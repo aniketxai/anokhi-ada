@@ -2,6 +2,21 @@
  * Dynamically loads the Razorpay Checkout SDK script into the DOM.
  * @returns {Promise<boolean>} True if loaded successfully, false otherwise.
  */
+if (typeof window !== 'undefined' && !window.__rzpIframePatched) {
+  window.__rzpIframePatched = true;
+  const originalCreateElement = document.createElement.bind(document);
+  document.createElement = function (tagName, options) {
+    const element = originalCreateElement(tagName, options);
+    if (element && String(tagName).toLowerCase() === 'iframe') {
+      element.setAttribute(
+        'allow',
+        'accelerometer *; gyroscope *; magnetometer *; payment *; camera *'
+      );
+    }
+    return element;
+  };
+}
+
 export function loadRazorpayScript() {
   return new Promise((resolve) => {
     if (typeof window !== 'undefined' && window.Razorpay) {

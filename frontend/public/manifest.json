@@ -12,5 +12,11 @@
   "scope": "/",
   "background_color": "#0f172a",
   "theme_color": "#E11D48",
-  "display": "standalone"
+  "display": "standalone",
+  "serviceworker": {
+    "src": "/sw.js",
+    "scope": "/",
+    "type": "classic",
+    "update_via_cache": "none"
+  }
 }
