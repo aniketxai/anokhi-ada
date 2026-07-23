@@ -9,6 +9,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
+    headers: {
+      'Permissions-Policy': 'accelerometer=*, gyroscope=*, magnetometer=*, payment=*',
+    },
     proxy: {
       '/api': 'http://localhost:5002',  // ← add this block
     },
