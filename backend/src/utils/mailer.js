@@ -44,7 +44,7 @@ function buildOrderEmail(order) {
   const from =
     process.env.MAIL_FROM ||
     process.env.SMTP_USER ||
-    'no-reply@sambx.local';
+    'no-reply@anokhiada.com';
 
   const customerName =
     `${order.shipping.firstName} ${order.shipping.lastName}`.trim();
@@ -334,7 +334,7 @@ function buildContactEmail(contact) {
   const recipient = buildRecipient();
 
   return {
-    from: process.env.MAIL_FROM || process.env.SMTP_USER || 'no-reply@sambx.local',
+    from: process.env.MAIL_FROM || process.env.SMTP_USER || 'no-reply@anokhiada.com',
 
     to: recipient,
 
@@ -429,7 +429,7 @@ export async function sendOrderNotificationEmail(order) {
     await transport.sendMail({
       ...adminMail,
 
-      from: `"Sambx Forge" <${process.env.SMTP_USER}>`,
+      from: `"Anokhi Ada" <${process.env.SMTP_USER}>`,
 
       replyTo:
         order.shipping.email ||
@@ -466,7 +466,7 @@ export async function sendOrderNotificationEmail(order) {
         .join('');
 
       await transport.sendMail({
-        from: `"Sambx Forge" <${process.env.SMTP_USER}>`,
+        from: `"Anokhi Ada" <${process.env.SMTP_USER}>`,
 
         to: order.shipping.email,
 
@@ -588,7 +588,7 @@ export async function sendOrderNotificationEmail(order) {
                   "
                 >
                   <p style="margin:0;">
-                    Thank you for shopping with Sambx 🚀
+                    Thank you for shopping with Anokhi Ada 💖
                   </p>
                 </div>
               </div>
@@ -622,7 +622,7 @@ export async function sendCustomEmail({ to, subject, text, html, from, replyTo }
     await transport.verify();
 
     const mail = {
-      from: from || (`"Sambx Forge" <${process.env.SMTP_USER || 'no-reply@sambx.local'}>`),
+      from: from || (`"Anokhi Ada" <${process.env.SMTP_USER || 'no-reply@anokhiada.com'}>`),
       to,
       subject,
       text,
@@ -681,7 +681,7 @@ export async function sendOrderCancellationEmail(order, cancellationReason = '')
 
     // ADMIN NOTIFICATION
     await transport.sendMail({
-      from: `"Sambx Forge" <${process.env.SMTP_USER}>`,
+      from: `"Anokhi Ada" <${process.env.SMTP_USER}>`,
       to: process.env.ORDER_NOTIFICATION_EMAIL || 'aniketxai@gmail.com',
       replyTo: customerEmail,
       subject: `❌ Order Cancelled - ${order.orderNumber}`,
@@ -828,7 +828,7 @@ export async function sendOrderCancellationEmail(order, cancellationReason = '')
 
     // CUSTOMER NOTIFICATION
     await transport.sendMail({
-      from: `"Sambx Forge" <${process.env.SMTP_USER}>`,
+      from: `"Anokhi Ada" <${process.env.SMTP_USER}>`,
       to: customerEmail,
       subject: `Order Cancellation Confirmation - ${order.orderNumber}`,
       html: `
@@ -1007,7 +1007,7 @@ export async function sendCustomOrderNotificationEmail(customOrder) {
     const from =
       process.env.MAIL_FROM ||
       process.env.SMTP_USER ||
-      'no-reply@sambx.local';
+      'no-reply@anokhiada.com';
 
     console.info(`📧 Preparing email to: ${recipient}`);
 
@@ -1075,13 +1075,13 @@ export async function sendCustomOrderNotificationEmail(customOrder) {
               href="${process.env.VITE_FRONTEND_URL || 'https://sambx.com'}/admin"
               style="display:inline-block;padding:12px 24px;background:#667eea;color:white;text-decoration:none;border-radius:8px;font-weight:bold;transition:background 0.3s;"
             >
-              Review Order in Admin Panel
+              Access Admin Panel
             </a>
           </div>
 
           <div style="margin-top:30px;padding-top:20px;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280;text-align:center;">
-            <p style="margin:0;">This is an automated message from SAMBX. Please do not reply to this email.</p>
-            <p style="margin:8px 0 0 0;">© 2024 SAMBX. All rights reserved.</p>
+            <p style="margin:0;">This is an automated message from Anokhi Ada. Please do not reply to this email.</p>
+            <p style="margin:8px 0 0 0;">© Anokhi Ada. All rights reserved.</p>
           </div>
         </div>
       </div>

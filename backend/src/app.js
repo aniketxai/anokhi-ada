@@ -67,7 +67,7 @@ app.use(morgan('dev'));
 app.get('/', (req, res) => {
   res.json({
     success: true,
-    message: 'SAMBX API is running',
+    message: 'Anokhi Ada API is running',
     health: '/api/health',
   });
 });
@@ -75,7 +75,7 @@ app.get('/', (req, res) => {
 app.get('/api/health', (req, res) => {
   res.json({
     success: true,
-    message: 'SAMBX API is running',
+    message: 'Anokhi Ada API is running',
   });
 });
 

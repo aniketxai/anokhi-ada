@@ -6,7 +6,7 @@ export default function Logo({ className = '', size = 'md', useImage = false, im
     return (
       <img
         src={imageSrc}
-        alt="SAMBX Forge"
+        alt="Anokhi Ada"
         className={`${sizes[size]} object-contain ${className}`}
       />
     );
@@ -20,7 +20,7 @@ export default function Logo({ className = '', size = 'md', useImage = false, im
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Forge anvil/hex symbol */}
+      {/* Brand icon symbol */}
       <path
         d="M30 8L52 20V44L30 56L8 44V20L30 8Z"
         stroke="currentColor"
@@ -54,30 +54,30 @@ export default function Logo({ className = '', size = 'md', useImage = false, im
       {/* Center dot */}
       <circle cx="30" cy="32" r="3" fill="currentColor" opacity="0.5" />
 
-      {/* SAMBX text */}
+      {/* Anokhi text */}
       <text
         x="64"
         y="30"
-        fontFamily="Space Grotesk, Inter, sans-serif"
+        fontFamily="Playfair Display, Georgia, serif"
         fontSize="20"
         fontWeight="700"
         fill="currentColor"
-        letterSpacing="3"
+        letterSpacing="2"
       >
-        SAMBX
+        Anokhi
       </text>
-      {/* Forge text */}
+      {/* Ada text */}
       <text
         x="64"
         y="48"
         fontFamily="Space Grotesk, Inter, sans-serif"
         fontSize="14"
-        fontWeight="400"
+        fontWeight="500"
         fill="currentColor"
-        opacity="0.6"
-        letterSpacing="5"
+        opacity="0.8"
+        letterSpacing="4"
       >
-        FORGE
+        ADA
       </text>
     </svg>
   );

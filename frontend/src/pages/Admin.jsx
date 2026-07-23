@@ -537,7 +537,7 @@ const loadAdminData = useCallback(async ({ showLoading = true } = {}) => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `sambx-export-${new Date().toISOString().split('T')[0]}.json`;
+      link.download = `anokhi-ada-export-${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -722,7 +722,7 @@ if (!isAuthenticated) {
             <Loader size={28} className="animate-spin" />
           </div>
           <p className="mt-5 text-sm uppercase tracking-[0.28em] text-outline">Loading data</p>
-          <h1 className="mt-2 text-2xl font-bold font-display">SAMBX Admin Panel</h1>
+          <h1 className="mt-2 text-2xl font-bold font-display">Anokhi Ada Admin Panel</h1>
           <p className="mt-3 text-sm text-secondary-text">
             Fetching products, orders, enquiries, and dashboard summary.
           </p>
@@ -747,8 +747,8 @@ if (!isAuthenticated) {
         <aside className="hidden xl:flex w-72 flex-col border-r border-white/8 bg-black/20 backdrop-blur-xl px-5 py-6 sticky top-0 h-screen">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-outline">SAMBX</p>
-              <h1 className="text-2xl font-bold font-display">Admin Forge</h1>
+              <p className="text-xs uppercase tracking-[0.35em] text-outline">Anokhi Ada</p>
+              <h1 className="text-2xl font-bold font-display">Admin Panel</h1>
             </div>
             <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold text-primary">Live</span>
           </div>
@@ -786,7 +786,7 @@ if (!isAuthenticated) {
               </div>
             </div>
             <p className="text-xs text-secondary-text leading-relaxed">
-              Product, order, quote, and message management for the full SAMBX Forge.
+              Product, order, quote, and message management for Anokhi Ada.
             </p>
             <AdminLogoutButton onLogout={() => setIsAuthenticated(false)} />
           </div>
@@ -798,7 +798,7 @@ if (!isAuthenticated) {
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-outline">Ecommerce control center</p>
-                <h2 className="mt-1 text-3xl sm:text-4xl font-bold font-display">SAMBX Admin Panel</h2>
+                <h2 className="mt-1 text-3xl sm:text-4xl font-bold font-display">Anokhi Ada Admin Panel</h2>
                 <p className="mt-2 max-w-2xl text-sm sm:text-base text-secondary-text">
                   Manage products, orders, quote requests, customer messages, shipping, and store settings in one command center.
                 </p>

@@ -84,11 +84,11 @@ function ToggleSwitch({ enabled, onChange }) {
 
 export default function AdminSettings() {
   const [settings, setSettings] = useState({
-    storeName: 'SAMBX',
+    storeName: 'Anokhi Ada',
     storeEmail: 'aniketxai@gmail.com',
     storeCurrency: 'INR',
     adminEmail: 'aniketxai@gmail.com',
-    senderName: 'SAMBX Forge',
+    senderName: 'Anokhi Ada',
     smtpHost: 'smtp.gmail.com',
     smtpPort: '587',
     smtpUser: '',

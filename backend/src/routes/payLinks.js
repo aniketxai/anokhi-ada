@@ -48,7 +48,7 @@ router.post('/', requireAdmin, async (req, res) => {
       expiresAt,
     });
 
-    const SITE_URL = process.env.SITE_URL || 'https://sambx.in';
+    const SITE_URL = process.env.SITE_URL || 'https://anokhiada.vercel.app';
     const url      = `${SITE_URL}/pay/link/${token}`;
     const expires  = expiresAt.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
 
@@ -123,7 +123,7 @@ router.post('/:token/order', async (req, res) => {
     // ── Replace this block with your actual Order model ──────────────────
     // Example using a generic orders collection:
     const db          = req.app.get('db'); // or import your Order model directly
-    const orderNumber = `SAMBX-${Date.now()}`;
+    const orderNumber = `ANOKHI-${Date.now()}`;
 
     // If you have an Order model, replace the lines below:
     // await Order.create({ ... });

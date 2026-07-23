@@ -24,7 +24,7 @@ import { getPayLink, postPayLinkOrder } from '../api';
 const CLOUDINARY_CLOUD_NAME    = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 const DEFAULT_VPA              = import.meta.env.VITE_UPI_VPA  || '8210993912-2@ybl';
-const DEFAULT_NAME             = import.meta.env.VITE_UPI_NAME || 'SAMBX';
+const DEFAULT_NAME             = import.meta.env.VITE_UPI_NAME || 'Anokhi Ada';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -214,7 +214,7 @@ export default function PayLinkPayment() {
             {statusError || 'This payment link is invalid or has expired.'}
           </p>
           <p className="mt-3 text-xs text-secondary-text/60">
-            Contact SAMBX to get a new payment link.
+            Contact Anokhi Ada to get a new payment link.
           </p>
           <Link
             to="/"

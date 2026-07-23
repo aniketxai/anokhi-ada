@@ -97,7 +97,7 @@ export default function Checkout() {
       navigate('/pay/upi', {
         state: {
           amount: finalTotal.toFixed(2),
-          note: `SAMBX order payment - ${shipping.firstName || 'Customer'}`,
+          note: `Anokhi Ada order payment - ${shipping.firstName || 'Customer'}`,
         },
       });
       return;

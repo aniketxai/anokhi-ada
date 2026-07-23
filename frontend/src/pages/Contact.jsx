@@ -6,6 +6,8 @@ import BlurBlob from '../components/BlurBlob';
 import Button from '../components/Button';
 import { postContact } from '../api/index.js';
 
+import { BRAND } from '../data/brand';
+
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
@@ -58,11 +60,11 @@ export default function Contact() {
             <div className="bg-surface-container rounded-3xl p-6">
               <div className="flex items-start gap-4">
                 <div className="w-11 h-11 rounded-xl bg-secondary-container flex items-center justify-center shrink-0">
-                  <Mail size={18} className="text-primary" />
+                  <Phone size={18} className="text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground text-sm mb-1">WhatsApp</h3>
-                  <p className="text-secondary-text text-sm">+91 8210993912</p>
+                  <h3 className="font-semibold text-foreground text-sm mb-1">WhatsApp / Phone</h3>
+                  <p className="text-secondary-text text-sm">{BRAND.whatsapp}</p>
                 </div>
               </div>
             </div>
@@ -70,11 +72,11 @@ export default function Contact() {
             <div className="bg-surface-container rounded-3xl p-6">
               <div className="flex items-start gap-4">
                 <div className="w-11 h-11 rounded-xl bg-secondary-container flex items-center justify-center shrink-0">
-                  <Phone size={18} className="text-primary" />
+                  <Mail size={18} className="text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground text-sm mb-1">Instagram</h3>
-                  <p className="text-secondary-text text-sm">@sambx.forge</p>
+                  <h3 className="font-semibold text-foreground text-sm mb-1">Location</h3>
+                  <p className="text-secondary-text text-sm">{BRAND.city}</p>
                 </div>
               </div>
             </div>
@@ -85,8 +87,8 @@ export default function Contact() {
                   <MapPin size={18} className="text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground text-sm mb-1">Email</h3>
-                  <p className="text-secondary-text text-sm">sambx.tech@gmail.com</p>
+                  <h3 className="font-semibold text-foreground text-sm mb-1">Support Hours</h3>
+                  <p className="text-secondary-text text-sm">{BRAND.supportTime}</p>
                 </div>
               </div>
             </div>

@@ -15,7 +15,7 @@ export const sendEmail = async ({
   });
 
   await transporter.sendMail({
-    from: `"SAMBX FORGE" <${process.env.EMAIL_USER}>`,
+    from: `"Anokhi Ada" <${process.env.EMAIL_USER}>`,
     to,
     subject,
     html,

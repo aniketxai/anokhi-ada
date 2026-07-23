@@ -23,8 +23,8 @@ export default function UPIPayment() {
   const { clearCart } = useApp();
 
   const DEFAULT_VPA = import.meta.env.VITE_UPI_VPA || '8210993912-2@ybl';
-  const DEFAULT_NAME = import.meta.env.VITE_UPI_NAME || 'SAMBX';
-  const DEFAULT_NOTE = import.meta.env.VITE_UPI_NOTE || 'SAMBX order payment';
+  const DEFAULT_NAME = import.meta.env.VITE_UPI_NAME || 'Anokhi Ada';
+  const DEFAULT_NOTE = import.meta.env.VITE_UPI_NOTE || 'Anokhi Ada order payment';
 
   const checkoutState = location.state || {};
   const storedDraft = readCheckoutDraft();
@@ -38,7 +38,7 @@ export default function UPIPayment() {
   const [note, setNote] = useState(
     checkoutState.note ||
     (storedDraft?.shipping
-      ? `SAMBX order payment - ${[storedDraft.shipping.firstName, storedDraft.shipping.lastName].filter(Boolean).join(' ').trim() || 'Customer'}`
+      ? `Anokhi Ada order payment - ${[storedDraft.shipping.firstName, storedDraft.shipping.lastName].filter(Boolean).join(' ').trim() || 'Customer'}`
       : '')
   );
   const [copied, setCopied] = useState(false);
@@ -98,7 +98,7 @@ export default function UPIPayment() {
         .trim();
 
       if (customerName) {
-        setNote(`SAMBX order payment - ${customerName}`);
+        setNote(`Anokhi Ada order payment - ${customerName}`);
       }
     } else {
       // No valid draft or amount provided — redirect back to checkout to prevent accidental payment page access

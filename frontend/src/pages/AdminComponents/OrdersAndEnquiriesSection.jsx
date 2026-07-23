@@ -53,7 +53,7 @@ export function OrdersSection({
           .totals { margin-top: 10px; text-align: right; }
         </style>
         <div class="header">
-          <h2>SAMBX Order Receipt</h2>
+          <h2>Anokhi Ada Order Receipt</h2>
           <p><strong>Order #:</strong> ${order.orderNumber}</p>
           <p><strong>Date:</strong> ${new Date(order.createdAt).toLocaleDateString('en-IN')}</p>
         </div>
