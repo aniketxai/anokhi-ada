@@ -1,0 +1,155 @@
+@import "tailwindcss";
+
+/*
+  Anokhi Ada design system — warm, premium "gifting" palette.
+  Values ported from the Anokhi Ada theme (HSL tokens) into Tailwind v4's
+  CSS-first @theme so utility classes like bg-background, text-primary,
+  border-border etc. all resolve to this palette.
+*/
+@theme {
+  --color-background: hsl(34 42% 97%);
+  --color-foreground: hsl(24 20% 14%);
+
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(24 20% 14%);
+
+  --color-popover: hsl(0 0% 100%);
+  --color-popover-foreground: hsl(24 20% 14%);
+
+  --color-primary: hsl(25 45% 34%);
+  --color-primary-foreground: hsl(36 50% 98%);
+
+  --color-secondary: hsl(34 36% 92%);
+  --color-secondary-foreground: hsl(24 20% 18%);
+
+  --color-muted: hsl(34 30% 94%);
+  --color-muted-foreground: hsl(24 14% 42%);
+
+  --color-accent: hsl(35 48% 88%);
+  --color-accent-foreground: hsl(25 45% 28%);
+
+  --color-destructive: hsl(0 72% 55%);
+  --color-destructive-foreground: hsl(36 50% 99%);
+
+  --color-border: hsl(32 24% 84%);
+  --color-input: hsl(32 24% 84%);
+  --color-ring: hsl(25 45% 34%);
+
+  --color-success: #10B981;
+  --color-warning: #F97316;
+  --color-error: hsl(0 72% 55%);
+
+  --radius-lg: 1rem;
+  --radius-md: 0.75rem;
+  --radius-sm: 0.5rem;
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+
+  --animate-fade-up: fade-up 0.6s ease-out forwards;
+  --animate-marquee: marquee 22s linear infinite;
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-33.333%); }
+  }
+}
+
+@layer base {
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    border-color: var(--color-border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    overflow-x: hidden;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-secondary);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-primary);
+    border-radius: 999px;
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-accent-foreground);
+  }
+}
+
+@layer utilities {
+  .transition-material {
+    transition: all 300ms cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  .transition-material-fast {
+    transition: all 150ms cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  /* Soft glass panel, used for the sticky navbar and overlays */
+  .glass {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+  }
+
+  .glass-pink {
+    background: rgba(245, 232, 218, 0.62);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+  }
+
+  .premium-shadow {
+    box-shadow: 0 10px 40px -12px rgba(123, 79, 43, 0.18);
+  }
+
+  .premium-shadow-lg {
+    box-shadow: 0 24px 60px -16px rgba(123, 79, 43, 0.24);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .gradient-text {
+    background-image: linear-gradient(90deg, #7b4f2b 0%, #a06a3a 55%, #d8a15d 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
