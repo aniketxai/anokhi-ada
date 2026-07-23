@@ -20,12 +20,13 @@ const app = express();
 
 const allowedOrigins = [
   ...(process.env.CORS_ORIGIN?.split(',').map((s) => s.trim()).filter(Boolean) || []),
-  ...(process.env.NODE_ENV === 'production' ? ['https://anokhiada.vercel.app/'] : []),
+  ...(process.env.NODE_ENV === 'production' ? ['https://anokhiada.vercel.app', 'https://anokhi-ada.vercel.app'] : ['*']),
 ];
 
 function isAllowedOrigin(origin) {
   if (!origin) return true;
 
+  // In development, allow any origin via the '*' wildcard.
   return allowedOrigins.includes('*') || allowedOrigins.includes(origin);
 }
 
