@@ -17,6 +17,9 @@ import api from '../api';
 import { useApp } from '../context/useApp';
 import Button from '../components/Button';
 import ProductCard from '../components/ProductCard';
+import BlurBlob from '../components/BlurBlob';
+import ProductDetailSkeleton from '../components/ProductDetailSkeleton';
+import PersonalisationActionBox from '../components/PersonalisationActionBox';
 import { formatINR } from '../utils/currency';
 import { sanitizeImageUrl, sanitizeProductImages } from '../utils/image';
 
