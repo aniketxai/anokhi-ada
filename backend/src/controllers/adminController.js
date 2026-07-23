@@ -142,6 +142,11 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
       data: {
         stats: [],
         revenue: 0,
+        totalRevenue: 0,
+        failedPaymentCount: 0,
+        failedPaymentAmount: 0,
+        totalProductViews: 0,
+        topViewedProducts: [],
         recentOrders: [],
         recentQuotes: [],
         recentContacts: [],
@@ -151,34 +156,61 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
     return;
   }
 
-  const [products, orders, quotes, contacts] = await Promise.all([
+  const [products, allOrders, quotes, contacts] = await Promise.all([
     Product.find().sort({ createdAt: -1 }).lean(),
-    Order.find().sort({ createdAt: -1 }).limit(8).lean(),
+    Order.find().sort({ createdAt: -1 }).lean(),
     QuoteRequest.find().sort({ createdAt: -1 }).limit(8).lean(),
     ContactMessage.find().sort({ createdAt: -1 }).limit(8).lean(),
   ]);
 
-  const revenue = orders.reduce((sum, order) => sum + Number(order.total || 0), 0);
-  const pendingOrders = orders.filter((order) => ['pending', 'paid', 'processing'].includes(order.status)).length;
+  const recentOrders = allOrders.slice(0, 8);
+  const paidOrders = allOrders.filter((order) => order.payment?.status === 'paid' || ['paid', 'processing', 'shipped', 'delivered'].includes(order.status));
+  const failedOrders = allOrders.filter((order) => order.payment?.status === 'failed' || order.status === 'failed');
+
+  const totalRevenue = paidOrders.reduce((sum, order) => sum + Number(order.total || 0), 0);
+  const failedPaymentCount = failedOrders.length;
+  const failedPaymentAmount = failedOrders.reduce((sum, order) => sum + Number(order.total || 0), 0);
+
+  const pendingOrders = allOrders.filter((order) => ['pending', 'processing'].includes(order.status) && order.payment?.status !== 'failed').length;
   const lowStockProducts = products.filter((product) => deriveStockQty(product) <= 5);
+
+  const totalProductViews = products.reduce((sum, p) => sum + Number(p.views || 0), 0);
+  const topViewedProducts = [...products]
+    .sort((a, b) => Number(b.views || 0) - Number(a.views || 0))
+    .slice(0, 5)
+    .map((p) => ({
+      id: p.id,
+      name: p.name,
+      category: p.category,
+      price: p.price,
+      views: p.views || 0,
+      image: p.images?.[0] || '',
+    }));
 
   res.json({
     success: true,
     data: {
       stats: [
         { label: 'Products', value: products.length },
-        { label: 'Orders', value: orders.length },
-        { label: 'Revenue', value: revenue },
+        { label: 'Orders', value: allOrders.length },
+        { label: 'Revenue', value: totalRevenue },
         { label: 'Pending Orders', value: pendingOrders },
+        { label: 'Failed Payments', value: failedPaymentCount },
+        { label: 'Total Views', value: totalProductViews },
         { label: 'Low Stock', value: lowStockProducts.length },
         { label: 'Quotes', value: quotes.length },
       ],
-      revenue,
-      recentOrders: orders.slice(0, 5),
+      revenue: totalRevenue,
+      totalRevenue,
+      failedPaymentCount,
+      failedPaymentAmount,
+      totalProductViews,
+      topViewedProducts,
+      recentOrders: recentOrders.slice(0, 5),
       recentQuotes: quotes.slice(0, 5),
       recentContacts: contacts.slice(0, 5),
       recentActivity: [
-        ...orders.slice(0, 3).map((order) => ({
+        ...recentOrders.slice(0, 3).map((order) => ({
           type: 'order',
           title: `Order ${order.orderNumber} ${order.status}`,
           time: order.createdAt,

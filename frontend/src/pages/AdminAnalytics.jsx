@@ -11,15 +11,20 @@ import {
   DollarSign,
   Package,
   Calendar,
+  AlertTriangle,
+  Eye,
+  CheckCircle2,
+  XCircle,
 } from 'lucide-react';
 import { formatINR } from '../utils/currency';
 
-function AnalyticsCard({ title, value, change, icon: Icon, color = 'primary' }) {
+function AnalyticsCard({ title, value, subtitle, change, icon: Icon, color = 'primary' }) {
   const colorClasses = {
     primary: 'bg-primary/15 text-primary',
     emerald: 'bg-emerald-500/15 text-emerald-300',
     blue: 'bg-sky-500/15 text-sky-300',
     purple: 'bg-purple-500/15 text-purple-300',
+    red: 'bg-red-500/15 text-red-300',
   };
 
   return (
@@ -31,14 +36,15 @@ function AnalyticsCard({ title, value, change, icon: Icon, color = 'primary' }) 
         <div>
           <p className="text-sm text-secondary-text">{title}</p>
           <p className="mt-2 text-3xl font-bold font-display">{value}</p>
-          {change && (
+          {subtitle && <p className="mt-1 text-xs text-outline font-medium">{subtitle}</p>}
+          {typeof change === 'number' && change !== 0 && (
             <p className={`mt-2 text-sm font-semibold ${change > 0 ? 'text-emerald-300' : 'text-red-300'}`}>
               {change > 0 ? <TrendingUp className="inline mr-1" size={14} /> : <TrendingDown className="inline mr-1" size={14} />}
               {Math.abs(change)}% vs last period
             </p>
           )}
         </div>
-        <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${colorClasses[color]}`}>
+        <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${colorClasses[color] || colorClasses.primary}`}>
           <Icon size={20} />
         </div>
       </div>
@@ -64,10 +70,10 @@ export default function AdminAnalytics({ summary, orders, products, contacts, qu
   // Filter orders by date range
   const getFilteredData = useCallback((dataArray, period) => {
     if (!dataArray || !Array.isArray(dataArray)) return [];
-    
+
     const now = new Date();
-    let startDate = new Date(0); // Beginning of time for 'All time'
-    
+    let startDate = new Date(0);
+
     switch (period) {
       case 'Today':
         startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -85,14 +91,13 @@ export default function AdminAnalytics({ summary, orders, products, contacts, qu
       default:
         return dataArray;
     }
-    
+
     return dataArray.filter(item => {
       const itemDate = new Date(item.createdAt || 0);
       return itemDate >= startDate;
     });
   }, []);
 
-  // Helper to extract customer name from order
   const getCustomerName = (order) => {
     return order.shipping?.firstName && order.shipping?.lastName
       ? `${order.shipping.firstName} ${order.shipping.lastName}`
@@ -103,259 +108,293 @@ export default function AdminAnalytics({ summary, orders, products, contacts, qu
     const filteredOrders = getFilteredData(orders, selectedPeriod);
     const filteredContacts = getFilteredData(contacts, selectedPeriod);
     const filteredQuotes = getFilteredData(quotes, selectedPeriod);
-    
+
+    const paidOrders = filteredOrders.filter(o => o.payment?.status === 'paid' || ['paid', 'processing', 'shipped', 'delivered'].includes(o.status));
+    const failedOrders = filteredOrders.filter(o => o.payment?.status === 'failed' || o.status === 'failed');
+
     const totalOrders = filteredOrders?.length || 0;
-    const totalRevenue = filteredOrders?.reduce((sum, o) => sum + (o.totalAmount || o.total || 0), 0) || 0;
+    const totalRevenue = paidOrders.reduce((sum, o) => sum + (o.totalAmount || o.total || 0), 0);
+    const failedRevenueLoss = failedOrders.reduce((sum, o) => sum + (o.totalAmount || o.total || 0), 0);
+
     const totalCustomers = new Set(filteredOrders?.map(getCustomerName) || []).size;
     const totalProducts = products?.length || 0;
+    const totalViews = products?.reduce((sum, p) => sum + Number(p.views || 0), 0) || summary?.totalProductViews || 0;
     const totalEnquiries = (filteredContacts?.length || 0) + (filteredQuotes?.length || 0);
 
+    const topViewedProducts = [...(products || [])]
+      .sort((a, b) => Number(b.views || 0) - Number(a.views || 0))
+      .slice(0, 5);
+
     const ordersByStatus = {
-      pending: filteredOrders?.filter(o => o.status === 'pending').length || 0,
-      paid: filteredOrders?.filter(o => o.status === 'paid').length || 0,
+      pending: filteredOrders?.filter(o => o.status === 'pending' && o.payment?.status !== 'failed').length || 0,
+      paid: paidOrders.length,
+      failed: failedOrders.length,
       processing: filteredOrders?.filter(o => o.status === 'processing').length || 0,
       shipped: filteredOrders?.filter(o => o.status === 'shipped').length || 0,
       delivered: filteredOrders?.filter(o => o.status === 'delivered').length || 0,
     };
 
-    const contactsByStatus = {
-      new: filteredContacts?.filter(c => c.status === 'new').length || 0,
-      'in-review': filteredContacts?.filter(c => c.status === 'in-review' || c.status === 'read').length || 0,
-      replied: filteredContacts?.filter(c => c.status === 'replied').length || 0,
-    };
-
-    const quotesByStatus = {
-      new: filteredQuotes?.filter(q => q.status === 'new').length || 0,
-      'in-review': filteredQuotes?.filter(q => q.status === 'in-review').length || 0,
-      quoted: filteredQuotes?.filter(q => q.status === 'quoted').length || 0,
-    };
-
-    const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-    const conversionRate = totalCustomers > 0 ? ((totalOrders / totalCustomers) * 100).toFixed(1) : 0;
-
-    // Calculate change percentages based on previous period
-    let revenueChange = 0;
-    let orderChange = 0;
-    let customerChange = 0;
-    let productChange = 0;
-    let avgOrderValueChange = 0;
-    let enquiryChange = 0;
-
-    if (selectedPeriod !== 'All time') {
-      // Get all data for comparison with current period
-      const allOrders = orders || [];
-      const previousPeriodStartDate = selectedPeriod === 'Today'
-        ? new Date(new Date().getTime() - 1 * 24 * 60 * 60 * 1000)
-        : selectedPeriod === 'Last 7 days'
-        ? new Date(new Date().getTime() - 14 * 24 * 60 * 60 * 1000)
-        : selectedPeriod === 'Last 30 days'
-        ? new Date(new Date().getTime() - 60 * 24 * 60 * 60 * 1000)
-        : new Date(new Date().getTime() - 180 * 24 * 60 * 60 * 1000);
-
-      const periodLength = selectedPeriod === 'Today' ? 1 : selectedPeriod === 'Last 7 days' ? 7 : selectedPeriod === 'Last 30 days' ? 30 : 90;
-      const previousPeriodEndDate = new Date(new Date().getTime() - periodLength * 24 * 60 * 60 * 1000);
-
-      const previousOrders = allOrders.filter(o => {
-        const oDate = new Date(o.createdAt || 0);
-        return oDate >= previousPeriodStartDate && oDate < previousPeriodEndDate;
-      });
-
-      const prevRevenue = previousOrders.reduce((sum, o) => sum + (o.totalAmount || o.total || 0), 0) || 0;
-      const prevOrders = previousOrders.length;
-      const prevCustomers = new Set(previousOrders.map(getCustomerName)).size;
-      const prevAvgOrderValue = prevOrders > 0 ? prevRevenue / prevOrders : 0;
-
-      revenueChange = prevRevenue > 0 ? (((totalRevenue - prevRevenue) / prevRevenue) * 100).toFixed(1) : 0;
-      orderChange = prevOrders > 0 ? (((totalOrders - prevOrders) / prevOrders) * 100).toFixed(1) : 0;
-      customerChange = prevCustomers > 0 ? (((totalCustomers - prevCustomers) / prevCustomers) * 100).toFixed(1) : 0;
-      avgOrderValueChange = prevAvgOrderValue > 0 ? (((avgOrderValue - prevAvgOrderValue) / prevAvgOrderValue) * 100).toFixed(1) : 0;
-      
-      const previousContactsCount = (contacts || []).filter(c => {
-        const cDate = new Date(c.createdAt || 0);
-        return cDate >= previousPeriodStartDate && cDate < previousPeriodEndDate;
-      }).length;
-      const previousQuotesCount = (quotes || []).filter(q => {
-        const qDate = new Date(q.createdAt || 0);
-        return qDate >= previousPeriodStartDate && qDate < previousPeriodEndDate;
-      }).length;
-      const prevEnquiries = previousContactsCount + previousQuotesCount;
-      enquiryChange = prevEnquiries > 0 ? (((totalEnquiries - prevEnquiries) / prevEnquiries) * 100).toFixed(1) : 0;
-    }
+    const avgOrderValue = totalOrders > 0 ? totalRevenue / (paidOrders.length || 1) : 0;
+    const conversionRate = totalViews > 0 ? ((totalOrders / totalViews) * 100).toFixed(1) : 0;
 
     return {
       totalRevenue,
+      failedRevenueLoss,
       totalOrders,
+      failedOrdersCount: failedOrders.length,
+      paidOrdersCount: paidOrders.length,
       totalCustomers,
       totalProducts,
+      totalViews,
       totalEnquiries,
+      topViewedProducts,
       avgOrderValue,
       conversionRate,
       ordersByStatus,
-      contactsByStatus,
-      quotesByStatus,
-      revenueChange: parseFloat(revenueChange),
-      orderChange: parseFloat(orderChange),
-      customerChange: parseFloat(customerChange),
-      productChange,
-      avgOrderValueChange: parseFloat(avgOrderValueChange),
-      enquiryChange: parseFloat(enquiryChange),
     };
-  }, [orders, products, contacts, quotes, selectedPeriod, getFilteredData]);
+  }, [orders, products, contacts, quotes, summary, selectedPeriod, getFilteredData]);
+
+  // Compute daily trend for past 7 days
+  const dailyTrend = useMemo(() => {
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const now = new Date();
+    const result = days.map((dayName) => ({ day: dayName, revenue: 0, failed: 0 }));
+
+    (orders || []).forEach((o) => {
+      const d = new Date(o.createdAt || 0);
+      const dayDiff = Math.floor((now - d) / (1000 * 60 * 60 * 24));
+      if (dayDiff < 7) {
+        const index = (d.getDay() + 6) % 7; // Convert Sun-Sat to Mon-Sun
+        if (o.payment?.status === 'failed' || o.status === 'failed') {
+          result[index].failed += Number(o.total || o.totalAmount || 0);
+        } else {
+          result[index].revenue += Number(o.total || o.totalAmount || 0);
+        }
+      }
+    });
+
+    const maxVal = Math.max(...result.map(r => Math.max(r.revenue, r.failed)), 5000);
+    return result.map(r => ({
+      ...r,
+      revenueHeight: Math.round((r.revenue / maxVal) * 100),
+      failedHeight: Math.round((r.failed / maxVal) * 100),
+    }));
+  }, [orders]);
+
+  const maxViews = useMemo(() => {
+    const list = analytics.topViewedProducts.map(p => Number(p.views || 0));
+    return Math.max(...list, 10);
+  }, [analytics.topViewedProducts]);
 
   return (
     <div className="space-y-6">
-      {/* Key Metrics */}
+      {/* Key Metrics Grid */}
       <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-6">
         <AnalyticsCard
           title="Total Revenue"
           value={formatINR(analytics.totalRevenue)}
-          change={analytics.revenueChange}
+          subtitle="Successful paid orders"
           icon={DollarSign}
           color="emerald"
         />
         <AnalyticsCard
+          title="Failed Payments Loss"
+          value={formatINR(analytics.failedRevenueLoss)}
+          subtitle={`${analytics.failedOrdersCount} failed transactions`}
+          icon={AlertTriangle}
+          color="red"
+        />
+        <AnalyticsCard
+          title="Product Views"
+          value={analytics.totalViews}
+          subtitle="Total store impressions"
+          icon={Eye}
+          color="blue"
+        />
+        <AnalyticsCard
           title="Total Orders"
           value={analytics.totalOrders}
-          change={analytics.orderChange}
+          subtitle={`${analytics.paidOrdersCount} completed / ${analytics.failedOrdersCount} failed`}
           icon={ShoppingCart}
-          color="blue"
+          color="primary"
         />
         <AnalyticsCard
           title="Customers"
           value={analytics.totalCustomers}
-          change={analytics.customerChange}
+          subtitle="Unique buyers"
           icon={Users}
           color="purple"
         />
         <AnalyticsCard
-          title="Products"
-          value={analytics.totalProducts}
-          change={analytics.productChange}
-          icon={Package}
-        />
-        <AnalyticsCard
           title="Avg Order Value"
           value={formatINR(analytics.avgOrderValue)}
-          change={analytics.avgOrderValueChange}
+          subtitle="Per completed order"
           icon={TrendingUp}
           color="emerald"
         />
-        <AnalyticsCard
-          title="Enquiries"
-          value={analytics.totalEnquiries}
-          change={analytics.enquiryChange}
-          icon={LineChartIcon}
-          color="blue"
-        />
       </div>
 
-      {/* Charts Section */}
+      {/* Graphs Row 1: Product View Count Graph & Failed Payment Recovery Graph */}
       <div className="grid gap-6 lg:grid-cols-2">
+        {/* Product View Count Graph */}
         <SectionCard
-          title="Order Status Distribution"
-          description="Breakdown of orders by current status"
+          title="👁 Top Viewed Products Graph"
+          description="Most popular items viewed by store visitors"
         >
-          <div className="space-y-4">
-            {Object.entries(analytics.ordersByStatus).map(([status, count]) => {
-              const total = analytics.totalOrders || 1;
-              const percentage = ((count / total) * 100).toFixed(0);
-              const colors = {
-                pending: 'bg-amber-500',
-                paid: 'bg-sky-500',
-                processing: 'bg-purple-500',
-                shipped: 'bg-violet-500',
-                delivered: 'bg-teal-500',
-              };
+          {analytics.topViewedProducts.length > 0 ? (
+            <div className="space-y-4">
+              {analytics.topViewedProducts.map((p, idx) => {
+                const views = Number(p.views || 0);
+                const percent = Math.round((views / maxViews) * 100);
 
-              return (
-                <div key={status}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium capitalize">{status}</span>
-                    <span className="text-sm font-semibold text-secondary-text">{count} ({percentage}%)</span>
+                return (
+                  <div key={p.id || idx} className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs sm:text-sm">
+                      <div className="flex items-center gap-2 truncate pr-2">
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-sky-500/20 text-[10px] font-bold text-sky-300 shrink-0">
+                          #{idx + 1}
+                        </span>
+                        <span className="font-semibold text-foreground truncate">{p.name}</span>
+                        <span className="text-secondary-text text-xs">({p.category})</span>
+                      </div>
+                      <span className="font-bold text-sky-300 shrink-0">👁 {views} views</span>
+                    </div>
+                    <div className="h-3 rounded-full bg-white/8 overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.max(percent, 4)}%` }}
+                        transition={{ duration: 0.6, delay: idx * 0.1 }}
+                        className="h-full rounded-full bg-linear-to-r from-sky-500 to-indigo-400"
+                      />
+                    </div>
                   </div>
-                  <div className="h-2 rounded-full bg-white/8 overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${colors[status]}`}
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="py-8 text-center text-sm text-secondary-text">
+              No product views recorded yet. Product page visits will populate this graph dynamically!
+            </div>
+          )}
         </SectionCard>
 
+        {/* Failed Payment Breakdown Graph */}
         <SectionCard
-          title="Enquiry Status Distribution"
-          description="Mix of contact and quote requests"
+          title="⚠️ Payment Status Breakdown Graph"
+          description="Comparison of Successful vs Failed vs Pending transactions"
         >
-          <div className="space-y-4">
-            {Object.entries(analytics.contactsByStatus).map(([status, count]) => {
-              const total = (Object.values(analytics.contactsByStatus).reduce((a, b) => a + b, 0)) || 1;
-              const percentage = ((count / total) * 100).toFixed(0);
-              const colors = {
-                new: 'bg-sky-500',
-                'in-review': 'bg-amber-500',
-                replied: 'bg-emerald-500',
-              };
-
-              return (
-                <div key={`contact-${status}`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium capitalize">{status}</span>
-                    <span className="text-sm font-semibold text-secondary-text">{count} ({percentage}%)</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-white/8 overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${colors[status]}`}
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
+          <div className="space-y-5">
+            {/* Visual Bar Comparison */}
+            <div className="rounded-3xl border border-white/8 bg-black/20 p-4 space-y-4">
+              <div>
+                <div className="flex justify-between text-xs font-semibold mb-1">
+                  <span className="text-emerald-300 flex items-center gap-1">
+                    <CheckCircle2 size={13} /> Paid Orders ({analytics.ordersByStatus.paid})
+                  </span>
+                  <span className="text-emerald-300 font-bold">{formatINR(analytics.totalRevenue)}</span>
                 </div>
-              );
-            })}
+                <div className="h-3 rounded-full bg-white/8 overflow-hidden">
+                  <div
+                    className="h-full bg-emerald-500 rounded-full transition-all"
+                    style={{ width: `${analytics.totalOrders ? (analytics.ordersByStatus.paid / analytics.totalOrders) * 100 : 0}%` }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-xs font-semibold mb-1">
+                  <span className="text-red-300 flex items-center gap-1">
+                    <XCircle size={13} /> Failed Payments ({analytics.ordersByStatus.failed})
+                  </span>
+                  <span className="text-red-300 font-bold">{formatINR(analytics.failedRevenueLoss)}</span>
+                </div>
+                <div className="h-3 rounded-full bg-white/8 overflow-hidden">
+                  <div
+                    className="h-full bg-red-500 rounded-full transition-all"
+                    style={{ width: `${analytics.totalOrders ? (analytics.ordersByStatus.failed / analytics.totalOrders) * 100 : 0}%` }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-xs font-semibold mb-1">
+                  <span className="text-amber-300 flex items-center gap-1">
+                    <PieChartIcon size={13} /> Pending Orders ({analytics.ordersByStatus.pending})
+                  </span>
+                  <span className="text-amber-300 font-bold">In Review</span>
+                </div>
+                <div className="h-3 rounded-full bg-white/8 overflow-hidden">
+                  <div
+                    className="h-full bg-amber-500 rounded-full transition-all"
+                    style={{ width: `${analytics.totalOrders ? (analytics.ordersByStatus.pending / analytics.totalOrders) * 100 : 0}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-200 flex items-center justify-between">
+              <div>
+                <p className="font-bold">Recover Lost Revenue</p>
+                <p className="text-red-300/80">Use "Send Pay Link" in Orders tab to convert failed orders</p>
+              </div>
+              <span className="rounded-full bg-red-600 px-3 py-1 text-white font-bold">{analytics.failedOrdersCount} Failed</span>
+            </div>
           </div>
         </SectionCard>
       </div>
 
-      {/* Performance Metrics */}
+      {/* Revenue & Sales Bar Chart */}
       <SectionCard
-        title="Performance Metrics"
-        description="Key performance indicators and conversion rates"
+        title="📊 Weekly Sales vs Failed Transactions Graph"
+        description="Daily revenue earned vs potential revenue lost in the last 7 days"
       >
-        <div className="grid gap-4 sm:grid-cols-3">
-          <div className="rounded-3xl border border-white/8 bg-black/20 p-4">
-            <p className="text-sm text-secondary-text mb-2">Conversion Rate</p>
-            <p className="text-3xl font-bold font-display">{analytics.conversionRate}%</p>
-            <p className="text-xs text-outline mt-2">Orders per customer</p>
+        <div className="rounded-3xl border border-white/8 bg-black/20 p-5">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4 text-xs font-bold">
+              <span className="flex items-center gap-1.5 text-emerald-400">
+                <span className="h-3 w-3 rounded-full bg-emerald-500 inline-block" /> Earned Revenue
+              </span>
+              <span className="flex items-center gap-1.5 text-red-400">
+                <span className="h-3 w-3 rounded-full bg-red-500 inline-block" /> Failed Transactions
+              </span>
+            </div>
+            <span className="text-xs text-outline font-semibold">Last 7 Days</span>
           </div>
-          <div className="rounded-3xl border border-white/8 bg-black/20 p-4">
-            <p className="text-sm text-secondary-text mb-2">Repeat Customer Rate</p>
-            <p className="text-3xl font-bold font-display">
-              {analytics.totalCustomers > 0 ? ((analytics.totalOrders / analytics.totalCustomers - 1) * 100).toFixed(1) : 0}%
-            </p>
-            <p className="text-xs text-outline mt-2">Average repeat purchases</p>
-          </div>
-          <div className="rounded-3xl border border-white/8 bg-black/20 p-4">
-            <p className="text-sm text-secondary-text mb-2">Enquiry to Order</p>
-            <p className="text-3xl font-bold font-display">
-              {analytics.totalEnquiries > 0 ? ((analytics.totalOrders / analytics.totalEnquiries) * 100).toFixed(1) : 0}%
-            </p>
-            <p className="text-xs text-outline mt-2">Enquiry conversion</p>
+
+          <div className="flex items-end justify-between gap-3 h-52 pt-4">
+            {dailyTrend.map((d) => (
+              <div key={d.day} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
+                <div className="flex items-end gap-1.5 w-full max-w-12 h-full justify-center">
+                  <motion.div
+                    initial={{ height: 0 }}
+                    animate={{ height: `${Math.max(d.revenueHeight, 4)}%` }}
+                    className="w-1/2 rounded-t-lg bg-emerald-500 hover:bg-emerald-400 transition-colors"
+                    title={`Earned: ${formatINR(d.revenue)}`}
+                  />
+                  <motion.div
+                    initial={{ height: 0 }}
+                    animate={{ height: `${Math.max(d.failedHeight, 4)}%` }}
+                    className="w-1/2 rounded-t-lg bg-red-500/80 hover:bg-red-500 transition-colors"
+                    title={`Failed: ${formatINR(d.failed)}`}
+                  />
+                </div>
+                <span className="text-xs text-outline font-bold">{d.day}</span>
+              </div>
+            ))}
           </div>
         </div>
       </SectionCard>
 
       {/* Time Period Selector */}
-      <SectionCard title="Time Period">
+      <SectionCard title="Time Period Filter">
         <div className="flex flex-wrap gap-2">
           {['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'All time'].map((period) => (
             <button
               key={period}
               onClick={() => setSelectedPeriod(period)}
-              className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-material ${
+              className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-material ${
                 selectedPeriod === period
-                  ? 'border-primary bg-primary/20 text-primary'
+                  ? 'border-primary bg-primary/20 text-primary font-bold'
                   : 'border-white/8 bg-white/5 text-foreground hover:bg-white/10'
               }`}
             >

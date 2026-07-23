@@ -22,6 +22,7 @@ const productSchema = new mongoose.Schema(
     inStock: { type: Boolean, default: true },
     stockQty: { type: Number, default: 0, min: 0 },
     featured: { type: Boolean, default: false },
+    views: { type: Number, default: 0, min: 0 },
   },
   { timestamps: true }
 );

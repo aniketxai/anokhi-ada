@@ -442,6 +442,40 @@ const cancelOrder = asyncHandler(async (req, res) => {
   });
 });
 
+const markOrderPaymentFailed = asyncHandler(async (req, res) => {
+  const { orderId, razorpayOrderId, failureReason = 'Payment dismissed or failed' } = req.body;
+
+  if (!orderId && !razorpayOrderId) {
+    res.status(400);
+    throw new Error('Order ID or Razorpay Order ID is required');
+  }
+
+  const order = await Order.findOne({
+    $or: [
+      ...(orderId ? [{ _id: orderId }] : []),
+      ...(razorpayOrderId ? [{ 'payment.razorpayOrderId': razorpayOrderId }] : []),
+    ],
+  });
+
+  if (!order) {
+    res.status(404);
+    throw new Error('Order not found');
+  }
+
+  // Only update if payment is not already paid
+  if (order.payment.status !== 'paid') {
+    order.payment.status = 'failed';
+    order.payment.failureReason = String(failureReason).slice(0, 500);
+    await order.save();
+  }
+
+  res.status(200).json({
+    success: true,
+    message: 'Payment status marked as failed',
+    data: order,
+  });
+});
+
 export {
   createOrder,
   cancelOrder,
@@ -449,4 +483,5 @@ export {
   createRazorpayOrder,
   verifyRazorpayPayment,
   handleRazorpayWebhook,
+  markOrderPaymentFailed,
 };

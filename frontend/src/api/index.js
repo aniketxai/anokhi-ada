@@ -485,6 +485,30 @@ export async function verifyRazorpayPayment(payload) {
   return data;
 }
 
+export async function incrementProductView(id) {
+  try {
+    const res = await fetchWithTimeout(`${getBaseUrl()}/api/products/${encodeURIComponent(id)}/view`, {
+      method: 'POST',
+    });
+    return await res.json();
+  } catch {
+    return { success: false };
+  }
+}
+
+export async function markOrderPaymentFailed(payload) {
+  try {
+    const res = await fetchWithTimeout(`${getBaseUrl()}/api/orders/mark-failed`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    return await res.json();
+  } catch (err) {
+    return { success: false, message: err.message };
+  }
+}
+
 // ── Default export ────────────────────────────────────────────────────────────
 
 export default {
@@ -495,6 +519,8 @@ export default {
   getCachedProducts,
   getCachedProductById,
   getCachedCategories,
+  incrementProductView,
+  markOrderPaymentFailed,
   postContact,
   postQuote,
   postOrder,

@@ -6,7 +6,7 @@ import { ArrowLeft, Check, ShieldCheck, CreditCard, Banknote, Loader2 } from 'lu
 import { useApp } from '../context/useApp';
 import Button from '../components/Button';
 import { formatINR } from '../utils/currency';
-import { postOrder, createRazorpayOrder, verifyRazorpayPayment } from '../api';
+import { postOrder, createRazorpayOrder, verifyRazorpayPayment, markOrderPaymentFailed } from '../api';
 import { loadRazorpayScript } from '../utils/razorpay';
 import { sanitizeImageUrl } from '../utils/image';
 
@@ -141,6 +141,11 @@ export default function Checkout() {
           ondismiss: () => {
             setLoading(false);
             setError('Payment cancelled. You can complete your order anytime.');
+            markOrderPaymentFailed({
+              orderId,
+              razorpayOrderId,
+              failureReason: 'Payment modal dismissed by user',
+            });
           },
         },
         handler: async (paymentResponse) => {
@@ -162,6 +167,11 @@ export default function Checkout() {
             setOrderPlaced(true);
           } catch (verifyErr) {
             setError(verifyErr.message || 'Payment verification failed. Please contact support.');
+            markOrderPaymentFailed({
+              orderId,
+              razorpayOrderId: paymentResponse.razorpay_order_id,
+              failureReason: verifyErr.message || 'Payment verification failed',
+            });
           } finally {
             setLoading(false);
           }
@@ -172,7 +182,13 @@ export default function Checkout() {
 
       rzp.on('payment.failed', (failResponse) => {
         setLoading(false);
-        setError(failResponse?.error?.description || 'Payment failed. Please try again.');
+        const description = failResponse?.error?.description || 'Payment failed. Please try again.';
+        setError(description);
+        markOrderPaymentFailed({
+          orderId,
+          razorpayOrderId,
+          failureReason: description,
+        });
       });
 
       rzp.open();

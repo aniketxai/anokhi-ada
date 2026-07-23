@@ -83,6 +83,7 @@ export function CatalogSection({
                     <th className="px-4 py-3.5 font-bold">Net wt</th>
                     <th className="px-4 py-3.5 font-bold">Price</th>
                     <th className="px-4 py-3.5 font-bold">Rating</th>
+                    <th className="px-4 py-3.5 font-bold">Views</th>
                     <th className="px-4 py-3.5 font-bold">Stock</th>
                     <th className="px-4 py-3.5 font-bold">Action</th>
                   </tr>
@@ -90,7 +91,7 @@ export function CatalogSection({
                 <tbody className="divide-y divide-border bg-card">
                   {(filteredProducts || []).length === 0 ? (
                     <tr>
-                      <td colSpan="7" className="px-4 py-8 text-center">
+                      <td colSpan="8" className="px-4 py-8 text-center">
                         <p className="text-secondary-text font-medium">No products found. {adminProducts.length === 0 ? 'Create your first product by clicking "Add product".' : 'Try adjusting your search or filters.'}</p>
                       </td>
                     </tr>
@@ -123,6 +124,11 @@ export function CatalogSection({
                           <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
                           {product.rating || 0}
                         </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className="inline-flex items-center gap-1 rounded-full border border-sky-300/40 bg-sky-500/10 px-2.5 py-1 text-xs font-bold text-sky-300">
+                          👁 {product.views || 0}
+                        </span>
                       </td>
                       <td className="px-4 py-4">
                         <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-bold ${product.inStock ? 'border-emerald-300 bg-emerald-100 text-emerald-900' : 'border-rose-300 bg-rose-100 text-rose-900'}`}>

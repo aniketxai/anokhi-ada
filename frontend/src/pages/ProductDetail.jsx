@@ -67,6 +67,10 @@ export default function ProductDetail() {
 
         setProduct(safeProductShape(singleProduct || productFromList || cachedProduct));
         setProducts(Array.isArray(allProducts) ? allProducts : []);
+
+        if (id) {
+          api.incrementProductView(id);
+        }
       })
       .finally(() => {
         if (active) setLoading(false);

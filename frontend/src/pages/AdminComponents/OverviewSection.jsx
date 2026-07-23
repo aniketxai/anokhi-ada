@@ -61,7 +61,7 @@ export function OverviewSection({
   return (
     <div className="space-y-6">
       {/* KPIs */}
-      <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-5 mb-6">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 mb-6">
         {kpis.map((item) => {
           const Icon = item.icon;
           const toneClass =

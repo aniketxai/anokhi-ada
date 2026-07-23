@@ -82,6 +82,7 @@ async function loadProducts({ category, q, sort }) {
     'price-asc': { price: 1 },
     'price-desc': { price: -1 },
     rating: { rating: -1 },
+    views: { views: -1 },
     newest: { createdAt: -1 },
   };
 
@@ -228,3 +229,22 @@ export const getHomeData = asyncHandler(async (req, res) => {
     },
   });
 });
+
+export const incrementProductViews = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    res.status(400);
+    throw new Error('Product ID is required');
+  }
+
+  if (isDatabaseReady()) {
+    try {
+      await Product.findOneAndUpdate({ id }, { $inc: { views: 1 } }, { new: true });
+    } catch (err) {
+      console.error('Failed to increment views:', err);
+    }
+  }
+
+  res.json({ success: true, message: 'View count updated' });
+});
+

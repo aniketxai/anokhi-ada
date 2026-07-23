@@ -11,6 +11,8 @@ const statusStyles = {
   accepted: 'bg-emerald-100 text-emerald-900 border-emerald-300',
   completed: 'bg-teal-100 text-teal-900 border-teal-300',
   rejected: 'bg-rose-100 text-rose-900 border-rose-300',
+  failed: 'bg-red-100 text-red-900 border-red-300 font-bold',
+  cancelled: 'bg-gray-100 text-gray-800 border-gray-300',
   replied: 'bg-emerald-100 text-emerald-900 border-emerald-300',
 };
 

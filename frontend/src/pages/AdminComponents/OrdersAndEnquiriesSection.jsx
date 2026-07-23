@@ -1,9 +1,9 @@
-import { Loader, Save, Reply, Eye, X, Search, Clock, TrendingUp, CheckCircle2, Printer, Download } from 'lucide-react';
+import { Loader, Save, Reply, Eye, X, Search, Clock, TrendingUp, CheckCircle2, Printer, Download, AlertTriangle, Link2 } from 'lucide-react';
 import { SectionCard, StatusPill } from './Helpers';
 import { formatINR } from '../../utils/currency';
 import { formatPaymentValue } from './UIComponents';
 import { useState } from 'react';
-import { cancelOrder } from '../../api/index.js';
+import { cancelOrder, generateAdminPayLink } from '../../api/index.js';
 
 export function OrdersSection({
   orderFilter,
@@ -97,15 +97,43 @@ export function OrdersSection({
     printWindow.document.close();
     printWindow.print();
   };
-  const pendingOrders = (filteredOrders || []).filter(o => o.status === 'pending' || o.status === 'paid').length;
+  const [generatedPayLink, setGeneratedPayLink] = useState(null);
+  const [generatingPayLinkOrderId, setGeneratingPayLinkOrderId] = useState(null);
+
+  const pendingOrders = (filteredOrders || []).filter(o => o.status === 'pending' || o.payment?.status === 'pending').length;
   const shippedOrders = (filteredOrders || []).filter(o => o.status === 'shipped').length;
+  const failedOrdersCount = (filteredOrders || []).filter(o => o.payment?.status === 'failed' || o.status === 'failed').length;
+
+  const handleGeneratePayLink = async (order) => {
+    try {
+      setGeneratingPayLinkOrderId(order._id || order.id);
+      const res = await generateAdminPayLink({
+        orderNumber: order.orderNumber,
+        amount: order.total || order.totalAmount || 0,
+        customerName: `${order.shipping?.firstName || ''} ${order.shipping?.lastName || ''}`.trim() || 'Customer',
+        customerEmail: order.shipping?.email || '',
+        customerPhone: order.shipping?.phone || '',
+      });
+      if (res?.payLink?.url) {
+        setGeneratedPayLink(res.payLink.url);
+        navigator.clipboard.writeText(res.payLink.url).catch(() => {});
+        alert(`Payment link generated and copied to clipboard!\n${res.payLink.url}`);
+      }
+    } catch (err) {
+      alert(`Failed to generate payment link: ${err.message}`);
+    } finally {
+      setGeneratingPayLinkOrderId(null);
+    }
+  };
+
   const searchedOrders = searchTerm 
     ? (filteredOrders || []).filter(o => 
         o.orderNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         o.shipping?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         o.shipping?.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         o.shipping?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        o.shipping?.phone?.toLowerCase().includes(searchTerm.toLowerCase())
+        o.shipping?.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        o.payment?.failureReason?.toLowerCase().includes(searchTerm.toLowerCase())
       )
     : filteredOrders;
 
@@ -136,11 +164,11 @@ export function OrdersSection({
     <div className="space-y-6">
       <SectionCard
         title="Orders Management"
-        description="Manage orders, track shipments, and verify payments."
+        description="Manage orders, track shipments, verify payments, and recover failed transactions."
       >
         <div className="space-y-4">
           {/* Quick Stats */}
-          <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
             <div className="rounded-2xl bg-linear-to-br from-amber-500/10 to-amber-500/5 border border-amber-500/20 p-3">
               <div className="flex items-center justify-between">
                 <div>
@@ -148,6 +176,15 @@ export function OrdersSection({
                   <p className="text-2xl font-bold text-amber-300 mt-1">{pendingOrders}</p>
                 </div>
                 <Clock className="w-8 h-8 text-amber-400/40" />
+              </div>
+            </div>
+            <div className="rounded-2xl bg-linear-to-br from-red-500/10 to-red-500/5 border border-red-500/20 p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-red-200 font-semibold">Failed Payments</p>
+                  <p className="text-2xl font-bold text-red-300 mt-1">{failedOrdersCount}</p>
+                </div>
+                <AlertTriangle className="w-8 h-8 text-red-400/40" />
               </div>
             </div>
             <div className="rounded-2xl bg-linear-to-br from-sky-500/10 to-sky-500/5 border border-sky-500/20 p-3">
@@ -162,7 +199,7 @@ export function OrdersSection({
             <div className="rounded-2xl bg-linear-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 p-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-emerald-200 font-semibold">Total</p>
+                  <p className="text-xs text-emerald-200 font-semibold">Total Orders</p>
                   <p className="text-2xl font-bold text-emerald-300 mt-1">{(filteredOrders || []).length}</p>
                 </div>
                 <CheckCircle2 className="w-8 h-8 text-emerald-400/40" />
@@ -171,7 +208,7 @@ export function OrdersSection({
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
-            {['All', 'pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled'].map((option) => (
+            {['All', 'pending', 'paid', 'failed', 'processing', 'shipped', 'delivered', 'cancelled'].map((option) => (
               <button
                 key={option}
                 onClick={() => setOrderFilter(option)}
@@ -266,20 +303,40 @@ export function OrdersSection({
                           {/* Payment & Date Info */}
                           <div className="flex flex-wrap items-center gap-3 text-xs text-outline">
                             <span>Payment: {formatPaymentValue(order.payment)}</span>
-                        {order.createdAt && (
+                            {order.createdAt && (
                               <span>· {formatDate(order.createdAt)}</span>
-                        )}
+                            )}
                           </div>
+
+                          {(order.payment?.status === 'failed' || order.payment?.failureReason) && (
+                            <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300 flex items-start justify-between gap-2">
+                              <div className="flex items-start gap-2">
+                                <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                                <div>
+                                  <p className="font-bold text-red-200">Payment Failure</p>
+                                  <p className="mt-0.5 text-red-300/90">{order.payment?.failureReason || 'Transaction did not complete'}</p>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => handleGeneratePayLink(order)}
+                                disabled={generatingPayLinkOrderId === (order._id || order.id)}
+                                className="inline-flex items-center gap-1.5 rounded-full bg-red-600 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-red-500 transition-colors shrink-0 shadow-xs"
+                              >
+                                <Link2 className="w-3.5 h-3.5" />
+                                {generatingPayLinkOrderId === (order._id || order.id) ? 'Generating...' : 'Send Pay Link'}
+                              </button>
+                            </div>
+                          )}
 
                           {/* Action Buttons */}
                           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
-                        <button
-                          onClick={() => handleViewOrder(order)}
+                            <button
+                              onClick={() => handleViewOrder(order)}
                               className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-full border border-white/8 bg-white/5 px-3 py-2 text-xs font-semibold text-foreground hover:bg-white/10 transition-material"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                          View
-                        </button>
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              View
+                            </button>
                             <button
                               onClick={() => handlePrintOrder(order)}
                               className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-full border border-white/8 bg-white/5 px-3 py-2 text-xs font-semibold text-foreground hover:bg-white/10 transition-material"
@@ -287,42 +344,50 @@ export function OrdersSection({
                               <Printer className="w-3.5 h-3.5" />
                               Print
                             </button>
-                        {canCancel && (
-                          <button
-                            onClick={() => setShowCancelDialog(order._id)}
-                            disabled={cancelingOrderId === order._id}
+                            <button
+                              onClick={() => handleGeneratePayLink(order)}
+                              disabled={generatingPayLinkOrderId === (order._id || order.id)}
+                              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-300 hover:bg-amber-500/20 transition-material"
+                            >
+                              <Link2 className="w-3.5 h-3.5" />
+                              Pay Link
+                            </button>
+                            {canCancel && (
+                              <button
+                                onClick={() => setShowCancelDialog(order._id)}
+                                disabled={cancelingOrderId === order._id}
                                 className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-full border border-red-500/25 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300 hover:bg-red-500/20 disabled:opacity-60 transition-material"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                            Cancel
-                          </button>
-                        )}
-                        <div className="flex items-center gap-2">
-                          <select
-                            defaultValue={order.status}
-                            onChange={(e) => {
-                              const newStatus = e.target.value;
-                              if (newStatus !== order.status) {
-                                handleOrderStatusSave(order._id || order.id, newStatus);
-                              }
-                            }}
-                            disabled={savingOrderId === (order._id || order.id)}
-                            className="flex-1 sm:flex-none rounded-full border border-white/8 bg-black/20 px-3 py-2 text-xs font-semibold capitalize text-foreground outline-none disabled:opacity-60"
-                          >
-                            {['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled'].map((status) => (
-                              <option key={status} value={status} className="bg-background">
-                                {status}
-                              </option>
-                            ))}
-                          </select>
-                          {savingOrderId === (order._id || order.id) && (
-                            <span className="inline-flex items-center gap-1 text-xs text-foreground shrink-0">
-                              <Loader className="w-3.5 h-3.5 animate-spin" />
-                              Updating...
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                              >
+                                <X className="w-3.5 h-3.5" />
+                                Cancel
+                              </button>
+                            )}
+                            <div className="flex items-center gap-2">
+                              <select
+                                defaultValue={order.status}
+                                onChange={(e) => {
+                                  const newStatus = e.target.value;
+                                  if (newStatus !== order.status) {
+                                    handleOrderStatusSave(order._id || order.id, newStatus);
+                                  }
+                                }}
+                                disabled={savingOrderId === (order._id || order.id)}
+                                className="flex-1 sm:flex-none rounded-full border border-white/8 bg-black/20 px-3 py-2 text-xs font-semibold capitalize text-foreground outline-none disabled:opacity-60"
+                              >
+                                {['pending', 'paid', 'failed', 'processing', 'shipped', 'delivered', 'cancelled'].map((status) => (
+                                  <option key={status} value={status} className="bg-background">
+                                    {status}
+                                  </option>
+                                ))}
+                              </select>
+                              {savingOrderId === (order._id || order.id) && (
+                                <span className="inline-flex items-center gap-1 text-xs text-foreground shrink-0">
+                                  <Loader className="w-3.5 h-3.5 animate-spin" />
+                                  Updating...
+                                </span>
+                              )}
+                            </div>
+                          </div>
                     </div>
                   </div>
                 );

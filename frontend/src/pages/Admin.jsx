@@ -16,6 +16,8 @@ import {
   AlertCircle,
   ShieldCheck,
   Download,
+  AlertTriangle,
+  Eye,
 } from 'lucide-react';
 import { categories } from '../data/products';
 import { formatINR } from '../utils/currency';
@@ -303,18 +305,25 @@ const loadAdminData = useCallback(async ({ showLoading = true } = {}) => {
         icon: ShoppingCart,
       },
       {
+        label: 'Failed Payments',
+        value: (summary?.failedPaymentCount ?? (adminOrders || []).filter((o) => o.payment?.status === 'failed' || o.status === 'failed').length).toString(),
+        delta: summary?.failedPaymentAmount ? `Loss: ${formatINR(summary.failedPaymentAmount)}` : 'Recoverable',
+        tone: 'down',
+        icon: AlertTriangle,
+      },
+      {
+        label: 'Total Views',
+        value: (summary?.totalProductViews ?? (adminProducts || []).reduce((s, p) => s + Number(p.views || 0), 0)).toString(),
+        delta: 'Store impressions',
+        tone: 'up',
+        icon: Eye,
+      },
+      {
         label: 'Pending',
-        value: (adminOrders || []).filter((o) => o.status === 'pending').length.toString(),
+        value: (adminOrders || []).filter((o) => o.status === 'pending' && o.payment?.status !== 'failed').length.toString(),
         delta: '-4.1%',
         tone: 'down',
         icon: Clock3,
-      },
-      {
-        label: 'Messages',
-        value: (adminContacts || []).length.toString(),
-        delta: '+6.7%',
-        tone: 'up',
-        icon: Mail,
       },
       {
         label: 'Low Stock',
@@ -324,7 +333,7 @@ const loadAdminData = useCallback(async ({ showLoading = true } = {}) => {
         icon: PackageCheck,
       },
     ],
-    [summary, statusCounts, adminOrders, adminContacts, lowStockProducts]
+    [summary, statusCounts, adminOrders, adminProducts, lowStockProducts]
   );
 
   const resetProductForm = useCallback(() => {
