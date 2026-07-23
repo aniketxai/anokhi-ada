@@ -1,43 +1,51 @@
 @import "tailwindcss";
 
 /*
-  Anokhi Ada design system — warm, premium "gifting" palette.
-  Values ported from the Anokhi Ada theme (HSL tokens) into Tailwind v4's
-  CSS-first @theme so utility classes like bg-background, text-primary,
-  border-border etc. all resolve to this palette.
+  Anokhi Ada design system — warm, high-contrast, premium "gifting" palette.
+  All theme variables map directly to Tailwind v4 @theme tokens so all UI components,
+  text, icons, borders, and cards render crisp, legible, and vibrant.
 */
 @theme {
-  --color-background: hsl(34 42% 97%);
-  --color-foreground: hsl(24 20% 14%);
+  --color-background: #faf7f2;
+  --color-foreground: #1c1512;
 
-  --color-card: hsl(0 0% 100%);
-  --color-card-foreground: hsl(24 20% 14%);
+  --color-card: #ffffff;
+  --color-card-foreground: #1c1512;
 
-  --color-popover: hsl(0 0% 100%);
-  --color-popover-foreground: hsl(24 20% 14%);
+  --color-popover: #ffffff;
+  --color-popover-foreground: #1c1512;
 
-  --color-primary: hsl(25 45% 34%);
-  --color-primary-foreground: hsl(36 50% 98%);
+  --color-primary: #8c4a24;
+  --color-primary-foreground: #ffffff;
 
-  --color-secondary: hsl(34 36% 92%);
-  --color-secondary-foreground: hsl(24 20% 18%);
+  --color-secondary: #f0e6da;
+  --color-secondary-foreground: #2d1f18;
 
-  --color-muted: hsl(34 30% 94%);
-  --color-muted-foreground: hsl(24 14% 42%);
+  --color-muted: #efe6dc;
+  --color-muted-foreground: #4a3c35;
 
-  --color-accent: hsl(35 48% 88%);
-  --color-accent-foreground: hsl(25 45% 28%);
+  --color-secondary-text: #4a3c35;
+  --color-outline: #6e5b51;
 
-  --color-destructive: hsl(0 72% 55%);
-  --color-destructive-foreground: hsl(36 50% 99%);
+  --color-surface-container: #ffffff;
+  --color-surface-muted: #f5ece2;
+  --color-surface-dim: #ebdcd0;
+  --color-secondary-container: #f5e8d8;
+  --color-accent-glow: rgba(216, 161, 93, 0.25);
 
-  --color-border: hsl(32 24% 84%);
-  --color-input: hsl(32 24% 84%);
-  --color-ring: hsl(25 45% 34%);
+  --color-accent: #e8d7c3;
+  --color-accent-foreground: #5c3218;
 
-  --color-success: #10B981;
-  --color-warning: #F97316;
-  --color-error: hsl(0 72% 55%);
+  --color-destructive: #dc2626;
+  --color-destructive-foreground: #ffffff;
+
+  --color-border: #d9c8b5;
+  --color-input: #d9c8b5;
+  --color-ring: #8c4a24;
+
+  --color-success: #059669;
+  --color-warning: #d97706;
+  --color-error: #dc2626;
 
   --radius-lg: 1rem;
   --radius-md: 0.75rem;
@@ -83,7 +91,7 @@
   }
 
   ::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
   }
 
   ::-webkit-scrollbar-track {
@@ -112,17 +120,17 @@
 
   /* Soft glass panel, used for the sticky navbar and overlays */
   .glass {
-    background: rgba(255, 255, 255, 0.72);
+    background: rgba(255, 255, 255, 0.88);
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(217, 200, 181, 0.8);
   }
 
   .glass-pink {
-    background: rgba(245, 232, 218, 0.62);
+    background: rgba(245, 232, 218, 0.82);
     backdrop-filter: blur(14px) saturate(160%);
     -webkit-backdrop-filter: blur(14px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.45);
+    border: 1px solid rgba(217, 200, 181, 0.7);
   }
 
   .premium-shadow {
@@ -138,7 +146,7 @@
   }
 
   .gradient-text {
-    background-image: linear-gradient(90deg, #7b4f2b 0%, #a06a3a 55%, #d8a15d 100%);
+    background-image: linear-gradient(90deg, #613317 0%, #8c4a24 55%, #b57041 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;

@@ -16,7 +16,6 @@ const quickLinks = [
   { href: '/products', label: 'Shop' },
   { href: '/contact', label: 'Contact' },
   { href: '/wishlist', label: 'Wishlist' },
-  { href: '/custom-order', label: 'Custom Order' },
 ];
 
 const policyLinks = [

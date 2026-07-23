@@ -59,10 +59,10 @@ export default function Logo({ className = '', size = 'md', useImage = false, im
         x="64"
         y="30"
         fontFamily="Playfair Display, Georgia, serif"
-        fontSize="20"
-        fontWeight="700"
+        fontSize="22"
+        fontWeight="800"
         fill="currentColor"
-        letterSpacing="2"
+        letterSpacing="1"
       >
         Anokhi
       </text>
@@ -70,11 +70,10 @@ export default function Logo({ className = '', size = 'md', useImage = false, im
       <text
         x="64"
         y="48"
-        fontFamily="Space Grotesk, Inter, sans-serif"
+        fontFamily="Inter, sans-serif"
         fontSize="14"
-        fontWeight="500"
+        fontWeight="700"
         fill="currentColor"
-        opacity="0.8"
         letterSpacing="4"
       >
         ADA

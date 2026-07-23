@@ -13,7 +13,7 @@ export const BRAND = {
   freeShippingThreshold: 399,
   flatShipping: 80,
   social: {
-    instagram: 'https://www.instagram.com/explore_with_sana88',
+    instagram: 'https://www.instagram.com/anokhiada_01/',
     facebook: 'https://www.facebook.com/share/1UocsGNVqY/',
     whatsapp: 'https://wa.me/919942085352',
   },

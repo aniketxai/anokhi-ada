@@ -120,7 +120,6 @@ export default function Navbar() {
               </div>
 
               <NavLink to="/products" active={isActive('/products')}>Shop</NavLink>
-              <NavLink to="/custom-order" active={isActive('/custom-order')}>Custom Order</NavLink>
               <NavLink to="/about" active={isActive('/about')}>About</NavLink>
               <NavLink to="/contact" active={isActive('/contact')}>Contact</NavLink>
             </div>
@@ -193,10 +192,10 @@ function NavLink({ to, children, active }) {
   return (
     <Link
       to={to}
-      className={`relative text-sm font-medium pb-0.5 transition-colors ${
+      className={`relative text-sm font-semibold pb-0.5 transition-colors ${
         active
-          ? 'text-foreground after:absolute after:left-0 after:right-0 after:-bottom-0.5 after:h-px after:bg-foreground after:rounded-full'
-          : 'text-muted-foreground hover:text-primary'
+          ? 'text-primary font-bold after:absolute after:left-0 after:right-0 after:-bottom-0.5 after:h-[2px] after:bg-primary after:rounded-full'
+          : 'text-foreground hover:text-primary'
       }`}
     >
       {children}
@@ -285,7 +284,6 @@ function MobileMenu({ open, onClose }) {
 
               <div className="my-3 mx-4 border-t border-border" />
 
-              <MobileLink to="/custom-order" label="Custom Order" onClose={onClose} />
               <MobileLink to="/about" label="About Us" onClose={onClose} />
               <MobileLink to="/contact" label="Contact" onClose={onClose} />
               <MobileLink to="/wishlist" label="Wishlist" onClose={onClose} />

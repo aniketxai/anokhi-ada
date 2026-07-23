@@ -9,7 +9,7 @@ const features = [
     desc: `On orders above ₹${BRAND.freeShippingThreshold}`,
   },
   { icon: FiShield, title: 'Secure Packaging', desc: 'Every order packed with care' },
-  { icon: FiGift, title: 'Custom Orders', desc: 'Made to your exact spec' },
+  { icon: FiGift, title: 'Premium Gifting', desc: 'Handcrafted with love' },
   { icon: FiHeadphones, title: 'Support', desc: BRAND.supportTime },
 ];
 
