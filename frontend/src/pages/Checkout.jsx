@@ -75,15 +75,16 @@ export default function Checkout() {
     setLoading(true);
     try {
       const scriptLoaded = await loadRazorpayScript();
-      if (!scriptLoaded && typeof window.Razorpay === 'undefined') {
-        throw new Error('Could not load Razorpay payment gateway. Please check your internet connection.');
-      }
 
       const response = await createRazorpayOrder(payload);
       const rzpData = response?.data;
 
       if (!rzpData || !rzpData.razorpayOrderId) {
         throw new Error('Failed to create payment order. Please try again.');
+      }
+
+      if (!scriptLoaded && typeof window.Razorpay === 'undefined' && !rzpData.razorpayOrderId.startsWith('rzp_mock_')) {
+        throw new Error('Unable to connect to Razorpay (checkout.razorpay.com). Please disable any ad-blockers or check your internet connection.');
       }
 
       const {

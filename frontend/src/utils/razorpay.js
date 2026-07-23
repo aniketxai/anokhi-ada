@@ -17,33 +17,46 @@ if (typeof window !== 'undefined' && !window.__rzpIframePatched) {
   };
 }
 
-export function loadRazorpayScript() {
+export function loadRazorpayScript(retries = 3, delayMs = 1000) {
   return new Promise((resolve) => {
-    if (typeof window !== 'undefined' && window.Razorpay) {
-      resolve(true);
-      return;
+    function tryLoad(attemptsLeft) {
+      if (typeof window !== 'undefined' && window.Razorpay) {
+        resolve(true);
+        return;
+      }
+
+      // Remove any previously failed or interrupted script elements
+      const existingScripts = document.querySelectorAll('script[src*="checkout.razorpay.com"]');
+      existingScripts.forEach((s) => s.remove());
+
+      const script = document.createElement('script');
+      // Cache-buster parameter prevents stale connection error caching
+      script.src = `https://checkout.razorpay.com/v1/checkout.js?_t=${Date.now()}`;
+      script.async = true;
+
+      script.onload = () => {
+        if (typeof window !== 'undefined' && window.Razorpay) {
+          resolve(true);
+        } else if (attemptsLeft > 1) {
+          setTimeout(() => tryLoad(attemptsLeft - 1), delayMs);
+        } else {
+          resolve(false);
+        }
+      };
+
+      script.onerror = () => {
+        script.remove();
+        if (attemptsLeft > 1) {
+          setTimeout(() => tryLoad(attemptsLeft - 1), delayMs);
+        } else {
+          console.error('Failed to load Razorpay SDK checkout script after multiple retries.');
+          resolve(false);
+        }
+      };
+
+      document.head.appendChild(script);
     }
 
-    const existingScript = document.querySelector('script[src*="checkout.razorpay.com"]');
-    if (existingScript) {
-      existingScript.addEventListener('load', () => resolve(true), { once: true });
-      existingScript.addEventListener('error', () => resolve(false), { once: true });
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.async = true;
-
-    script.onload = () => {
-      resolve(true);
-    };
-
-    script.onerror = () => {
-      console.error('Failed to load Razorpay SDK checkout script.');
-      resolve(false);
-    };
-
-    document.head.appendChild(script);
+    tryLoad(retries);
   });
 }
