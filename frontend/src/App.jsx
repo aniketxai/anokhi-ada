@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import { AppProvider } from './context/AppContext.jsx';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -14,7 +14,6 @@ import CustomOrder from './pages/CustomOrder';
 import Cart from './pages/Cart';
 import Wishlist from './pages/Wishlist';
 import Checkout from './pages/Checkout';
-import UPIPayment from './pages/UPIPayment';
 import Admin from './pages/Admin';
 import ScrollToTop from './components/ScrollToTop';
 import PayLinkPayment from './pages/PayLinkPayment';
@@ -51,7 +50,7 @@ function AppContent() {
             <Route path="/cart" element={<Cart />} />
             <Route path="/wishlist" element={<Wishlist />} />
             <Route path="/checkout" element={<Checkout />} />
-            <Route path="/pay/upi" element={<UPIPayment />} />
+            <Route path="/pay/upi" element={<Navigate to="/checkout" replace />} />
             <Route path="/pay/link/:token" element={<PayLinkPayment />} />
           </Route>
           <Route path="/admin" element={<Admin />} />

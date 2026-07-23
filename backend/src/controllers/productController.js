@@ -96,12 +96,37 @@ async function loadProducts({ category, q, sort }) {
   }
 }
 
+const DEFAULT_FALLBACK_IMAGE = 'https://images.pexels.com/photos/1112598/pexels-photo-1112598.jpeg?auto=compress&cs=tinysrgb&w=600';
+
+function sanitizeImageUrl(url) {
+  if (!url || typeof url !== 'string') return DEFAULT_FALLBACK_IMAGE;
+  if (url.includes('localhost:') || url.includes('127.0.0.1:')) {
+    return DEFAULT_FALLBACK_IMAGE;
+  }
+  return url;
+}
+
+function sanitizeProduct(product) {
+  if (!product) return product;
+  const raw = Array.isArray(product.images) && product.images.length
+    ? product.images
+    : [product.image || product.img].filter(Boolean);
+
+  const clean = raw.map(sanitizeImageUrl);
+
+  return {
+    ...product,
+    images: clean.length ? clean : [DEFAULT_FALLBACK_IMAGE],
+  };
+}
+
 export const getProducts = asyncHandler(async (req, res) => {
   const { category, q, sort } = req.query;
 
   const products = await loadProducts({ category, q, sort });
-  const dataSource = isDatabaseReady() ? 'db' : (products.length ? 'fallback' : 'none');
-  res.json({ success: true, count: products.length, data: products, dataSource });
+  const sanitized = (products || []).map(sanitizeProduct);
+  const dataSource = isDatabaseReady() ? 'db' : (sanitized.length ? 'fallback' : 'none');
+  res.json({ success: true, count: sanitized.length, data: sanitized, dataSource });
 });
 
 export const getProductById = asyncHandler(async (req, res) => {
@@ -128,8 +153,9 @@ export const getProductById = asyncHandler(async (req, res) => {
     throw new Error('Product not found');
   }
 
-  const dataSource = isDatabaseReady() ? 'db' : (product ? 'fallback' : 'none');
-  res.json({ success: true, data: product, dataSource });
+  const sanitized = sanitizeProduct(product);
+  const dataSource = isDatabaseReady() ? 'db' : (sanitized ? 'fallback' : 'none');
+  res.json({ success: true, data: sanitized, dataSource });
 });
 
 export const getCategories = asyncHandler(async (req, res) => {
@@ -176,12 +202,13 @@ export const getHomeData = asyncHandler(async (req, res) => {
     }
   }
 
-  const dataSource = isDatabaseReady() ? 'db' : (featuredProducts.length ? 'fallback' : 'none');
+  const sanitizedFeatured = (featuredProducts || []).map(sanitizeProduct);
+  const dataSource = isDatabaseReady() ? 'db' : (sanitizedFeatured.length ? 'fallback' : 'none');
 
   res.json({
     success: true,
     data: {
-      featuredProducts,
+      featuredProducts: sanitizedFeatured,
       services,
       testimonials,
       faqs,

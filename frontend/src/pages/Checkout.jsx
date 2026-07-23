@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, ShieldCheck, CreditCard, QrCode, Banknote, Loader2 } from 'lucide-react';
+import { ArrowLeft, Check, ShieldCheck, CreditCard, Banknote, Loader2 } from 'lucide-react';
 
 import { useApp } from '../context/useApp';
 import Button from '../components/Button';
 import { formatINR } from '../utils/currency';
 import { postOrder, createRazorpayOrder, verifyRazorpayPayment } from '../api';
 import { loadRazorpayScript } from '../utils/razorpay';
+import { sanitizeImageUrl } from '../utils/image';
 
 import CouponSelector from '../components/common/CouponSelector';
 import CeoDeliveryOption from '../components/common/CeoDeliveryOption';
@@ -21,6 +22,7 @@ export default function Checkout() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [orderNumber, setOrderNumber] = useState('');
+  const [confirmedCodDetails, setConfirmedCodDetails] = useState(null);
 
   const [shipping, setShipping] = useState({
     firstName: '',
@@ -43,10 +45,11 @@ export default function Checkout() {
   const shippingFee = baseShippingFee;
 
   const isCodAvailable = cartTotal >= 399;
-  const effectivePaymentMethod = isCodAvailable ? paymentMethod : (paymentMethod === 'cod' ? 'razorpay' : paymentMethod);
+  const effectivePaymentMethod = isCodAvailable ? paymentMethod : 'razorpay';
 
-  const codCharge = effectivePaymentMethod === 'cod' ? 100 : 0;
-  const finalTotal = Math.max(0, cartTotal - discountAmount) + baseShippingFee + ceoDeliveryFee + codCharge;
+  const finalTotal = Math.max(0, cartTotal - discountAmount) + baseShippingFee + ceoDeliveryFee;
+  const codAdvanceDeposit = 100;
+  const codBalanceOnDelivery = Math.max(0, finalTotal - codAdvanceDeposit);
 
   const buildOrderPayload = () => ({
     items: cart.map((item) => ({
@@ -54,7 +57,7 @@ export default function Checkout() {
       name: item.name,
       price: item.price,
       quantity: item.quantity,
-      image: item.images?.[0] || '',
+      image: sanitizeImageUrl(item.images?.[0] || item.image || ''),
     })),
     shipping,
     shippingFee: baseShippingFee + ceoDeliveryFee,
@@ -62,10 +65,8 @@ export default function Checkout() {
     ceoDeliveryFee,
     appliedCoupon: appliedCoupon ? appliedCoupon.code : null,
     discountAmount,
-    payment: {
-      method: effectivePaymentMethod,
-      codCharge,
-    },
+    paymentMethod: effectivePaymentMethod,
+    isCodAdvance: effectivePaymentMethod === 'cod',
     subtotal: cartTotal,
     total: finalTotal,
   });
@@ -85,7 +86,20 @@ export default function Checkout() {
         throw new Error('Failed to create payment order. Please try again.');
       }
 
-      const { razorpayOrderId, amount, currency, keyId, orderId, orderNumber: createdOrderNum } = rzpData;
+      const {
+        razorpayOrderId,
+        amount,
+        currency,
+        keyId,
+        orderId,
+        orderNumber: createdOrderNum,
+        isCodOrder,
+        remainingCodAmount,
+      } = rzpData;
+
+      const description = isCodOrder
+        ? `Order #${createdOrderNum} (₹100 COD Advance Deposit)`
+        : `Order #${createdOrderNum}`;
 
       // Handle Mock/Test fallback if environment keys are missing
       if (razorpayOrderId.startsWith('rzp_mock_') || typeof window.Razorpay === 'undefined') {
@@ -96,6 +110,9 @@ export default function Checkout() {
           razorpaySignature: `sig_mock_${Date.now()}`,
         });
         setOrderNumber(verifyRes?.data?.orderNumber || createdOrderNum || '');
+        if (isCodOrder) {
+          setConfirmedCodDetails({ advance: 100, remaining: remainingCodAmount });
+        }
         clearCart();
         sessionStorage.removeItem('checkoutDraft');
         setOrderPlaced(true);
@@ -108,8 +125,7 @@ export default function Checkout() {
         amount: amount,
         currency: currency || 'INR',
         name: 'Anokhi Ada',
-        description: `Order #${createdOrderNum}`,
-        image: 'https://anokhiada.vercel.app/logo.png',
+        description,
         order_id: razorpayOrderId,
         prefill: {
           name: `${shipping.firstName} ${shipping.lastName}`.trim(),
@@ -119,6 +135,7 @@ export default function Checkout() {
         theme: {
           color: '#E11D48',
         },
+        image: 'https://images.pexels.com/photos/1112598/pexels-photo-1112598.jpeg?auto=compress&cs=tinysrgb&w=600',
         modal: {
           ondismiss: () => {
             setLoading(false);
@@ -136,6 +153,9 @@ export default function Checkout() {
             });
 
             setOrderNumber(verifyRes?.data?.orderNumber || createdOrderNum || '');
+            if (isCodOrder) {
+              setConfirmedCodDetails({ advance: 100, remaining: remainingCodAmount });
+            }
             clearCart();
             sessionStorage.removeItem('checkoutDraft');
             setOrderPlaced(true);
@@ -151,7 +171,7 @@ export default function Checkout() {
 
       rzp.on('payment.failed', (failResponse) => {
         setLoading(false);
-        setError(failResponse?.error?.description || 'Payment failed. Please try another payment method.');
+        setError(failResponse?.error?.description || 'Payment failed. Please try again.');
       });
 
       rzp.open();
@@ -181,42 +201,10 @@ export default function Checkout() {
     }
 
     const payload = buildOrderPayload();
-
-    if (effectivePaymentMethod === 'razorpay') {
-      await handleRazorpayCheckout(payload);
-      return;
-    }
-
-    if (effectivePaymentMethod === 'online') {
-      sessionStorage.setItem('checkoutDraft', JSON.stringify(payload));
-      navigate('/pay/upi', {
-        state: {
-          amount: finalTotal.toFixed(2),
-          note: `Anokhi Ada order payment - ${shipping.firstName || 'Customer'}`,
-        },
-      });
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      sessionStorage.removeItem('checkoutDraft');
-      const response = await postOrder(payload);
-      setOrderNumber(response?.data?.orderNumber || '');
-      clearCart();
-      setOrderPlaced(true);
-    } catch (submitError) {
-      setError(
-        submitError.message ||
-        'Unable to place order. Please try again.'
-      );
-    } finally {
-      setLoading(false);
-    }
+    await handleRazorpayCheckout(payload);
   };
 
-  // SUCCESS
+  // SUCCESS SCREEN
   if (orderPlaced) {
     return (
       <div className="pt-24 pb-20 min-h-screen flex items-center justify-center">
@@ -238,9 +226,26 @@ export default function Checkout() {
           </p>
 
           {orderNumber && (
-            <div className="bg-surface-container rounded-2xl p-4 mb-6 border border-white/10">
-              <p className="text-xs uppercase tracking-wider text-outline mb-1 font-semibold">Order Number</p>
-              <p className="text-lg font-bold text-primary">{orderNumber}</p>
+            <div className="bg-surface-container rounded-2xl p-4 mb-6 border border-white/10 text-left">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs uppercase tracking-wider text-outline font-semibold">Order Number</span>
+                <span className="text-base font-bold text-primary">{orderNumber}</span>
+              </div>
+
+              {confirmedCodDetails ? (
+                <div className="mt-3 pt-3 border-t border-white/10 space-y-1.5 text-xs">
+                  <div className="flex justify-between text-emerald-400 font-medium">
+                    <span>Advance Deposit Paid Online</span>
+                    <span>₹{confirmedCodDetails.advance}</span>
+                  </div>
+                  <div className="flex justify-between text-amber-300 font-semibold">
+                    <span>Balance Payable on Delivery (COD)</span>
+                    <span>{formatINR(confirmedCodDetails.remaining)}</span>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-emerald-400 font-medium mt-1">Full Payment Received via Razorpay</p>
+              )}
             </div>
           )}
 
@@ -653,7 +658,7 @@ export default function Checkout() {
 
               <div className="space-y-4">
 
-                {/* RAZORPAY (PRIMARY / RECOMMENDED) */}
+                {/* RAZORPAY FULL ONLINE (PRIMARY) */}
                 <label
                   className={`block border-2 rounded-2xl p-4.5 cursor-pointer transition-all ${
                     effectivePaymentMethod === 'razorpay'
@@ -674,53 +679,21 @@ export default function Checkout() {
                       <div className="flex items-center gap-2">
                         <CreditCard className="w-5 h-5 text-primary" />
                         <p className="font-semibold text-foreground">
-                          Razorpay Secure Checkout
+                          Razorpay Full Payment
                         </p>
                         <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                          Instant & Secure
+                          Instant Confirmation
                         </span>
                       </div>
 
                       <p className="text-xs text-secondary-text mt-1">
-                        UPI, Credit/Debit Cards, NetBanking, Wallets & PayLater
+                        Pay full amount online via UPI, Credit/Debit Cards, NetBanking, Wallets
                       </p>
                     </div>
                   </div>
                 </label>
 
-                {/* MANUAL UPI */}
-                <label
-                  className={`block border rounded-2xl p-4 cursor-pointer transition-all ${
-                    effectivePaymentMethod === 'online'
-                      ? 'border-primary bg-primary/5'
-                      : 'border-surface-muted hover:border-white/20'
-                  }`}
-                >
-                  <div className="flex items-center gap-3.5">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      checked={effectivePaymentMethod === 'online'}
-                      onChange={() => setPaymentMethod('online')}
-                      className="accent-primary"
-                    />
-
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <QrCode className="w-4 h-4 text-emerald-400" />
-                        <p className="font-medium text-foreground">
-                          Manual UPI Transfer (QR Code)
-                        </p>
-                      </div>
-
-                      <p className="text-xs text-outline mt-0.5">
-                        Scan QR code and upload screenshot proof
-                      </p>
-                    </div>
-                  </div>
-                </label>
-
-                {/* COD */}
+                {/* COD WITH ₹100 ONLINE ADVANCE DEPOSIT */}
                 <label
                   className={`block border rounded-2xl p-4 transition-all ${
                     !isCodAvailable
@@ -744,27 +717,19 @@ export default function Checkout() {
                       <div className="flex items-center gap-2">
                         <Banknote className="w-4 h-4 text-amber-400" />
                         <p className="font-medium text-foreground">
-                          Cash on Delivery
+                          Cash on Delivery (COD)
                         </p>
-                        {!isCodAvailable && (
-                          <span className="text-[10px] bg-red-500/10 text-red-500 px-2 py-0.5 rounded-full font-bold uppercase">
-                            Unavailable below ₹399
-                          </span>
-                        )}
+                        <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-semibold">
+                          ₹100 Advance Required
+                        </span>
                       </div>
 
-                      <p className="text-xs text-outline mt-0.5">
+                      <p className="text-xs text-outline mt-1">
                         {isCodAvailable
-                          ? 'Extra ₹100 COD charge applies'
-                          : 'Add items worth ₹' + (399 - cartTotal) + ' more to unlock COD.'}
+                          ? 'Pay ₹100 online advance via Razorpay now to confirm order. Remaining balance paid on delivery!'
+                          : 'Add items worth ₹' + (399 - cartTotal) + ' more to unlock COD option.'}
                       </p>
                     </div>
-
-                    {isCodAvailable && (
-                      <span className="text-xs font-semibold text-amber-400">
-                        +₹100
-                      </span>
-                    )}
                   </div>
                 </label>
               </div>
@@ -804,8 +769,9 @@ export default function Checkout() {
                     className="flex items-center gap-3"
                   >
                     <img
-                      src={item.images?.[0]}
+                      src={sanitizeImageUrl(item.images?.[0] || item.image)}
                       alt={item.name}
+                      onError={(e) => { e.currentTarget.src = 'https://images.pexels.com/photos/1112598/pexels-photo-1112598.jpeg?auto=compress&cs=tinysrgb&w=600'; }}
                       className="w-12 h-12 rounded-xl object-cover"
                     />
 
@@ -828,9 +794,9 @@ export default function Checkout() {
 
               <CouponSelector className="mb-6" />
 
-              <div className="border-t border-surface-muted pt-3 mb-6">
+              <div className="border-t border-surface-muted pt-3 mb-6 space-y-1.5">
 
-                <div className="flex justify-between mb-1">
+                <div className="flex justify-between">
                   <span className="text-secondary-text text-sm">
                     Subtotal
                   </span>
@@ -841,7 +807,7 @@ export default function Checkout() {
                 </div>
 
                 {discountAmount > 0 && (
-                  <div className="flex justify-between mb-1 text-emerald-600 dark:text-emerald-400">
+                  <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
                     <span className="text-sm font-medium">
                       Coupon Discount ({appliedCoupon?.code})
                     </span>
@@ -852,7 +818,7 @@ export default function Checkout() {
                   </div>
                 )}
 
-                <div className="flex justify-between mb-1">
+                <div className="flex justify-between">
                   <span className="text-secondary-text text-sm">
                     Shipping Charge
                   </span>
@@ -869,7 +835,7 @@ export default function Checkout() {
                 </div>
 
                 {isCeoDelivery && (
-                  <div className="flex justify-between mb-1 text-amber-600 dark:text-amber-400">
+                  <div className="flex justify-between text-amber-600 dark:text-amber-400">
                     <span className="text-sm font-semibold flex items-center gap-1">
                       👑 VIP Delivery by CEO
                     </span>
@@ -880,27 +846,29 @@ export default function Checkout() {
                   </div>
                 )}
 
-                {effectivePaymentMethod === 'cod' && (
-                  <div className="flex justify-between mb-1">
-                    <span className="text-secondary-text text-sm">
-                      COD Charges
-                    </span>
-
-                    <span className="font-medium text-foreground">
-                      {formatINR(100)}
-                    </span>
-                  </div>
-                )}
-
                 <div className="flex justify-between mt-3 pt-2 border-t border-white/10">
                   <span className="font-bold text-lg text-foreground">
-                    Total
+                    Total Amount
                   </span>
 
                   <span className="font-bold text-2xl text-foreground">
                     {formatINR(finalTotal)}
                   </span>
                 </div>
+
+                {/* COD ADVANCE BREAKDOWN */}
+                {effectivePaymentMethod === 'cod' && (
+                  <div className="mt-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl space-y-1">
+                    <div className="flex justify-between text-xs font-semibold text-amber-300">
+                      <span>Online Advance Deposit Now:</span>
+                      <span>₹100</span>
+                    </div>
+                    <div className="flex justify-between text-xs font-semibold text-foreground">
+                      <span>Payable on Delivery (COD Balance):</span>
+                      <span>{formatINR(codBalanceOnDelivery)}</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-3">
@@ -925,12 +893,10 @@ export default function Checkout() {
                       <Loader2 className="w-5 h-5 animate-spin" />
                       <span>Processing...</span>
                     </>
-                  ) : effectivePaymentMethod === 'razorpay' ? (
-                    `Pay ${formatINR(finalTotal)} with Razorpay`
-                  ) : effectivePaymentMethod === 'online' ? (
-                    'Proceed to Manual UPI'
+                  ) : effectivePaymentMethod === 'cod' ? (
+                    'Pay ₹100 Advance to Confirm Order'
                   ) : (
-                    'Place Order (COD)'
+                    `Pay ${formatINR(finalTotal)} with Razorpay`
                   )}
                 </Button>
               </div>

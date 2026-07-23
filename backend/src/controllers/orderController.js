@@ -28,6 +28,8 @@ const createRazorpayOrder = asyncHandler(async (req, res) => {
     appliedCoupon = null,
     discountAmount = 0,
     notes = '',
+    paymentMethod = 'razorpay',
+    isCodAdvance = false,
   } = req.body;
 
   if (!Array.isArray(items) || items.length === 0) {
@@ -81,7 +83,13 @@ const createRazorpayOrder = asyncHandler(async (req, res) => {
   const calculatedDiscount = Math.max(0, Number(discountAmount) || 0);
 
   const total = Math.max(0, subtotal - calculatedDiscount) + calculatedShippingFee;
-  const amountInPaise = Math.round(total * 100);
+
+  const isCodOrder = paymentMethod === 'cod' || isCodAdvance;
+  const advanceAmount = isCodOrder ? 100 : 0;
+  const payableNow = isCodOrder ? Math.min(100, total) : total;
+  const remainingCodAmount = isCodOrder ? Math.max(0, total - payableNow) : 0;
+
+  const amountInPaise = Math.round(payableNow * 100);
 
   const orderNumber = makeOrderNumber();
 
@@ -90,16 +98,22 @@ const createRazorpayOrder = asyncHandler(async (req, res) => {
     items: normalizedItems,
     shipping: normalizedShipping,
     payment: {
-      method: 'razorpay',
+      method: isCodOrder ? 'cod' : 'razorpay',
       status: 'pending',
       verified: false,
+      reference: isCodOrder ? `COD Advance ₹${payableNow}` : '',
     },
     subtotal,
     shippingFee: calculatedShippingFee,
     codCharge: 0,
     total,
     status: 'pending',
-    notes: String(notes ?? '').trim(),
+    notes: [
+      notes,
+      isCodOrder ? `COD Order: ₹${payableNow} advance paid online, ₹${remainingCodAmount} balance payable on delivery.` : '',
+    ]
+      .filter(Boolean)
+      .join('\n'),
   });
 
   let razorpayOrderId = '';
@@ -114,6 +128,8 @@ const createRazorpayOrder = asyncHandler(async (req, res) => {
           orderId: order._id.toString(),
           orderNumber,
           customerEmail: normalizedShipping.email,
+          paymentType: isCodOrder ? 'cod_advance' : 'full',
+          remainingCodAmount: String(remainingCodAmount),
         },
       });
 
@@ -141,6 +157,9 @@ const createRazorpayOrder = asyncHandler(async (req, res) => {
       orderNumber: order.orderNumber,
       razorpayOrderId,
       amount: amountInPaise,
+      payableNow,
+      remainingCodAmount,
+      isCodOrder,
       currency: 'INR',
       keyId: key_id || 'rzp_test_mock',
       isConfigured: isRazorpayConfigured,
@@ -343,8 +362,7 @@ const createOrder = asyncHandler(async (req, res) => {
   const paymentScreenshotName = String(payment.screenshotName ?? payment.paymentScreenshotName ?? '').trim();
   const paymentVerified = Boolean(payment.verified ?? false);
 
-  const codCharge =
-    paymentMethod === 'cod' ? 100 : 0;
+  const codCharge = 0;
 
   const subtotal = normalizedItems.reduce(
     (sum, item) =>
