@@ -40,7 +40,8 @@ const corsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'request-id', 'x-rtb-fingerprint-id'],
+  exposedHeaders: ['request-id', 'x-rtb-fingerprint-id', 'Authorization', 'Content-Type'],
   optionsSuccessStatus: 200,
 };
 
@@ -54,9 +55,23 @@ app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
 /* =========================
-   MIDDLEWARE
+   MIDDLEWARE & SECURITY HEADERS
 ========================= */
-app.use(helmet());
+app.use((req, res, next) => {
+  res.setHeader(
+    'Permissions-Policy',
+    'accelerometer=*, gyroscope=*, magnetometer=*, payment=*'
+  );
+  next();
+});
+
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  })
+);
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));

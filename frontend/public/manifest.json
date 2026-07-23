@@ -1,0 +1,16 @@
+{
+  "short_name": "Anokhi Ada",
+  "name": "Anokhi Ada — Gifting, Reimagined With Love",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "scope": "/",
+  "background_color": "#0f172a",
+  "theme_color": "#E11D48",
+  "display": "standalone"
+}
