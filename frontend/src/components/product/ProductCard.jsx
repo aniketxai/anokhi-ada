@@ -4,6 +4,8 @@ import { FiStar, FiHeart, FiShoppingBag } from 'react-icons/fi';
 import { useApp } from '../../context/useApp';
 import { formatINR } from '../../utils/currency';
 
+import { sanitizeImageUrl } from '../../utils/image';
+
 function discountPercent(price, originalPrice) {
   if (!originalPrice || originalPrice <= price) return 0;
   return Math.round(((originalPrice - price) / originalPrice) * 100);
@@ -12,7 +14,8 @@ function discountPercent(price, originalPrice) {
 export default function ProductCard({ product, index = 0 }) {
   const { addToCart, toggleWishlist, wishlist } = useApp();
   const wished = wishlist.includes(String(product.id));
-  const image = Array.isArray(product.images) ? product.images[0] : product.image;
+  const rawImage = Array.isArray(product.images) ? product.images[0] : product.image;
+  const image = sanitizeImageUrl(rawImage);
   const discount = discountPercent(product.price, product.originalPrice);
 
   const handleWishlist = (e) => {
@@ -41,6 +44,9 @@ export default function ProductCard({ product, index = 0 }) {
             src={image}
             alt={product.name}
             loading="lazy"
+            onError={(e) => {
+              e.currentTarget.src = 'https://images.pexels.com/photos/1112598/pexels-photo-1112598.jpeg?auto=compress&cs=tinysrgb&w=600';
+            }}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
 

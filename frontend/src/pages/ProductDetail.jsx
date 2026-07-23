@@ -17,17 +17,15 @@ import api from '../api';
 import { useApp } from '../context/useApp';
 import Button from '../components/Button';
 import ProductCard from '../components/ProductCard';
-import BlurBlob from '../components/BlurBlob';
-import ProductDetailSkeleton from '../components/ProductDetailSkeleton';
-import PersonalisationActionBox from '../components/PersonalisationActionBox';
 import { formatINR } from '../utils/currency';
+import { sanitizeImageUrl, sanitizeProductImages } from '../utils/image';
 
 function safeProductShape(product) {
   if (!product) return null;
 
   return {
     ...product,
-    images: product.images || [],
+    images: sanitizeProductImages(product.images || []),
     features: product.features || [],
     specifications: product.specifications || {},
   };
@@ -165,8 +163,11 @@ export default function ProductDetail() {
             {/* Main Image */}
             <div className="bg-surface-container rounded-3xl overflow-hidden aspect-square mb-4">
               <img
-                src={currentImage}
+                src={sanitizeImageUrl(currentImage)}
                 alt={product.name}
+                onError={(e) => {
+                  e.currentTarget.src = 'https://images.pexels.com/photos/1112598/pexels-photo-1112598.jpeg?auto=compress&cs=tinysrgb&w=600';
+                }}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -185,8 +186,11 @@ export default function ProductDetail() {
                     }`}
                   >
                     <img
-                      src={img}
+                      src={sanitizeImageUrl(img)}
                       alt={`Product ${i + 1}`}
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://images.pexels.com/photos/1112598/pexels-photo-1112598.jpeg?auto=compress&cs=tinysrgb&w=600';
+                      }}
                       className="w-full h-full object-cover"
                     />
                   </button>

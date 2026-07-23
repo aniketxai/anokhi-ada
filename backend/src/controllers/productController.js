@@ -100,10 +100,22 @@ const DEFAULT_FALLBACK_IMAGE = 'https://images.pexels.com/photos/1112598/pexels-
 
 function sanitizeImageUrl(url) {
   if (!url || typeof url !== 'string') return DEFAULT_FALLBACK_IMAGE;
-  if (url.includes('localhost:') || url.includes('127.0.0.1:')) {
+  const trimmed = url.trim();
+  if (
+    !trimmed.startsWith('http://') &&
+    !trimmed.startsWith('https://') &&
+    !trimmed.startsWith('data:image/')
+  ) {
     return DEFAULT_FALLBACK_IMAGE;
   }
-  return url;
+  if (
+    trimmed.includes('localhost:') ||
+    trimmed.includes('127.0.0.1:') ||
+    trimmed.includes('localhost/')
+  ) {
+    return DEFAULT_FALLBACK_IMAGE;
+  }
+  return trimmed;
 }
 
 function sanitizeProduct(product) {
