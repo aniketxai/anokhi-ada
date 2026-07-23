@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import Button from '../components/Button';
 import SectionHeading from '../components/SectionHeading';
 import { formatINR } from '../utils/currency';
+import { sanitizeImageUrl } from '../utils/image';
 import api from '../api';
 
 export default function Wishlist() {
@@ -75,8 +76,11 @@ export default function Wishlist() {
             >
               <Link to={`/products/${product.id}`} className="col-span-1 shrink-0">
                 <img
-                  src={product.images?.[0]}
+                  src={sanitizeImageUrl(product.images?.[0] || product.image || product.img)}
                   alt={product.name}
+                  onError={(e) => {
+                    e.currentTarget.src = 'https://images.pexels.com/photos/1112598/pexels-photo-1112598.jpeg?auto=compress&cs=tinysrgb&w=600';
+                  }}
                   className="w-full h-24 sm:w-20 sm:h-20 rounded-2xl object-cover"
                 />
               </Link>

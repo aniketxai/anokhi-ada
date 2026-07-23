@@ -4,13 +4,17 @@ import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useApp } from '../context/useApp';
 import { formatINR } from '../utils/currency';
+import { sanitizeImageUrl } from '../utils/image';
 import Skeleton from './Skeleton';
+
+const DEFAULT_FALLBACK_IMAGE = 'https://images.pexels.com/photos/1112598/pexels-photo-1112598.jpeg?auto=compress&cs=tinysrgb&w=600';
 
 export default function ProductCard({ product, index = 0 }) {
   const [imageLoading, setImageLoading] = useState(true);
   const { addToCart, toggleWishlist, wishlist } = useApp();
   const isWished = wishlist.includes(product.id);
-  const imageSrc = product.images?.[0] || 'https://via.placeholder.com/600x600?text=No+Image';
+  const rawImage = Array.isArray(product.images) ? product.images[0] : (product.image || product.img);
+  const imageSrc = sanitizeImageUrl(rawImage);
 
   const handleWishlistToggle = () => {
     
@@ -44,7 +48,10 @@ export default function ProductCard({ product, index = 0 }) {
               height="500"
               decoding="async"
               onLoad={() => setImageLoading(false)}
-              onError={() => setImageLoading(false)}
+              onError={(e) => {
+                e.currentTarget.src = DEFAULT_FALLBACK_IMAGE;
+                setImageLoading(false);
+              }}
               className={`w-full h-full object-contain object-center transition-all duration-300 group-hover:scale-105 bg-white/5 ${
                 imageLoading ? 'opacity-0' : 'opacity-100'
               }`}

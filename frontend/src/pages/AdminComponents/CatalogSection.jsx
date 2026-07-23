@@ -1,6 +1,9 @@
 import { Search, Filter, Plus, Upload, Eye, Trash2, Star, PackageCheck, AlertCircle } from 'lucide-react';
 import { SectionCard } from './Helpers';
 import { formatINR } from '../../utils/currency';
+import { sanitizeImageUrl } from '../../utils/image';
+
+const DEFAULT_FALLBACK_IMAGE = 'https://images.pexels.com/photos/1112598/pexels-photo-1112598.jpeg?auto=compress&cs=tinysrgb&w=600';
 
 export function CatalogSection({
   productQuery,
@@ -98,11 +101,11 @@ export function CatalogSection({
                         <div className="flex items-center gap-3">
                           <div className="h-12 w-12 overflow-hidden rounded-2xl border border-border bg-muted shrink-0">
                             <img
-                              src={product.images?.[0] || 'https://via.placeholder.com/48?text=No+Image'}
+                              src={sanitizeImageUrl(product.images?.[0] || product.image || product.img)}
                               alt={product.name}
                               className="h-full w-full object-cover"
                               onError={(e) => {
-                                e.target.src = 'https://via.placeholder.com/48?text=No+Image';
+                                e.target.src = DEFAULT_FALLBACK_IMAGE;
                               }}
                             />
                           </div>

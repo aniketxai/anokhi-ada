@@ -1,5 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader, Save, UploadCloud, Trash2 } from 'lucide-react';
+import { sanitizeImageUrl } from '../../utils/image';
+
+const DEFAULT_FALLBACK_IMAGE = 'https://images.pexels.com/photos/1112598/pexels-photo-1112598.jpeg?auto=compress&cs=tinysrgb&w=600';
 
 function getImageList(images) {
   return String(images || '')
@@ -241,9 +244,12 @@ export function ProductEditModal({
                         >
                           <div className="relative aspect-4/3 bg-muted">
                             <img
-                              src={src}
+                              src={sanitizeImageUrl(src)}
                               alt={`Product ${index + 1}`}
                               className="h-full w-full object-contain"
+                              onError={(e) => {
+                                e.currentTarget.src = DEFAULT_FALLBACK_IMAGE;
+                              }}
                             />
 
                             <button

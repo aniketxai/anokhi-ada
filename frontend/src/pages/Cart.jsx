@@ -5,6 +5,7 @@ import { useApp } from '../context/useApp';
 import Button from '../components/Button';
 import SectionHeading from '../components/SectionHeading';
 import { formatINR } from '../utils/currency';
+import { sanitizeImageUrl } from '../utils/image';
 
 import CouponSelector from '../components/common/CouponSelector';
 import CeoDeliveryOption from '../components/common/CeoDeliveryOption';
@@ -74,8 +75,11 @@ export default function Cart() {
               className="bg-surface-container rounded-3xl p-4 flex flex-col sm:flex-row gap-4 sm:items-center"
             >
               <img
-                src={item.images[0]}
+                src={sanitizeImageUrl(item.images?.[0] || item.image || item.img)}
                 alt={item.name}
+                onError={(e) => {
+                  e.currentTarget.src = 'https://images.pexels.com/photos/1112598/pexels-photo-1112598.jpeg?auto=compress&cs=tinysrgb&w=600';
+                }}
                 className="w-full sm:w-20 h-40 sm:h-20 rounded-2xl object-cover shrink-0"
               />
               <div className="flex-1 min-w-0 text-center sm:text-left">
