@@ -736,7 +736,7 @@ if (!isAuthenticated) {
       <div className="absolute inset-0 pointer-events-none opacity-70 bg-[radial-gradient(circle_at_top,rgba(255,106,0,0.14),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(229,232,235,0.08),transparent_30%)]" />
 
       {error && (
-        <div className="fixed top-4 right-4 z-50 rounded-xl border border-red-500/25 bg-red-500/15 px-4 py-3 text-red-300 flex items-center gap-2">
+        <div className="fixed top-4 right-4 z-50 rounded-xl border border-rose-300 bg-rose-100 px-4 py-3 text-rose-900 font-bold shadow-lg flex items-center gap-2">
           <AlertCircle size={18} />
           <span className="text-sm">{error}</span>
         </div>
@@ -744,13 +744,13 @@ if (!isAuthenticated) {
 
       <div className="relative z-10 mx-auto flex min-h-screen max-w-screen-2xl">
         {/* Sidebar */}
-        <aside className="hidden xl:flex w-72 flex-col border-r border-white/8 bg-black/20 backdrop-blur-xl px-5 py-6 sticky top-0 h-screen">
+        <aside className="hidden xl:flex w-72 flex-col border-r border-border bg-card px-5 py-6 sticky top-0 h-screen shadow-xs">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-outline">Anokhi Ada</p>
-              <h1 className="text-2xl font-bold font-display">Admin Panel</h1>
+              <p className="text-xs uppercase tracking-[0.35em] text-outline font-bold">Anokhi Ada</p>
+              <h1 className="text-2xl font-extrabold text-foreground font-display">Admin Panel</h1>
             </div>
-            <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold text-primary">Live</span>
+            <span className="rounded-full bg-emerald-100 border border-emerald-300 px-3 py-1 text-xs font-bold text-emerald-900">Live</span>
           </div>
 
           <nav className="space-y-2">
@@ -762,10 +762,10 @@ if (!isAuthenticated) {
                 <button
                   key={item.id}
                   onClick={() => setActiveSection(item.id)}
-                  className={`w-full flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-material text-left ${
+                  className={`w-full flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors text-left ${
                     active
-                      ? 'bg-primary text-white shadow-soft'
-                      : 'bg-white/3 text-secondary-text hover:bg-white/6 hover:text-foreground'
+                      ? 'bg-primary text-white shadow-xs font-bold'
+                      : 'bg-transparent text-foreground hover:bg-surface-muted hover:text-primary'
                   }`}
                 >
                   <Icon size={18} />
@@ -775,14 +775,14 @@ if (!isAuthenticated) {
             })}
           </nav>
 
-          <div className="mt-auto rounded-3xl border border-white/8 bg-white/4 p-4">
+          <div className="mt-auto rounded-3xl border border-border bg-surface-muted p-4">
             <div className="flex items-center gap-3 mb-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/15 text-primary">
                 <ShieldCheck size={20} />
               </div>
               <div>
-                <p className="text-sm font-semibold">Secure Admin</p>
-                <p className="text-xs text-secondary-text">2FA · Audit logs · Roles</p>
+                <p className="text-sm font-bold text-foreground">Secure Admin</p>
+                <p className="text-xs font-medium text-secondary-text">2FA · Audit logs · Roles</p>
               </div>
             </div>
             <p className="text-xs text-secondary-text leading-relaxed">
@@ -794,12 +794,12 @@ if (!isAuthenticated) {
 
         {/* Main Content */}
         <main className="flex-1 px-4 py-5 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
-          <div className="mb-6 rounded-[28px] border border-white/8 bg-white/4 p-4 sm:p-5 backdrop-blur-xl">
+          <div className="mb-6 rounded-[28px] border border-border bg-card p-4 sm:p-5 shadow-xs">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-outline">Ecommerce control center</p>
-                <h2 className="mt-1 text-3xl sm:text-4xl font-bold font-display">Anokhi Ada Admin Panel</h2>
-                <p className="mt-2 max-w-2xl text-sm sm:text-base text-secondary-text">
+                <p className="text-xs uppercase tracking-[0.3em] text-outline font-bold">Ecommerce control center</p>
+                <h2 className="mt-1 text-3xl sm:text-4xl font-extrabold text-foreground font-display">Anokhi Ada Admin Panel</h2>
+                <p className="mt-2 max-w-2xl text-sm sm:text-base text-secondary-text font-medium">
                   Manage products, orders, quote requests, customer messages, shipping, and store settings in one command center.
                 </p>
               </div>
@@ -807,13 +807,13 @@ if (!isAuthenticated) {
               <div className="flex flex-wrap items-center gap-3">
                 <button 
                   onClick={handleExportData}
-                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-foreground hover:bg-white/10 transition-material">
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-bold text-foreground hover:bg-muted transition-colors shadow-xs">
                   <Download size={16} />
                   Export
                 </button>
                 <button
                   onClick={beginCreateProduct}
-                  className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-white shadow-soft hover:bg-primary-light transition-material"
+                  className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-sm font-bold text-white hover:opacity-90 transition-opacity shadow-xs"
                 >
                   <Plus size={16} />
                   Add product
@@ -823,7 +823,7 @@ if (!isAuthenticated) {
           </div>
 
           {successMessage && (
-            <div className="mb-5 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+            <div className="mb-5 rounded-2xl border border-emerald-300 bg-emerald-100 px-4 py-3 text-sm font-bold text-emerald-900 shadow-xs">
               {successMessage}
             </div>
           )}
