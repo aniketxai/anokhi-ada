@@ -316,7 +316,7 @@ export function OrderDetailModal({ isOpen, order, onClose, onOrderUpdated, onPay
             )}
             {payment.reference && (
               <div className="flex justify-between gap-4 items-center">
-                <span className="text-secondary-text">UPI Ref</span>
+                <span className="text-secondary-text">Ref ID</span>
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-foreground text-right break-all">{payment.reference}</span>
                   <button
@@ -332,12 +332,30 @@ export function OrderDetailModal({ isOpen, order, onClose, onOrderUpdated, onPay
                 </div>
               </div>
             )}
+            {payment.razorpayOrderId && (
+              <div className="flex justify-between gap-4 items-center">
+                <span className="text-secondary-text">Razorpay Order ID</span>
+                <span className="font-mono text-xs font-semibold text-foreground text-right break-all">{payment.razorpayOrderId}</span>
+              </div>
+            )}
+            {payment.razorpayPaymentId && (
+              <div className="flex justify-between gap-4 items-center">
+                <span className="text-secondary-text">Razorpay Payment ID</span>
+                <span className="font-mono text-xs font-semibold text-emerald-400 text-right break-all">{payment.razorpayPaymentId}</span>
+              </div>
+            )}
+            {payment.paidAt && (
+              <div className="flex justify-between gap-4 items-center">
+                <span className="text-secondary-text">Paid At</span>
+                <span className="text-xs font-medium text-foreground">{new Date(payment.paidAt).toLocaleString()}</span>
+              </div>
+            )}
             <div className="flex justify-between items-center pt-2 border-t border-white/10">
               <span className="text-secondary-text font-semibold">Verification</span>
               <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${payment.verified ? 'bg-emerald-400' : 'bg-amber-400'}`} />
-                <span className={`font-semibold ${payment.verified ? 'text-emerald-300' : 'text-amber-300'}`}>
-                  {payment.verified ? 'Verified' : 'Pending'}
+                <div className={`w-2 h-2 rounded-full ${payment.verified || payment.status === 'paid' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                <span className={`font-semibold ${payment.verified || payment.status === 'paid' ? 'text-emerald-300' : 'text-amber-300'}`}>
+                  {payment.verified || payment.status === 'paid' ? 'Verified / Paid' : 'Pending'}
                 </span>
               </div>
             </div>

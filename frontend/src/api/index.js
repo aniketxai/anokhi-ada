@@ -455,6 +455,36 @@ export async function generateAdminPayLink(payload) {
   return requestJson('/api/pay-links', { method: 'POST', body: payload });
 }
 
+// ── Razorpay Integration ──────────────────────────────────────────────────────
+
+export async function fetchRazorpayKey() {
+  const res = await fetchWithTimeout(`${getBaseUrl()}/api/orders/razorpay-key`);
+  if (!res.ok) throw new Error('Failed to fetch Razorpay key');
+  return res.json();
+}
+
+export async function createRazorpayOrder(payload) {
+  const res = await fetchWithTimeout(`${getBaseUrl()}/api/orders/create-razorpay-order`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Failed to initialize Razorpay payment');
+  return data;
+}
+
+export async function verifyRazorpayPayment(payload) {
+  const res = await fetchWithTimeout(`${getBaseUrl()}/api/orders/verify-razorpay-payment`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Payment verification failed');
+  return data;
+}
+
 // ── Default export ────────────────────────────────────────────────────────────
 
 export default {
@@ -495,4 +525,7 @@ export default {
   getPayLink,
   postPayLinkOrder,
   generateAdminPayLink,
+  fetchRazorpayKey,
+  createRazorpayOrder,
+  verifyRazorpayPayment,
 };

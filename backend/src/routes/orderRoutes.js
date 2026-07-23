@@ -1,7 +1,19 @@
 import { Router } from 'express';
-import { createOrder, cancelOrder } from '../controllers/orderController.js';
+import {
+  createOrder,
+  cancelOrder,
+  getRazorpayKey,
+  createRazorpayOrder,
+  verifyRazorpayPayment,
+  handleRazorpayWebhook,
+} from '../controllers/orderController.js';
 
 const router = Router();
+
+router.get('/razorpay-key', getRazorpayKey);
+router.post('/create-razorpay-order', createRazorpayOrder);
+router.post('/verify-razorpay-payment', verifyRazorpayPayment);
+router.post('/razorpay-webhook', handleRazorpayWebhook);
 
 router.post('/', createOrder);
 router.patch('/:orderId/cancel', cancelOrder);

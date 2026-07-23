@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check, ShieldCheck, CreditCard, QrCode, Banknote, Loader2 } from 'lucide-react';
 
 import { useApp } from '../context/useApp';
 import Button from '../components/Button';
 import { formatINR } from '../utils/currency';
-import { postOrder } from '../api';
+import { postOrder, createRazorpayOrder, verifyRazorpayPayment } from '../api';
+import { loadRazorpayScript } from '../utils/razorpay';
 
 import CouponSelector from '../components/common/CouponSelector';
 import CeoDeliveryOption from '../components/common/CeoDeliveryOption';
@@ -35,14 +36,14 @@ export default function Checkout() {
     zipCode: '',
   });
 
-  const [paymentMethod, setPaymentMethod] = useState('online');
+  const [paymentMethod, setPaymentMethod] = useState('razorpay');
 
   const baseShippingFee = cartTotal < 399 ? 80 : 0;
   const ceoDeliveryFee = isCeoDelivery ? 5000 : 0;
   const shippingFee = baseShippingFee;
 
   const isCodAvailable = cartTotal >= 399;
-  const effectivePaymentMethod = isCodAvailable ? paymentMethod : 'online';
+  const effectivePaymentMethod = isCodAvailable ? paymentMethod : (paymentMethod === 'cod' ? 'razorpay' : paymentMethod);
 
   const codCharge = effectivePaymentMethod === 'cod' ? 100 : 0;
   const finalTotal = Math.max(0, cartTotal - discountAmount) + baseShippingFee + ceoDeliveryFee + codCharge;
@@ -69,13 +70,102 @@ export default function Checkout() {
     total: finalTotal,
   });
 
+  const handleRazorpayCheckout = async (payload) => {
+    setLoading(true);
+    try {
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded && typeof window.Razorpay === 'undefined') {
+        throw new Error('Could not load Razorpay payment gateway. Please check your internet connection.');
+      }
+
+      const response = await createRazorpayOrder(payload);
+      const rzpData = response?.data;
+
+      if (!rzpData || !rzpData.razorpayOrderId) {
+        throw new Error('Failed to create payment order. Please try again.');
+      }
+
+      const { razorpayOrderId, amount, currency, keyId, orderId, orderNumber: createdOrderNum } = rzpData;
+
+      // Handle Mock/Test fallback if environment keys are missing
+      if (razorpayOrderId.startsWith('rzp_mock_') || typeof window.Razorpay === 'undefined') {
+        const verifyRes = await verifyRazorpayPayment({
+          orderId,
+          razorpayOrderId,
+          razorpayPaymentId: `pay_mock_${Date.now()}`,
+          razorpaySignature: `sig_mock_${Date.now()}`,
+        });
+        setOrderNumber(verifyRes?.data?.orderNumber || createdOrderNum || '');
+        clearCart();
+        sessionStorage.removeItem('checkoutDraft');
+        setOrderPlaced(true);
+        setLoading(false);
+        return;
+      }
+
+      const options = {
+        key: keyId,
+        amount: amount,
+        currency: currency || 'INR',
+        name: 'Anokhi Ada',
+        description: `Order #${createdOrderNum}`,
+        image: 'https://anokhiada.vercel.app/logo.png',
+        order_id: razorpayOrderId,
+        prefill: {
+          name: `${shipping.firstName} ${shipping.lastName}`.trim(),
+          email: shipping.email,
+          contact: shipping.phone,
+        },
+        theme: {
+          color: '#E11D48',
+        },
+        modal: {
+          ondismiss: () => {
+            setLoading(false);
+            setError('Payment cancelled. You can complete your order anytime.');
+          },
+        },
+        handler: async (paymentResponse) => {
+          try {
+            setLoading(true);
+            const verifyRes = await verifyRazorpayPayment({
+              orderId,
+              razorpayOrderId: paymentResponse.razorpay_order_id,
+              razorpayPaymentId: paymentResponse.razorpay_payment_id,
+              razorpaySignature: paymentResponse.razorpay_signature,
+            });
+
+            setOrderNumber(verifyRes?.data?.orderNumber || createdOrderNum || '');
+            clearCart();
+            sessionStorage.removeItem('checkoutDraft');
+            setOrderPlaced(true);
+          } catch (verifyErr) {
+            setError(verifyErr.message || 'Payment verification failed. Please contact support.');
+          } finally {
+            setLoading(false);
+          }
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+
+      rzp.on('payment.failed', (failResponse) => {
+        setLoading(false);
+        setError(failResponse?.error?.description || 'Payment failed. Please try another payment method.');
+      });
+
+      rzp.open();
+    } catch (err) {
+      setError(err.message || 'Failed to initialize Razorpay checkout.');
+      setLoading(false);
+    }
+  };
+
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
-
     setError('');
 
     const form = e.currentTarget;
-
     if (!form.reportValidity()) {
       return;
     }
@@ -92,7 +182,12 @@ export default function Checkout() {
 
     const payload = buildOrderPayload();
 
-    if (paymentMethod === 'online') {
+    if (effectivePaymentMethod === 'razorpay') {
+      await handleRazorpayCheckout(payload);
+      return;
+    }
+
+    if (effectivePaymentMethod === 'online') {
       sessionStorage.setItem('checkoutDraft', JSON.stringify(payload));
       navigate('/pay/upi', {
         state: {
@@ -107,15 +202,10 @@ export default function Checkout() {
 
     try {
       sessionStorage.removeItem('checkoutDraft');
-
       const response = await postOrder(payload);
-
       setOrderNumber(response?.data?.orderNumber || '');
-
       clearCart();
-
       setOrderPlaced(true);
-
     } catch (submitError) {
       setError(
         submitError.message ||
@@ -133,31 +223,34 @@ export default function Checkout() {
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
+          className="text-center max-w-md mx-auto px-4"
         >
-          <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4">
-            <Check size={28} className="text-success" />
+          <div className="w-20 h-20 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto mb-6 shadow-inner">
+            <Check size={36} />
           </div>
 
-          <h2 className="text-2xl font-bold text-foreground font-display mb-2">
-            Order Placed
+          <h2 className="text-3xl font-bold text-foreground font-display mb-2">
+            Order Placed Successfully!
           </h2>
 
-          <p className="text-secondary-text text-sm mb-2">
-            Thank you for your order.
+          <p className="text-secondary-text text-sm mb-4">
+            Thank you for shopping with Anokhi Ada. Your payment and order details have been securely confirmed.
           </p>
 
           {orderNumber && (
-            <p className="text-sm text-foreground/80 mb-6">
-              Order number: {orderNumber}
-            </p>
+            <div className="bg-surface-container rounded-2xl p-4 mb-6 border border-white/10">
+              <p className="text-xs uppercase tracking-wider text-outline mb-1 font-semibold">Order Number</p>
+              <p className="text-lg font-bold text-primary">{orderNumber}</p>
+            </div>
           )}
 
-          <Link to="/products">
-            <Button>
-              Continue Shopping
-            </Button>
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link to="/products">
+              <Button size="lg" className="w-full sm:w-auto">
+                Continue Shopping
+              </Button>
+            </Link>
+          </div>
         </motion.div>
       </div>
     );
@@ -190,9 +283,15 @@ export default function Checkout() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* TITLE */}
-        <h1 className="text-3xl font-bold text-foreground font-display mb-8">
-          Checkout
-        </h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold text-foreground font-display">
+            Checkout
+          </h1>
+          <div className="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20 font-medium">
+            <ShieldCheck size={14} />
+            <span>Encrypted & Secure</span>
+          </div>
+        </div>
 
         {/* STEPS */}
         <div className="flex items-center gap-2 mb-8">
@@ -202,11 +301,11 @@ export default function Checkout() {
               className="flex items-center gap-2 flex-1"
             >
               <span
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-material ${
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                   step > i + 1
                     ? 'bg-success text-white'
                     : step === i + 1
-                    ? 'bg-primary text-white'
+                    ? 'bg-primary text-white shadow-lg shadow-primary/25'
                     : 'bg-surface-muted text-outline'
                 }`}
               >
@@ -220,7 +319,7 @@ export default function Checkout() {
               <span
                 className={`text-sm font-medium hidden sm:inline ${
                   step === i + 1
-                    ? 'text-foreground'
+                    ? 'text-foreground font-semibold'
                     : 'text-outline'
                 }`}
               >
@@ -244,8 +343,15 @@ export default function Checkout() {
 
           {/* ERROR */}
           {error && (
-            <div className="mb-6 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-              {error}
+            <div className="mb-6 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300 flex items-center justify-between">
+              <span>{error}</span>
+              <button
+                type="button"
+                onClick={() => setError('')}
+                className="text-xs text-red-400 underline ml-2"
+              >
+                Dismiss
+              </button>
             </div>
           )}
 
@@ -279,7 +385,7 @@ export default function Checkout() {
                       }))
                     }
                     placeholder="Aniket"
-                    className="w-full px-4 py-3 bg-background rounded-xl text-sm text-foreground"
+                    className="w-full px-4 py-3 bg-background rounded-xl text-sm text-foreground focus:ring-2 focus:ring-primary/20 outline-none"
                   />
                 </div>
 
@@ -300,7 +406,7 @@ export default function Checkout() {
                       }))
                     }
                     placeholder="Singh"
-                    className="w-full px-4 py-3 bg-background rounded-xl text-sm text-foreground"
+                    className="w-full px-4 py-3 bg-background rounded-xl text-sm text-foreground focus:ring-2 focus:ring-primary/20 outline-none"
                   />
                 </div>
 
@@ -321,7 +427,7 @@ export default function Checkout() {
                       }))
                     }
                     placeholder="you@example.com"
-                    className="w-full px-4 py-3 bg-background rounded-xl text-sm text-foreground"
+                    className="w-full px-4 py-3 bg-background rounded-xl text-sm text-foreground focus:ring-2 focus:ring-primary/20 outline-none"
                   />
                 </div>
 
@@ -343,7 +449,7 @@ export default function Checkout() {
                       }))
                     }
                     placeholder="9876543210"
-                    className="w-full px-4 py-3 bg-background rounded-xl text-sm text-foreground"
+                    className="w-full px-4 py-3 bg-background rounded-xl text-sm text-foreground focus:ring-2 focus:ring-primary/20 outline-none"
                   />
                 </div>
 
@@ -364,7 +470,7 @@ export default function Checkout() {
                       }))
                     }
                     placeholder="House No, Street, Area"
-                    className="w-full px-4 py-3 bg-background rounded-xl text-sm text-foreground resize-none"
+                    className="w-full px-4 py-3 bg-background rounded-xl text-sm text-foreground resize-none focus:ring-2 focus:ring-primary/20 outline-none"
                   />
                 </div>
 
@@ -384,7 +490,7 @@ export default function Checkout() {
                       }))
                     }
                     placeholder="Flat 201"
-                    className="w-full px-4 py-3 bg-background rounded-xl text-sm text-foreground"
+                    className="w-full px-4 py-3 bg-background rounded-xl text-sm text-foreground focus:ring-2 focus:ring-primary/20 outline-none"
                   />
                 </div>
 
@@ -404,7 +510,7 @@ export default function Checkout() {
                       }))
                     }
                     placeholder="Near Temple"
-                    className="w-full px-4 py-3 bg-background rounded-xl text-sm text-foreground"
+                    className="w-full px-4 py-3 bg-background rounded-xl text-sm text-foreground focus:ring-2 focus:ring-primary/20 outline-none"
                   />
                 </div>
 
@@ -425,7 +531,7 @@ export default function Checkout() {
                       }))
                     }
                     placeholder="Patna"
-                    className="w-full px-4 py-3 bg-background rounded-xl text-sm text-foreground"
+                    className="w-full px-4 py-3 bg-background rounded-xl text-sm text-foreground focus:ring-2 focus:ring-primary/20 outline-none"
                   />
                 </div>
 
@@ -446,10 +552,7 @@ export default function Checkout() {
                     }
                     className="w-full px-4 py-3 bg-background rounded-xl text-sm text-foreground border border-surface-muted focus:outline-none focus:border-primary"
                   >
-                    <option value="">
-                      Select State
-                    </option>
-
+                    <option value="">Select State</option>
                     <option value="Andhra Pradesh">Andhra Pradesh</option>
                     <option value="Arunachal Pradesh">Arunachal Pradesh</option>
                     <option value="Assam">Assam</option>
@@ -550,29 +653,68 @@ export default function Checkout() {
 
               <div className="space-y-4">
 
-                {/* ONLINE */}
+                {/* RAZORPAY (PRIMARY / RECOMMENDED) */}
                 <label
-                  className={`block border rounded-2xl p-4 cursor-pointer ${
-                    effectivePaymentMethod === 'online'
-                      ? 'border-primary bg-primary/5'
-                      : 'border-surface-muted'
+                  className={`block border-2 rounded-2xl p-4.5 cursor-pointer transition-all ${
+                    effectivePaymentMethod === 'razorpay'
+                      ? 'border-primary bg-primary/10 shadow-md shadow-primary/10'
+                      : 'border-surface-muted hover:border-white/20'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3.5">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      checked={effectivePaymentMethod === 'razorpay'}
+                      onChange={() => setPaymentMethod('razorpay')}
+                      className="accent-primary"
+                    />
+
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <CreditCard className="w-5 h-5 text-primary" />
+                        <p className="font-semibold text-foreground">
+                          Razorpay Secure Checkout
+                        </p>
+                        <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                          Instant & Secure
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-secondary-text mt-1">
+                        UPI, Credit/Debit Cards, NetBanking, Wallets & PayLater
+                      </p>
+                    </div>
+                  </div>
+                </label>
+
+                {/* MANUAL UPI */}
+                <label
+                  className={`block border rounded-2xl p-4 cursor-pointer transition-all ${
+                    effectivePaymentMethod === 'online'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-surface-muted hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-center gap-3.5">
                     <input
                       type="radio"
                       name="paymentMethod"
                       checked={effectivePaymentMethod === 'online'}
                       onChange={() => setPaymentMethod('online')}
+                      className="accent-primary"
                     />
 
-                    <div>
-                      <p className="font-medium text-foreground">
-                        Online Payment
-                      </p>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <QrCode className="w-4 h-4 text-emerald-400" />
+                        <p className="font-medium text-foreground">
+                          Manual UPI Transfer (QR Code)
+                        </p>
+                      </div>
 
-                      <p className="text-sm text-outline">
-                        UPI / Razorpay / PhonePe / Cards
+                      <p className="text-xs text-outline mt-0.5">
+                        Scan QR code and upload screenshot proof
                       </p>
                     </div>
                   </div>
@@ -585,20 +727,22 @@ export default function Checkout() {
                       ? 'opacity-60 bg-surface-muted/30 cursor-not-allowed border-surface-muted'
                       : effectivePaymentMethod === 'cod'
                       ? 'border-primary bg-primary/5 cursor-pointer'
-                      : 'border-surface-muted cursor-pointer'
+                      : 'border-surface-muted cursor-pointer hover:border-white/20'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3.5">
                     <input
                       type="radio"
                       name="paymentMethod"
                       disabled={!isCodAvailable}
                       checked={effectivePaymentMethod === 'cod'}
                       onChange={() => setPaymentMethod('cod')}
+                      className="accent-primary"
                     />
 
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
+                        <Banknote className="w-4 h-4 text-amber-400" />
                         <p className="font-medium text-foreground">
                           Cash on Delivery
                         </p>
@@ -609,15 +753,15 @@ export default function Checkout() {
                         )}
                       </div>
 
-                      <p className="text-sm text-outline">
+                      <p className="text-xs text-outline mt-0.5">
                         {isCodAvailable
                           ? 'Extra ₹100 COD charge applies'
-                          : 'Add items worth ₹' + (399 - cartTotal) + ' more to unlock COD & FREE shipping.'}
+                          : 'Add items worth ₹' + (399 - cartTotal) + ' more to unlock COD.'}
                       </p>
                     </div>
 
                     {isCodAvailable && (
-                      <span className="text-sm font-semibold text-warning">
+                      <span className="text-xs font-semibold text-amber-400">
                         +₹100
                       </span>
                     )}
@@ -636,7 +780,7 @@ export default function Checkout() {
                 </Button>
 
                 <Button type="submit" size="lg">
-                 Next
+                  Next
                 </Button>
               </div>
             </motion.div>
@@ -748,7 +892,7 @@ export default function Checkout() {
                   </div>
                 )}
 
-                <div className="flex justify-between mt-3">
+                <div className="flex justify-between mt-3 pt-2 border-t border-white/10">
                   <span className="font-bold text-lg text-foreground">
                     Total
                   </span>
@@ -764,6 +908,7 @@ export default function Checkout() {
                   type="button"
                   variant="outline"
                   size="lg"
+                  disabled={loading}
                   onClick={() => setStep(2)}
                 >
                   Back
@@ -773,12 +918,20 @@ export default function Checkout() {
                   type="submit"
                   size="lg"
                   disabled={loading}
+                  className="flex-1 flex items-center justify-center gap-2"
                 >
-                  {paymentMethod === 'online'
-                    ? 'Proceed to UPI Payment'
-                    : loading
-                    ? 'Placing Order...'
-                    : 'Place Order'}
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Processing...</span>
+                    </>
+                  ) : effectivePaymentMethod === 'razorpay' ? (
+                    `Pay ${formatINR(finalTotal)} with Razorpay`
+                  ) : effectivePaymentMethod === 'online' ? (
+                    'Proceed to Manual UPI'
+                  ) : (
+                    'Place Order (COD)'
+                  )}
                 </Button>
               </div>
             </motion.div>

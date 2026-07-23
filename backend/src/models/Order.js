@@ -30,12 +30,18 @@ const shippingSchema = new mongoose.Schema(
 
 const paymentSchema = new mongoose.Schema(
   {
-    method: { type: String, default: 'card' },
+    method: { type: String, default: 'online' },
     last4: { type: String, default: '' },
     reference: { type: String, default: '' },
     screenshotUrl: { type: String, default: '' },
     screenshotName: { type: String, default: '' },
     verified: { type: Boolean, default: false },
+    razorpayOrderId: { type: String, default: '' },
+    razorpayPaymentId: { type: String, default: '' },
+    razorpaySignature: { type: String, default: '' },
+    status: { type: String, enum: ['pending', 'paid', 'failed'], default: 'pending' },
+    paidAt: { type: Date },
+    failureReason: { type: String, default: '' },
   },
   { _id: false }
 );
