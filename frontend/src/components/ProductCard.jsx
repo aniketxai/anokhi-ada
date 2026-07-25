@@ -26,6 +26,9 @@ export default function ProductCard({ product, index = 0 }) {
     addToCart(product);
   };
 
+  const isSale = Boolean(product.originalPrice && Number(product.originalPrice) > Number(product.price));
+  const discountPercent = isSale ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -59,12 +62,24 @@ export default function ProductCard({ product, index = 0 }) {
             />
           </Link>
 
-          {/* Badge */}
-          {product.badge && (
-            <span className="absolute top-3 left-3 bg-primary text-white text-xs font-medium px-3 py-1 rounded-full">
-              {product.badge}
-            </span>
-          )}
+          {/* Badges */}
+          <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+            {isSale && (
+              <span className="bg-black text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wider">
+                Sale
+              </span>
+            )}
+            {discountPercent > 0 && (
+              <span className="bg-emerald-600 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xs">
+                {discountPercent}% OFF
+              </span>
+            )}
+            {product.badge && product.badge !== 'Sale' && (
+              <span className="bg-primary text-white text-xs font-medium px-3 py-1 rounded-full shadow-xs">
+                {product.badge}
+              </span>
+            )}
+          </div>
 
           {/* Quick actions */}
           <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-100 transition-material">
@@ -108,11 +123,15 @@ export default function ProductCard({ product, index = 0 }) {
 
           {/* Price + Cart */}
           <div className="mt-auto flex items-end justify-between gap-3">
-            <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2 min-w-0">
-              <span className="text-base sm:text-lg font-bold text-foreground">{formatINR(product.price)}</span>
-              {product.originalPrice && (
-                <span className="text-xs sm:text-sm text-outline line-through">{formatINR(product.originalPrice)}</span>
+            <div className="flex flex-wrap items-baseline gap-1.5 min-w-0">
+              {isSale && (
+                <span className="text-xs sm:text-sm text-muted-foreground line-through font-medium">
+                  {formatINR(product.originalPrice)}
+                </span>
               )}
+              <span className="text-base sm:text-lg font-bold text-foreground">
+                {formatINR(product.price)}
+              </span>
             </div>
             <motion.button
               whileTap={{ scale: 0.9 }}

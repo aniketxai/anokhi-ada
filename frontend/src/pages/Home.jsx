@@ -11,7 +11,7 @@ import AboutBrand from '../components/home/AboutBrand';
 import Reviews from '../components/home/Reviews';
 import InstagramGallery from '../components/home/InstagramGallery';
 import Newsletter from '../components/home/Newsletter';
-import { hotSelling, customPackaging, somethingForHer } from '../data/categories';
+import { hotSelling, customPackaging, somethingForHer, somethingForHim } from '../data/categories';
 
 export default function Home() {
   const [products, setProducts] = useState(() => api.getCachedProducts());
@@ -80,6 +80,14 @@ export default function Home() {
         subtitle="Thoughtful gifts, hampers & more."
         items={somethingForHer}
         viewAllHref="/products?category=luxury-hampers"
+      />
+
+      <SubcollectionStrip
+        eyebrow="Curated for him"
+        title="Something For Him"
+        subtitle="Thoughtful gifts, hampers & more."
+        items={somethingForHim}
+        viewAllHref="/products?category=curated-for-him"
       />
 
       {bestSellers.length > 0 && (

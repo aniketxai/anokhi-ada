@@ -118,7 +118,21 @@ export function CatalogSection({
                       </td>
                       <td className="px-4 py-4 text-sm font-medium text-foreground">{product.category}</td>
                       <td className="px-4 py-4 text-sm font-medium text-foreground">{product.netWeight ? `${product.netWeight}${product.netWeightUnit || 'g'}` : '-'}</td>
-                      <td className="px-4 py-4 text-sm font-bold text-primary">{formatINR(product.price)}</td>
+                      <td className="px-4 py-4 text-sm">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-foreground">{formatINR(product.price)}</span>
+                          {product.originalPrice > product.price && (
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className="text-xs text-secondary-text line-through font-medium">
+                                {formatINR(product.originalPrice)}
+                              </span>
+                              <span className="rounded-full bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.2 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                                {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </td>
                       <td className="px-4 py-4">
                         <div className="inline-flex items-center gap-1 text-sm font-bold text-amber-700">
                           <Star className="w-4 h-4 fill-amber-500 text-amber-500" />

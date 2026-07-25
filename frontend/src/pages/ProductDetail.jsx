@@ -41,6 +41,7 @@ export default function ProductDetail() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [isGiftOrderSelected, setIsGiftOrderSelected] = useState(false);
 
   const { addToCart, toggleWishlist, wishlist } = useApp();
 
@@ -213,12 +214,24 @@ export default function ProductDetail() {
             transition={{ duration: 0.5, delay: 0.1 }}
           >
 
-            {/* Badge */}
-            {product.badge && (
-              <span className="inline-block bg-primary text-white text-xs font-medium px-3 py-1 rounded-full mb-3">
-                {product.badge}
-              </span>
-            )}
+            {/* Badges */}
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              {(product.originalPrice > product.price || product.badge === 'Sale') && (
+                <span className="inline-block bg-black text-white text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wider">
+                  Sale
+                </span>
+              )}
+              {product.originalPrice > product.price && (
+                <span className="inline-block bg-emerald-600 text-white text-xs font-extrabold px-3 py-1 rounded-full shadow-xs">
+                  {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                </span>
+              )}
+              {product.badge && product.badge !== 'Sale' && (
+                <span className="inline-block bg-primary text-white text-xs font-medium px-3 py-1 rounded-full">
+                  {product.badge}
+                </span>
+              )}
+            </div>
 
             {/* Category */}
             <p className="text-xs text-outline font-medium mb-1">
@@ -256,14 +269,26 @@ export default function ProductDetail() {
             </div>
 
             {/* Price */}
-            <div className="flex items-baseline gap-3 mb-6">
+            <div className="flex flex-wrap items-baseline gap-3 mb-6">
+              {product.originalPrice > product.price && (
+                <span className="text-lg text-outline line-through font-medium">
+                  {formatINR(product.originalPrice + (isGiftOrderSelected ? 99 : 0))}
+                </span>
+              )}
+
               <span className="text-3xl font-bold text-foreground">
-                {formatINR(product.price || 0)}
+                {formatINR((product.price || 0) + (isGiftOrderSelected ? 99 : 0))}
               </span>
 
-              {product.originalPrice && (
-                <span className="text-lg text-outline line-through">
-                  {formatINR(product.originalPrice)}
+              {product.originalPrice > product.price && (
+                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">
+                  Save {formatINR(product.originalPrice - product.price)}
+                </span>
+              )}
+
+              {isGiftOrderSelected && (
+                <span className="text-xs bg-amber-500/20 text-amber-600 dark:text-amber-300 font-bold px-2.5 py-1 rounded-full border border-amber-500/30">
+                  + ₹99 Gift Order
                 </span>
               )}
             </div>
@@ -334,6 +359,7 @@ export default function ProductDetail() {
             <div className="space-y-4">
               <PersonalisationActionBox
                 product={product}
+                onGiftOrderChange={(selected) => setIsGiftOrderSelected(selected)}
                 onAddToCart={(p, options) => {
                   addToCart({ ...p, isGiftOrder: options?.isGiftOrder });
                 }}

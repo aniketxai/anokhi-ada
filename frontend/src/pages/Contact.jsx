@@ -57,52 +57,58 @@ export default function Contact() {
             transition={{ duration: 0.5 }}
             className="lg:col-span-2 space-y-6"
           >
-            <div className="bg-surface-container rounded-3xl p-6">
+            <div className="bg-surface-container rounded-3xl p-6 border border-border">
               <div className="flex items-start gap-4">
-                <div className="w-11 h-11 rounded-xl bg-secondary-container flex items-center justify-center shrink-0">
-                  <Phone size={18} className="text-primary" />
+                <div className="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                  <Phone size={20} />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground text-sm mb-1">WhatsApp / Phone</h3>
-                  <p className="text-secondary-text text-sm">{BRAND.whatsapp}</p>
+                  <h3 className="font-bold text-foreground text-base mb-1">📱 WhatsApp Support</h3>
+                  <a
+                    href={BRAND.social.whatsapp}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-emerald-600 dark:text-emerald-400 font-bold text-sm hover:underline block"
+                  >
+                    {BRAND.whatsapp}
+                  </a>
+                  <p className="text-xs text-outline mt-1">Tap to chat directly on WhatsApp</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-surface-container rounded-3xl p-6">
+            <div className="bg-surface-container rounded-3xl p-6 border border-border">
               <div className="flex items-start gap-4">
-                <div className="w-11 h-11 rounded-xl bg-secondary-container flex items-center justify-center shrink-0">
-                  <Mail size={18} className="text-primary" />
+                <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <MapPin size={20} />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground text-sm mb-1">Location</h3>
-                  <p className="text-secondary-text text-sm">{BRAND.city}</p>
+                  <h3 className="font-bold text-foreground text-base mb-1">🏠 Business Name & Location</h3>
+                  <p className="text-secondary-text text-sm font-semibold">{BRAND.name}</p>
+                  <p className="text-secondary-text text-xs">{BRAND.city}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-surface-container rounded-3xl p-6">
+            <div className="bg-surface-container rounded-3xl p-6 border border-border">
               <div className="flex items-start gap-4">
-                <div className="w-11 h-11 rounded-xl bg-secondary-container flex items-center justify-center shrink-0">
-                  <MapPin size={18} className="text-primary" />
+                <div className="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+                  <Mail size={20} />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground text-sm mb-1">Support Hours</h3>
-                  <p className="text-secondary-text text-sm">{BRAND.supportTime}</p>
+                  <h3 className="font-bold text-foreground text-base mb-1">⏰ Support Hours</h3>
+                  <p className="text-secondary-text text-sm font-medium">{BRAND.supportTime}</p>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 pt-2">
-              {['4h reply', 'Mon–Sun', '8am–10pm'].map((label, i) => (
-                <a
-                  key={i}
-                  href="#"
-                  className="px-4 h-10 rounded-full bg-surface-container flex items-center justify-center text-outline text-sm font-medium hover:bg-primary hover:text-white transition-material"
-                >
-                  {label}
-                </a>
-              ))}
+            {/* Support Note */}
+            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-3xl p-5 text-xs text-emerald-700 dark:text-emerald-300 leading-relaxed">
+              <strong>📩 Support Note:</strong> We request customers to contact us via WhatsApp message instead of repeated calls for faster assistance. All queries will be responded to within a reasonable time.
+            </div>
+
+            <div className="pt-2 text-center text-xs font-semibold text-outline">
+              Thank you for shopping with us!
             </div>
           </motion.div>
 

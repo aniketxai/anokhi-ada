@@ -29,13 +29,27 @@ function appReducer(state, action) {
           ...state,
           cart: state.cart.map(item =>
             item.id === action.payload.id
-              ? { ...item, quantity: item.quantity + 1 }
+              ? {
+                  ...item,
+                  quantity: item.quantity + 1,
+                  isGiftOrder: action.payload.isGiftOrder !== undefined ? action.payload.isGiftOrder : item.isGiftOrder,
+                }
               : item
           ),
         };
       }
-      return { ...state, cart: [...state.cart, { ...action.payload, quantity: 1 }] };
+      return {
+        ...state,
+        cart: [...state.cart, { ...action.payload, quantity: 1, isGiftOrder: !!action.payload.isGiftOrder }],
+      };
     }
+    case 'TOGGLE_GIFT_ORDER':
+      return {
+        ...state,
+        cart: state.cart.map(item =>
+          item.id === action.payload ? { ...item, isGiftOrder: !item.isGiftOrder } : item
+        ),
+      };
     case 'REMOVE_FROM_CART':
       return { ...state, cart: state.cart.filter(item => item.id !== action.payload) };
     case 'UPDATE_QUANTITY':
@@ -160,8 +174,11 @@ export function AppProvider({ children }) {
     }
   });
 
-  const cartTotal = state.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const giftOrderTotal = state.cart.reduce((sum, item) => sum + (item.isGiftOrder ? 99 * item.quantity : 0), 0);
+  const cartTotal = state.cart.reduce((sum, item) => sum + (Number(item.price || 0) + (item.isGiftOrder ? 99 : 0)) * item.quantity, 0);
   const cartCount = state.cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  const toggleGiftOrder = useCallback((id) => dispatch({ type: 'TOGGLE_GIFT_ORDER', payload: id }), []);
 
   const discountAmount = getDiscountAmount(appliedCoupon, cartTotal);
 
@@ -250,10 +267,12 @@ export function AppProvider({ children }) {
       updateQuantity,
       clearCart,
       toggleWishlist,
+      toggleGiftOrder,
       removeNotification,
       notify,
       cartTotal,
       cartCount,
+      giftOrderTotal,
       appliedCoupon,
       discountAmount,
       applyCoupon,

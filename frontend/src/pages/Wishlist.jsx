@@ -89,7 +89,14 @@ export default function Wishlist() {
                   {product.name}
                 </Link>
                 <p className="text-xs text-outline mt-0.5">{product.category}</p>
-                <p className="text-sm sm:text-lg font-bold text-foreground mt-1">{formatINR(product.price)}</p>
+                <div className="flex items-baseline gap-2 mt-1">
+                  {product.originalPrice > product.price && (
+                    <span className="text-xs text-outline line-through font-medium">
+                      {formatINR(product.originalPrice)}
+                    </span>
+                  )}
+                  <p className="text-sm sm:text-lg font-bold text-foreground">{formatINR(product.price)}</p>
+                </div>
               </div>
               <div className="col-span-4 sm:col-span-1 flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                 <Button 

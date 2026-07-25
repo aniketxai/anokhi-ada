@@ -23,6 +23,7 @@ const policyLinks = [
   { href: '/refund-policy', label: 'Refund Policy' },
   { href: '/shipping-policy', label: 'Shipping Policy' },
   { href: '/terms', label: 'Terms & Conditions' },
+  { href: '/legal-notice', label: 'Legal Notice' },
 ];
 
 export default function Footer() {

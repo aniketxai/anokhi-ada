@@ -11,7 +11,7 @@ import CouponSelector from '../components/common/CouponSelector';
 import CeoDeliveryOption from '../components/common/CeoDeliveryOption';
 
 export default function Cart() {
-  const { cart, removeFromCart, updateQuantity, clearCart, cartTotal, appliedCoupon, discountAmount, isCeoDelivery } = useApp();
+  const { cart, removeFromCart, updateQuantity, clearCart, cartTotal, giftOrderTotal, toggleGiftOrder, appliedCoupon, discountAmount, isCeoDelivery } = useApp();
 
   if (cart.length === 0) {
     return (
@@ -66,58 +66,89 @@ export default function Cart() {
         </div>
 
         <div className="space-y-4 mb-8">
-          {cart.map((item, i) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: i * 0.05 }}
-              className="bg-surface-container rounded-3xl p-4 flex flex-col sm:flex-row gap-4 sm:items-center"
-            >
-              <img
-                src={sanitizeImageUrl(item.images?.[0] || item.image || item.img)}
-                alt={item.name}
-                onError={(e) => {
-                  e.currentTarget.src = 'https://images.pexels.com/photos/1112598/pexels-photo-1112598.jpeg?auto=compress&cs=tinysrgb&w=600';
-                }}
-                className="w-full sm:w-20 h-40 sm:h-20 rounded-2xl object-cover shrink-0"
-              />
-              <div className="flex-1 min-w-0 text-center sm:text-left">
-                <Link to={`/products/${item.id}`} className="font-semibold text-foreground text-sm hover:text-primary transition-material line-clamp-1">
-                  {item.name}
-                </Link>
-                <p className="text-xs text-outline mt-0.5">{item.category}</p>
-                <p className="text-lg font-bold text-foreground mt-1">{formatINR(item.price)}</p>
-              </div>
-              <div className="flex items-center justify-center gap-2">
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                  className="w-8 h-8 rounded-full bg-surface-muted flex items-center justify-center text-foreground hover:bg-surface-dim transition-material"
-                >
-                  <Minus size={14} />
-                </motion.button>
-                <span className="w-8 text-center text-sm font-medium text-foreground">{item.quantity}</span>
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                  className="w-8 h-8 rounded-full bg-surface-muted flex items-center justify-center text-foreground hover:bg-surface-dim transition-material"
-                >
-                  <Plus size={14} />
-                </motion.button>
-              </div>
-              <p className="text-sm font-bold text-foreground w-full sm:w-24 text-center sm:text-right">
-                {formatINR(item.price * item.quantity)}
-              </p>
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => removeFromCart(item.id)}
-                className="p-2 rounded-full hover:bg-error/10 text-outline hover:text-error transition-material self-center sm:self-auto"
+          {cart.map((item, i) => {
+            const itemPriceWithGift = item.price + (item.isGiftOrder ? 99 : 0);
+            return (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.05 }}
+                className="bg-surface-container rounded-3xl p-4 flex flex-col sm:flex-row gap-4 sm:items-center"
               >
-                <Trash2 size={16} />
-              </motion.button>
-            </motion.div>
-          ))}
+                <img
+                  src={sanitizeImageUrl(item.images?.[0] || item.image || item.img)}
+                  alt={item.name}
+                  onError={(e) => {
+                    e.currentTarget.src = 'https://images.pexels.com/photos/1112598/pexels-photo-1112598.jpeg?auto=compress&cs=tinysrgb&w=600';
+                  }}
+                  className="w-full sm:w-20 h-40 sm:h-20 rounded-2xl object-cover shrink-0"
+                />
+                <div className="flex-1 min-w-0 text-center sm:text-left">
+                  <Link to={`/products/${item.id}`} className="font-semibold text-foreground text-sm hover:text-primary transition-material line-clamp-1">
+                    {item.name}
+                  </Link>
+                  <p className="text-xs text-outline mt-0.5">{item.category}</p>
+                  
+                  {/* Gift Order Toggle / Badge */}
+                  <div className="mt-1 flex items-center justify-center sm:justify-start gap-2">
+                    <button
+                      type="button"
+                      onClick={() => toggleGiftOrder(item.id)}
+                      className={`text-xs px-2.5 py-1 rounded-full font-semibold border transition-all ${
+                        item.isGiftOrder
+                          ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/40'
+                          : 'bg-surface-muted text-secondary-text border-transparent hover:border-surface-muted'
+                      }`}
+                    >
+                      {item.isGiftOrder ? '🎁 Gift Order (+₹99 Applied)' : '+ Add Gift Packaging (@ ₹99)'}
+                    </button>
+                  </div>
+
+                  <div className="flex items-baseline gap-2 mt-1">
+                    {item.originalPrice > item.price && (
+                      <span className="text-xs text-outline line-through font-medium">
+                        {formatINR(item.originalPrice + (item.isGiftOrder ? 99 : 0))}
+                      </span>
+                    )}
+                    <p className="text-lg font-bold text-foreground">
+                      {formatINR(itemPriceWithGift)}
+                      {item.isGiftOrder && (
+                        <span className="text-[11px] font-normal text-secondary-text ml-1.5">(incl. ₹99 gift wrap)</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-center gap-2">
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                    className="w-8 h-8 rounded-full bg-surface-muted flex items-center justify-center text-foreground hover:bg-surface-dim transition-material"
+                  >
+                    <Minus size={14} />
+                  </motion.button>
+                  <span className="w-8 text-center text-sm font-medium text-foreground">{item.quantity}</span>
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                    className="w-8 h-8 rounded-full bg-surface-muted flex items-center justify-center text-foreground hover:bg-surface-dim transition-material"
+                  >
+                    <Plus size={14} />
+                  </motion.button>
+                </div>
+                <p className="text-sm font-bold text-foreground w-full sm:w-24 text-center sm:text-right">
+                  {formatINR(itemPriceWithGift * item.quantity)}
+                </p>
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => removeFromCart(item.id)}
+                  className="p-2 rounded-full hover:bg-error/10 text-outline hover:text-error transition-material self-center sm:self-auto"
+                >
+                  <Trash2 size={16} />
+                </motion.button>
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* CEO VIP Delivery Option */}
@@ -132,6 +163,15 @@ export default function Cart() {
             <span className="text-secondary-text text-sm">Subtotal</span>
             <span className="font-semibold text-foreground">{formatINR(cartTotal)}</span>
           </div>
+
+          {giftOrderTotal > 0 && (
+            <div className="flex items-center justify-between mb-3 text-amber-700 dark:text-amber-300 font-semibold">
+              <span className="text-sm flex items-center gap-1">
+                🎁 Gift Order Packaging
+              </span>
+              <span>+{formatINR(giftOrderTotal)}</span>
+            </div>
+          )}
 
           {discountAmount > 0 && (
             <div className="flex items-center justify-between mb-3 text-emerald-600 dark:text-emerald-400">

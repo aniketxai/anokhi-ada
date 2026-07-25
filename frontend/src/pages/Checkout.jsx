@@ -55,7 +55,8 @@ export default function Checkout() {
     items: cart.map((item) => ({
       productId: item.id,
       name: item.name,
-      price: item.price,
+      price: item.price + (item.isGiftOrder ? 99 : 0),
+      isGiftOrder: !!item.isGiftOrder,
       quantity: item.quantity,
       image: sanitizeImageUrl(item.images?.[0] || item.image || ''),
     })),
@@ -780,33 +781,41 @@ export default function Checkout() {
               </h2>
 
               <div className="space-y-3 mb-6">
-                {cart.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center gap-3"
-                  >
-                    <img
-                      src={sanitizeImageUrl(item.images?.[0] || item.image)}
-                      alt={item.name}
-                      onError={(e) => { e.currentTarget.src = 'https://images.pexels.com/photos/1112598/pexels-photo-1112598.jpeg?auto=compress&cs=tinysrgb&w=600'; }}
-                      className="w-12 h-12 rounded-xl object-cover"
-                    />
+                {cart.map((item) => {
+                  const itemPriceWithGift = item.price + (item.isGiftOrder ? 99 : 0);
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex items-center gap-3"
+                    >
+                      <img
+                        src={sanitizeImageUrl(item.images?.[0] || item.image)}
+                        alt={item.name}
+                        onError={(e) => { e.currentTarget.src = 'https://images.pexels.com/photos/1112598/pexels-photo-1112598.jpeg?auto=compress&cs=tinysrgb&w=600'; }}
+                        className="w-12 h-12 rounded-xl object-cover"
+                      />
 
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-foreground">
-                        {item.name}
-                      </p>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-foreground">
+                          {item.name}
+                          {item.isGiftOrder && (
+                            <span className="inline-block text-[10px] bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold px-2 py-0.5 rounded-md ml-2">
+                              🎁 Gift Order (+₹99)
+                            </span>
+                          )}
+                        </p>
 
-                      <p className="text-xs text-outline">
-                        Qty: {item.quantity}
+                        <p className="text-xs text-outline">
+                          Qty: {item.quantity}
+                        </p>
+                      </div>
+
+                      <p className="text-sm font-semibold text-foreground">
+                        {formatINR(itemPriceWithGift * item.quantity)}
                       </p>
                     </div>
-
-                    <p className="text-sm font-semibold text-foreground">
-                      {formatINR(item.price * item.quantity)}
-                    </p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <CouponSelector className="mb-6" />

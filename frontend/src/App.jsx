@@ -18,6 +18,11 @@ import Admin from './pages/Admin';
 import ScrollToTop from './components/ScrollToTop';
 import PayLinkPayment from './pages/PayLinkPayment';
 import WhatsAppButton from './components/WhatsAppButton';
+import RefundPolicy from './pages/RefundPolicy';
+import ShippingPolicy from './pages/ShippingPolicy';
+import TermsOfService from './pages/TermsOfService';
+import LegalNotice from './pages/LegalNotice';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 
 function PublicLayout() {
   return (
@@ -46,10 +51,19 @@ function AppContent() {
             <Route path="/services" element={<Services />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/contact-us" element={<Contact />} />
             <Route path="/custom-order" element={<CustomOrder />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/wishlist" element={<Wishlist />} />
             <Route path="/checkout" element={<Checkout />} />
+            <Route path="/refund-policy" element={<RefundPolicy />} />
+            <Route path="/return-policy" element={<RefundPolicy />} />
+            <Route path="/shipping-policy" element={<ShippingPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/terms-and-conditions" element={<TermsOfService />} />
+            <Route path="/legal-notice" element={<LegalNotice />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/pay/upi" element={<Navigate to="/checkout" replace />} />
             <Route path="/pay/link/:token" element={<PayLinkPayment />} />
           </Route>

@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader, Save, UploadCloud, Trash2 } from 'lucide-react';
 import { sanitizeImageUrl } from '../../utils/image';
+import { ADMIN_CATEGORIES } from '../../data/categories';
 
 const DEFAULT_FALLBACK_IMAGE = 'https://images.pexels.com/photos/1112598/pexels-photo-1112598.jpeg?auto=compress&cs=tinysrgb&w=600';
 
@@ -90,27 +91,54 @@ export function ProductEditModal({
                     <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-foreground">
                       Category *
                     </span>
-                    <input
+                    <select
                       required
                       value={form.category}
                       onChange={(e) => onChange('category', e.target.value)}
                       className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-                    />
+                    >
+                      <option value="">Select Category</option>
+                      {ADMIN_CATEGORIES.map((cat) => (
+                        <option key={cat} value={cat} className="bg-card text-foreground">
+                          {cat}
+                        </option>
+                      ))}
+                      {form.category && !ADMIN_CATEGORIES.includes(form.category) && (
+                        <option value={form.category} className="bg-card text-foreground">
+                          {form.category}
+                        </option>
+                      )}
+                    </select>
                   </label>
                 </div>
 
-                {/* Price + Rating + Stock */}
-                <div className="grid gap-4 sm:grid-cols-3">
+                {/* Price + Original Price (MRP) + Rating + Stock */}
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   <label className="block">
                     <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-foreground">
-                      Price *
+                      Selling Price (₹) *
                     </span>
                     <input
                       required
                       type="number"
                       step="0.01"
+                      placeholder="e.g. 199"
                       value={form.price}
                       onChange={(e) => onChange('price', e.target.value)}
+                      className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-foreground">
+                      Original Price / MRP (₹)
+                    </span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="e.g. 299"
+                      value={form.originalPrice}
+                      onChange={(e) => onChange('originalPrice', e.target.value)}
                       className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                     />
                   </label>
@@ -139,10 +167,25 @@ export function ProductEditModal({
                       type="number"
                       value={form.stockQty}
                       onChange={(e) => onChange('stockQty', e.target.value)}
+                      placeholder="25"
                       className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                     />
                   </label>
                 </div>
+
+                {/* Live Discount Calculation Banner */}
+                {Number(form.originalPrice) > Number(form.price) && Number(form.price) > 0 && (
+                  <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3 flex items-center justify-between text-xs text-emerald-800 dark:text-emerald-300 font-bold">
+                    <div className="flex items-center gap-2">
+                      <span className="bg-black text-white px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold">Sale</span>
+                      <span>
+                        Discount: {Math.round(((Number(form.originalPrice) - Number(form.price)) / Number(form.originalPrice)) * 100)}% OFF
+                        (Customer saves ₹{(Number(form.originalPrice) - Number(form.price)).toFixed(2)})
+                      </span>
+                    </div>
+                    <span className="text-[11px] opacity-80">Strikethrough enabled</span>
+                  </div>
+                )}
 
                 {/* Net Weight (admin-only) */}
                 <div className="grid gap-4 sm:grid-cols-3 items-end">

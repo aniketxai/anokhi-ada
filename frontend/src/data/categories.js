@@ -97,10 +97,50 @@ export const somethingForHer = [
   { id: 'custom-gifts', name: 'Custom Gifts', slug: 'custom-gifts', image: 'https://images.pexels.com/photos/6211316/pexels-photo-6211316.jpeg?auto=compress&cs=tinysrgb&w=600' },
 ];
 
+// Home "Something For Him" sub-collections with square images
+export const somethingForHim = [
+  { id: 'luxury-hampers-him', name: 'Luxury Hampers for Him', slug: 'luxury-hampers', image: 'https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=600' },
+  { id: 'perfume-him', name: 'Perfumes for Him', slug: 'perfume', image: 'https://images.pexels.com/photos/965989/pexels-photo-965989.jpeg?auto=compress&cs=tinysrgb&w=600' },
+  { id: 'grooming-kit', name: 'Grooming Essentials', slug: 'cosmetics', image: 'https://images.pexels.com/photos/2536965/pexels-photo-2536965.jpeg?auto=compress&cs=tinysrgb&w=600' },
+  { id: 'custom-gifts-him', name: 'Custom Gifts for Him', slug: 'custom-gifts', image: 'https://images.pexels.com/photos/6211316/pexels-photo-6211316.jpeg?auto=compress&cs=tinysrgb&w=600' },
+];
+
+export const ADMIN_CATEGORIES = [
+  'Hampers',
+  'Kurtis',
+  'Perfume',
+  'Earrings',
+  'Hampers under 299',
+  'Hampers under 199',
+  'Bangles box',
+  'Earrings box',
+  'Cosmetics',
+  'Face sheet mask',
+  'Lip gloss',
+  'Lipsticks',
+  'Custom packaging',
+  'Luxury hampers',
+  'Gift collections',
+  'Jewellery',
+  'Kurti collections',
+  'Luxury gift box',
+  'Fairy lights',
+  'Love theme',
+  'B’day theme',
+  'Gift wrap',
+  'Chocolates',
+  'Gifts under 699',
+  'Gifts under 499',
+  'Custom gifts',
+  'Curated for him',
+];
+
 export const allSubcollections = [
   ...hotSelling,
   ...customPackaging,
   ...somethingForHer,
+  ...somethingForHim,
 ];
 
 export default categories;
+

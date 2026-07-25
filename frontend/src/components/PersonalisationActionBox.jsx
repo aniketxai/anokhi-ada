@@ -3,10 +3,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Check, X, Gift, Sparkles, Tag, ShieldCheck } from 'lucide-react';
 import { useApp } from '../context/useApp';
 
-export default function PersonalisationActionBox({ product, onAddToCart, onBuyNow, className = '' }) {
+export default function PersonalisationActionBox({ product, onAddToCart, onBuyNow, onGiftOrderChange, className = '' }) {
   const [isGiftOrder, setIsGiftOrder] = useState(false);
   const [showLearnMore, setShowLearnMore] = useState(false);
   const { showNotification } = useApp() || {};
+
+  const toggleGiftOrder = () => {
+    const next = !isGiftOrder;
+    setIsGiftOrder(next);
+    if (onGiftOrderChange) {
+      onGiftOrderChange(next);
+    }
+  };
 
   const handleAddToCart = () => {
     if (onAddToCart) {
@@ -49,7 +57,7 @@ export default function PersonalisationActionBox({ product, onAddToCart, onBuyNo
       <motion.div
         whileHover={{ scale: 1.005 }}
         whileTap={{ scale: 0.995 }}
-        onClick={() => setIsGiftOrder(!isGiftOrder)}
+        onClick={toggleGiftOrder}
         className="relative overflow-hidden cursor-pointer rounded-[24px] p-4 sm:p-[18px] flex items-center justify-between transition-all duration-300 shadow-sm"
         style={{
           background: 'linear-gradient(100deg, #FDE6C4 0%, #F8DAA8 50%, #ECC382 100%)',
@@ -155,6 +163,7 @@ export default function PersonalisationActionBox({ product, onAddToCart, onBuyNo
               <button
                 onClick={() => {
                   setIsGiftOrder(true);
+                  if (onGiftOrderChange) onGiftOrderChange(true);
                   setShowLearnMore(false);
                 }}
                 className="w-full py-3 rounded-full bg-[#111111] text-white font-bold text-sm tracking-wide uppercase hover:bg-black transition-colors"

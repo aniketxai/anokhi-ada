@@ -19,7 +19,7 @@ import {
   AlertTriangle,
   Eye,
 } from 'lucide-react';
-import { categories } from '../data/products';
+import { categories, ADMIN_CATEGORIES } from '../data/categories';
 import { formatINR } from '../utils/currency';
 import api from '../api/index.js';
 import AdminAnalytics from './AdminAnalytics';
@@ -150,13 +150,12 @@ export default function Admin() {
   const [activity, setActivity] = useState([]);
 
   // Check authentication on mount
- // Check authentication on mount
 useEffect(() => {
   const token = localStorage.getItem('adminToken');
   setIsAuthenticated(!!token);
 }, []);
 
-const categoryOptions = ['All', ...categories];
+const categoryOptions = ['All', ...ADMIN_CATEGORIES];
 
 const loadAdminData = useCallback(async ({ showLoading = true } = {}) => {
     let cancelled = false;

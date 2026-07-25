@@ -51,13 +51,18 @@ export default function ProductCard({ product, index = 0 }) {
           />
 
           <div className="absolute top-2.5 left-2.5 right-2.5 flex items-start justify-between">
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1.5 items-start">
+              {(product.originalPrice > product.price || product.badge === 'Sale') && (
+                <span className="rounded-full bg-black text-white px-3 py-1 text-[11px] font-bold shadow-md uppercase tracking-wider">
+                  Sale
+                </span>
+              )}
               {discount > 0 && (
-                <span className="rounded-full bg-primary px-2.5 py-1 text-[10px] sm:text-[11px] font-semibold text-primary-foreground shadow-sm">
+                <span className="rounded-full bg-emerald-600 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-extrabold text-white shadow-sm">
                   -{discount}%
                 </span>
               )}
-              {product.badge && (
+              {product.badge && product.badge !== 'Sale' && (
                 <span className="rounded-full bg-white/90 backdrop-blur px-2.5 py-1 text-[10px] sm:text-[11px] font-semibold text-foreground shadow-sm">
                   {product.badge}
                 </span>
@@ -98,12 +103,12 @@ export default function ProductCard({ product, index = 0 }) {
             {product.reviews != null && <span>({product.reviews})</span>}
           </div>
           <div className="mt-2 flex items-baseline gap-2 flex-wrap">
-            <span className="text-base font-semibold">{formatINR(product.price)}</span>
             {product.originalPrice > product.price && (
-              <span className="text-xs text-muted-foreground line-through">
+              <span className="text-xs text-muted-foreground line-through font-medium">
                 {formatINR(product.originalPrice)}
               </span>
             )}
+            <span className="text-base font-bold text-foreground">{formatINR(product.price)}</span>
           </div>
         </div>
       </Link>

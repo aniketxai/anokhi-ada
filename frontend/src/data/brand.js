@@ -8,9 +8,9 @@ export const BRAND = {
   city: 'Patna, Bihar',
   whatsapp: '+91 9942085352',
   whatsappRaw: '919942085352',
-  supportTime: '10 AM – 6 PM, Monday to Saturday',
+  supportTime: '10:00 AM – 6:00 PM (Monday to Saturday)',
   shippingPartner: 'Shadowfax 360',
-  freeShippingThreshold: 399,
+  freeShippingThreshold: 499,
   flatShipping: 80,
   social: {
     instagram: 'https://www.instagram.com/anokhiada_01/',
