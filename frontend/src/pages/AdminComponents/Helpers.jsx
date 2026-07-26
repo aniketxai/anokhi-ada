@@ -1,26 +1,26 @@
 const statusStyles = {
-  pending: 'bg-amber-100 text-amber-900 border-amber-300',
-  paid: 'bg-emerald-100 text-emerald-900 border-emerald-300',
-  processing: 'bg-sky-100 text-sky-900 border-sky-300',
-  shipped: 'bg-violet-100 text-violet-900 border-violet-300',
-  delivered: 'bg-teal-100 text-teal-900 border-teal-300',
-  new: 'bg-sky-100 text-sky-900 border-sky-300',
-  read: 'bg-amber-100 text-amber-900 border-amber-300',
-  'in-review': 'bg-amber-100 text-amber-900 border-amber-300',
-  quoted: 'bg-purple-100 text-purple-900 border-purple-300',
-  accepted: 'bg-emerald-100 text-emerald-900 border-emerald-300',
-  completed: 'bg-teal-100 text-teal-900 border-teal-300',
-  rejected: 'bg-rose-100 text-rose-900 border-rose-300',
-  failed: 'bg-red-100 text-red-900 border-red-300 font-bold',
-  cancelled: 'bg-gray-100 text-gray-800 border-gray-300',
-  replied: 'bg-emerald-100 text-emerald-900 border-emerald-300',
+  pending: 'bg-amber-500/20 text-amber-900 dark:text-amber-200 border-amber-500/40 font-bold',
+  paid: 'bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 border-emerald-500/40 font-bold',
+  processing: 'bg-sky-500/20 text-sky-900 dark:text-sky-200 border-sky-500/40 font-bold',
+  shipped: 'bg-violet-500/20 text-violet-900 dark:text-violet-200 border-violet-500/40 font-bold',
+  delivered: 'bg-teal-500/20 text-teal-900 dark:text-teal-200 border-teal-500/40 font-bold',
+  new: 'bg-sky-500/20 text-sky-900 dark:text-sky-200 border-sky-500/40 font-bold',
+  read: 'bg-amber-500/20 text-amber-900 dark:text-amber-200 border-amber-500/40 font-bold',
+  'in-review': 'bg-amber-500/20 text-amber-900 dark:text-amber-200 border-amber-500/40 font-bold',
+  quoted: 'bg-purple-500/20 text-purple-900 dark:text-purple-200 border-purple-500/40 font-bold',
+  accepted: 'bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 border-emerald-500/40 font-bold',
+  completed: 'bg-teal-500/20 text-teal-900 dark:text-teal-200 border-teal-500/40 font-bold',
+  rejected: 'bg-rose-500/20 text-rose-900 dark:text-rose-200 border-rose-500/40 font-bold',
+  failed: 'bg-red-500/20 text-red-900 dark:text-red-200 border-red-500/40 font-bold',
+  cancelled: 'bg-gray-500/20 text-gray-900 dark:text-gray-200 border-gray-500/40 font-bold',
+  replied: 'bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 border-emerald-500/40 font-bold',
 };
 
 export function StatusPill({ status }) {
-  const className = statusStyles[status] || 'bg-accent text-accent-foreground border-border';
+  const className = statusStyles[status] || 'bg-accent text-accent-foreground border-border font-bold';
   const label = status === 'read' ? 'in review' : (status || '').replace('-', ' ');
   return (
-    <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold capitalize ${className}`}>
+    <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-bold capitalize ${className}`}>
       {label}
     </span>
   );
@@ -32,7 +32,7 @@ export function SectionCard({ title, description, action, children, className = 
       <div className="flex items-start justify-between gap-3 mb-5">
         <div>
           <h2 className="text-lg sm:text-xl font-bold text-foreground">{title}</h2>
-          {description && <p className="mt-1 text-sm text-secondary-text">{description}</p>}
+          {description && <p className="mt-1 text-sm font-medium text-foreground/80 dark:text-gray-300">{description}</p>}
         </div>
         {action}
       </div>

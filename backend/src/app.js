@@ -21,7 +21,7 @@ const app = express();
 
 const allowedOrigins = [
   ...(process.env.CORS_ORIGIN?.split(',').map((s) => s.trim()).filter(Boolean) || []),
-  ...(process.env.NODE_ENV === 'production' ? ['https://anokhiada.vercel.app', 'https://anokhi-ada.vercel.app'] : ['*']),
+  ...(process.env.NODE_ENV === 'production' ? ['https://anokhiada.vercel.app', 'https://anokhi-ada.vercel.app', 'https://www.anokhiada.co.in'] : ['*']),
 ];
 
 function isAllowedOrigin(origin) {
