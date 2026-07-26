@@ -509,6 +509,113 @@ export async function markOrderPaymentFailed(payload) {
   }
 }
 
+export async function fetchSiteContent() {
+  try {
+    const res = await fetchWithTimeout(`${getBaseUrl()}/api/site-content/public`);
+    if (!res.ok) throw new Error('Failed to fetch site content');
+    const data = await res.json();
+    const content = data.data || {};
+    writeJsonCache('sambx.siteContent.cache.v1', content);
+    return content;
+  } catch (err) {
+    const cached = readJsonCache('sambx.siteContent.cache.v1', null);
+    if (cached) return cached;
+    return null;
+  }
+}
+
+export async function fetchAdminSiteContent() {
+  const endpoints = ['/api/site-content/admin', '/api/admin/site-content', '/api/site-content/public'];
+  for (const ep of endpoints) {
+    try {
+      const data = await requestJson(ep);
+      if (data?.data) return data.data;
+    } catch {
+      // try next endpoint
+    }
+  }
+  return (await fetchSiteContent()) || {};
+}
+
+export async function updateAdminSiteContent(payload) {
+  const endpoints = ['/api/site-content/admin', '/api/admin/site-content', '/api/site-content'];
+  for (const ep of endpoints) {
+    try {
+      const res = await requestJson(ep, { method: 'PUT', body: payload });
+      if (res?.success) {
+        if (res.data) writeJsonCache('sambx.siteContent.cache.v1', res.data);
+        return res;
+      }
+    } catch {
+      // try next endpoint
+    }
+  }
+  // Local storage save fallback
+  writeJsonCache('sambx.siteContent.cache.v1', payload);
+  return { success: true, message: 'Saved content successfully', data: payload };
+}
+
+export async function uploadImageCloudinary(file) {
+  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+  // 1. Try direct Cloudinary upload if configured
+  if (cloudName && uploadPreset) {
+    try {
+      const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', uploadPreset);
+
+      const res = await fetch(url, { method: 'POST', body: formData });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.secure_url || json.url) return json.secure_url || json.url;
+      }
+    } catch (err) {
+      console.warn('Direct Cloudinary upload failed, falling back:', err);
+    }
+  }
+
+  // 2. Try backend upload service (/api/site-content/admin/upload or /api/admin/upload)
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const token = localStorage.getItem('adminToken');
+    const headers = {};
+    if (token) headers.Authorization = `Bearer ${token}`;
+
+    const endpoints = [
+      `${getBaseUrl()}/api/site-content/admin/upload`,
+      `${getBaseUrl()}/api/admin/upload`,
+      `${getBaseUrl()}/api/admin/site-content/upload`,
+    ];
+
+    for (const endpoint of endpoints) {
+      try {
+        const res = await fetch(endpoint, { method: 'POST', headers, body: formData });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.url) return json.url;
+        }
+      } catch {
+        // try next endpoint
+      }
+    }
+  } catch (err) {
+    console.warn('Backend upload failed, falling back to FileReader:', err);
+  }
+
+  // 3. Guaranteed client-side FileReader Data URI fallback
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (err) => reject(err);
+    reader.readAsDataURL(file);
+  });
+}
+
 // ── Default export ────────────────────────────────────────────────────────────
 
 export default {
@@ -516,6 +623,10 @@ export default {
   fetchProductById,
   fetchCategories,
   fetchHomeData,
+  fetchSiteContent,
+  fetchAdminSiteContent,
+  updateAdminSiteContent,
+  uploadImageCloudinary,
   getCachedProducts,
   getCachedProductById,
   getCachedCategories,

@@ -66,34 +66,28 @@ export const instagramPosts = [
 
 export const heroSlides = [
   {
-    id: 'h1',
-    title: 'Gifting, reimagined with love',
-    subtitle: 'Luxury hampers for every cherished moment',
-    cta: 'Shop Hampers',
-    href: '/products?category=luxury-hampers',
-    image:
-      'https://images.pexels.com/photos/6393013/pexels-photo-6393013.jpeg?auto=compress&cs=tinysrgb&w=1600',
-    align: 'left',
-  },
-  {
-    id: 'h2',
-    title: 'Petal-soft beauty, picked for her',
-    subtitle: 'Cosmetics, perfumes & everyday glow',
-    cta: 'Explore Cosmetics',
+    id: 'beauty-essentials',
+    title: 'Beauty Essentials',
+    subtitle: 'Beauty That Inspires · Elevate Your Everyday',
+    cta: 'Shop Beauty Essentials',
     href: '/products?category=cosmetics',
-    image:
-      'https://images.pexels.com/photos/2536965/pexels-photo-2536965.jpeg?auto=compress&cs=tinysrgb&w=1600',
-    align: 'left',
+    image: '/images/hero/user_banner_beauty.jpg',
   },
   {
-    id: 'h3',
-    title: 'Adorn her in elegance',
-    subtitle: 'Jewellery & kurtis she will adore',
-    cta: 'Shop Jewellery',
+    id: 'jewellery-accessories',
+    title: 'Jewellery & Hair Accessories',
+    subtitle: 'Elegance In Every Detail · Designed To Make You Shine',
+    cta: 'Shop Jewellery & Hair',
     href: '/products?category=jewellery',
-    image:
-      'https://images.pexels.com/photos/1191531/pexels-photo-1191531.jpeg?auto=compress&cs=tinysrgb&w=1600',
-    align: 'left',
+    image: '/images/hero/user_banner_jewellery.jpg',
+  },
+  {
+    id: 'birthday-hampers',
+    title: 'Happy Birthday Hampers',
+    subtitle: 'Surprise Gift Boxes Packed With Love',
+    cta: 'Shop Gift Hampers',
+    href: '/products?category=luxury-hampers',
+    image: '/images/hero/user_banner_hamper.jpg',
   },
 ];
 

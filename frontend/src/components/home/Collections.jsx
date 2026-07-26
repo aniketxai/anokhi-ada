@@ -2,9 +2,11 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FiArrowRight } from 'react-icons/fi';
 import SectionHeader from '../common/SectionHeader';
-import { collections } from '../../data/categories';
+import { collections as fallbackCollections } from '../../data/categories';
 
-export default function Collections() {
+export default function Collections({ items }) {
+  const activeCollections = Array.isArray(items) && items.length > 0 ? items : fallbackCollections;
+
   return (
     <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
       <SectionHeader
@@ -14,7 +16,7 @@ export default function Collections() {
         viewAllHref="/products"
       />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 lg:gap-6">
-        {collections.map((c, i) => (
+        {activeCollections.map((c, i) => (
           <motion.div
             key={c.id}
             initial={{ opacity: 0, y: 20 }}

@@ -13,6 +13,7 @@ import customOrderRoutes from './routes/customOrderRoutes.js';
 import payLinksRouter from './routes/payLinks.js';
 import adminRoutes from './routes/adminRoutes.js';
 import importRoutes from './routes/importRoutes.js';
+import homeContentRoutes from './routes/homeContentRoutes.js';
 import { notFound } from './middleware/notFound.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
 
@@ -106,6 +107,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/custom-orders', customOrderRoutes);
 app.use('/api/admin', importRoutes);
 app.use('/api/pay-links', payLinksRouter);
+app.use('/api/site-content', homeContentRoutes);
 
 /* =========================
    ERROR HANDLERS

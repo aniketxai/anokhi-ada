@@ -4,8 +4,9 @@ import SectionHeader from '../common/SectionHeader';
 import { instagramPosts } from '../../data/content';
 import { BRAND } from '../../data/brand';
 
-export default function InstagramGallery() {
-  if (!instagramPosts?.length) return null;
+export default function InstagramGallery({ posts }) {
+  const activePosts = Array.isArray(posts) && posts.length > 0 ? posts : instagramPosts;
+  if (!activePosts?.length) return null;
   return (
     <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
       <SectionHeader
@@ -15,7 +16,7 @@ export default function InstagramGallery() {
         viewAllHref={BRAND.social.instagram || '#'}
       />
       <div className="grid grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3 lg:gap-4">
-        {instagramPosts.map((post, i) => (
+        {activePosts.map((post, i) => (
           <motion.a
             key={post.id}
             href={BRAND.social.instagram || '#'}

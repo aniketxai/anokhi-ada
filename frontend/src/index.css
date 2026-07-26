@@ -161,3 +161,41 @@
     scrollbar-width: none;
   }
 }
+
+/* Custom Swiper styles for Hero Slider */
+.swiper,
+.swiper-slide,
+.swiper-wrapper {
+  background-color: #FDF8F3 !important;
+}
+
+.swiper-pagination {
+  bottom: 12px !important;
+  z-index: 25 !important;
+}
+
+.swiper-pagination-bullet {
+  background-color: #f43f5e !important;
+  opacity: 0.35 !important;
+  width: 8px !important;
+  height: 8px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.swiper-pagination-bullet-active {
+  background-color: #e11d48 !important;
+  width: 24px !important;
+  border-radius: 9999px !important;
+  opacity: 1 !important;
+  box-shadow: 0 2px 8px rgba(225, 29, 72, 0.4) !important;
+}
+
+.swiper-fade .swiper-slide {
+  pointer-events: none;
+  transition-property: opacity !important;
+}
+
+.swiper-fade .swiper-slide-active {
+  pointer-events: auto;
+}
+

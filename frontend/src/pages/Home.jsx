@@ -16,6 +16,7 @@ import { hotSelling, customPackaging, somethingForHer, somethingForHim } from '.
 export default function Home() {
   const [products, setProducts] = useState(() => api.getCachedProducts());
   const [loading, setLoading] = useState(() => api.getCachedProducts().length === 0);
+  const [siteContent, setSiteContent] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -24,9 +25,38 @@ export default function Home() {
     }).finally(() => {
       if (active) setLoading(false);
     });
+
+    api.fetchSiteContent().then((content) => {
+      if (active && content) setSiteContent(content);
+    });
+
     return () => { active = false; };
   }, []);
 
+  const getSubcollectionStrip = (key, fallbackItems, defaultEyebrow, defaultTitle, defaultSubtitle, defaultLink) => {
+    const found = siteContent?.subcollectionStrips?.find((s) => s.key === key);
+    if (found) {
+      return {
+        eyebrow: found.eyebrow || defaultEyebrow,
+        title: found.title || defaultTitle,
+        subtitle: found.subtitle || defaultSubtitle,
+        items: found.items?.length ? found.items : fallbackItems,
+        viewAllHref: found.viewAllHref || defaultLink,
+      };
+    }
+    return {
+      eyebrow: defaultEyebrow,
+      title: defaultTitle,
+      subtitle: defaultSubtitle,
+      items: fallbackItems,
+      viewAllHref: defaultLink,
+    };
+  };
+
+  const hotSellingStrip = getSubcollectionStrip('hotSelling', hotSelling, 'Trending now', 'Hot Selling', 'Our most-loved picks, chosen by our customers.', '/products');
+  const customPackagingStrip = getSubcollectionStrip('customPackaging', customPackaging, 'Make it yours', 'Custom Packaging', 'Themed boxes & wraps for every celebration.', '/products?category=custom-packaging');
+  const forHerStrip = getSubcollectionStrip('forHer', somethingForHer, 'Curated for her', 'Something For Her', 'Thoughtful gifts, hampers & more.', '/products?category=luxury-hampers');
+  const forHimStrip = getSubcollectionStrip('forHim', somethingForHim, 'Curated for him', 'Something For Him', 'Thoughtful gifts, hampers & more.', '/products?category=curated-for-him');
   const getTags = (p) => p.tags || [];
   const newArrivals = products.filter((p) => getTags(p).includes('new'));
   const bestSellers = products.filter((p) => getTags(p).includes('bestseller') || p.badge === 'Best Seller');
@@ -34,16 +64,16 @@ export default function Home() {
 
   return (
     <>
-      <Hero />
+      <Hero slides={siteContent?.heroSlides} />
       <FeatureSection />
-      <Collections />
+      <Collections items={siteContent?.collections} />
 
       <SubcollectionStrip
-        eyebrow="Trending now"
-        title="Hot Selling"
-        subtitle="Our most-loved picks, chosen by our customers."
-        items={hotSelling}
-        viewAllHref="/products"
+        eyebrow={hotSellingStrip.eyebrow}
+        title={hotSellingStrip.title}
+        subtitle={hotSellingStrip.subtitle}
+        items={hotSellingStrip.items}
+        viewAllHref={hotSellingStrip.viewAllHref}
       />
 
       <ProductSection
@@ -57,11 +87,11 @@ export default function Home() {
       <FeaturedCategories />
 
       <SubcollectionStrip
-        eyebrow="Make it yours"
-        title="Custom Packaging"
-        subtitle="Themed boxes & wraps for every celebration."
-        items={customPackaging}
-        viewAllHref="/products?category=custom-packaging"
+        eyebrow={customPackagingStrip.eyebrow}
+        title={customPackagingStrip.title}
+        subtitle={customPackagingStrip.subtitle}
+        items={customPackagingStrip.items}
+        viewAllHref={customPackagingStrip.viewAllHref}
       />
 
       {newArrivals.length > 0 && (
@@ -75,19 +105,19 @@ export default function Home() {
       )}
 
       <SubcollectionStrip
-        eyebrow="Curated for her"
-        title="Something For Her"
-        subtitle="Thoughtful gifts, hampers & more."
-        items={somethingForHer}
-        viewAllHref="/products?category=luxury-hampers"
+        eyebrow={forHerStrip.eyebrow}
+        title={forHerStrip.title}
+        subtitle={forHerStrip.subtitle}
+        items={forHerStrip.items}
+        viewAllHref={forHerStrip.viewAllHref}
       />
 
       <SubcollectionStrip
-        eyebrow="Curated for him"
-        title="Something For Him"
-        subtitle="Thoughtful gifts, hampers & more."
-        items={somethingForHim}
-        viewAllHref="/products?category=curated-for-him"
+        eyebrow={forHimStrip.eyebrow}
+        title={forHimStrip.title}
+        subtitle={forHimStrip.subtitle}
+        items={forHimStrip.items}
+        viewAllHref={forHimStrip.viewAllHref}
       />
 
       {bestSellers.length > 0 && (
@@ -100,9 +130,9 @@ export default function Home() {
         />
       )}
 
-      <AboutBrand />
+      <AboutBrand aboutData={siteContent?.aboutSection} />
       <Reviews />
-      <InstagramGallery />
+      <InstagramGallery posts={siteContent?.instagramPosts} />
       <Newsletter />
       {!loading && products.length === 0 && (
         <p className="text-center text-sm text-muted-foreground py-10">

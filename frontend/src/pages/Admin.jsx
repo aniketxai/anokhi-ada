@@ -18,6 +18,7 @@ import {
   Download,
   AlertTriangle,
   Eye,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { categories, ADMIN_CATEGORIES } from '../data/categories';
 import { formatINR } from '../utils/currency';
@@ -35,11 +36,13 @@ import {
   OrdersSection,
   EnquiriesSection,
   CustomOrdersSection,
+  SiteContentSection,
   formatPaymentValue,
 } from './AdminComponents';
 
 const navItems = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+  { id: 'site-content', label: 'Homepage & Banners', icon: ImageIcon },
   { id: 'catalog', label: 'Catalog', icon: Boxes },
   { id: 'orders', label: 'Orders', icon: ShoppingCart },
   { id: 'custom-orders', label: 'Custom Orders', icon: FileUp },
@@ -147,6 +150,8 @@ export default function Admin() {
   const [adminCustomOrders, setAdminCustomOrders] = useState([]);
   const [adminQuotes, setAdminQuotes] = useState([]);
   const [adminContacts, setAdminContacts] = useState([]);
+  const [adminSiteContent, setAdminSiteContent] = useState(null);
+  const [savingSiteContent, setSavingSiteContent] = useState(false);
   const [activity, setActivity] = useState([]);
 
   // Check authentication on mount
@@ -165,13 +170,14 @@ const loadAdminData = useCallback(async ({ showLoading = true } = {}) => {
     try {
       setError(null);
 
-      const [summaryResult, productsResult, ordersResult, customOrdersResult, quotesResult, contactsResult] = await Promise.allSettled([
+      const [summaryResult, productsResult, ordersResult, customOrdersResult, quotesResult, contactsResult, siteContentResult] = await Promise.allSettled([
         api.fetchAdminSummary(),
         api.fetchAdminProducts(),
         api.fetchAdminOrders(),
         api.fetchAdminCustomOrders(),
         api.fetchAdminQuotes(),
         api.fetchAdminContacts(),
+        api.fetchAdminSiteContent(),
       ]);
 
       if (cancelled) return;
@@ -182,6 +188,7 @@ const loadAdminData = useCallback(async ({ showLoading = true } = {}) => {
       const customOrdersData = customOrdersResult.status === 'fulfilled' ? customOrdersResult.value : [];
       const quotesData = quotesResult.status === 'fulfilled' ? quotesResult.value : [];
       const contactsData = contactsResult.status === 'fulfilled' ? contactsResult.value : [];
+      const siteContentData = siteContentResult.status === 'fulfilled' ? siteContentResult.value : null;
 
       setSummary(summaryData);
       setAdminProducts(productsData);
@@ -189,6 +196,7 @@ const loadAdminData = useCallback(async ({ showLoading = true } = {}) => {
       setAdminCustomOrders(customOrdersData);
       setAdminQuotes(quotesData);
       setAdminContacts(contactsData);
+      setAdminSiteContent(siteContentData);
       
       
 
@@ -483,6 +491,22 @@ const loadAdminData = useCallback(async ({ showLoading = true } = {}) => {
       setError(err.message || 'Failed to delete product');
     }
   }, [editingProductId, refreshData, resetProductForm]);
+
+  const handleSaveSiteContent = useCallback(async (updatedContent) => {
+    setSavingSiteContent(true);
+    try {
+      setError(null);
+      const res = await api.updateAdminSiteContent(updatedContent);
+      setAdminSiteContent(res.data);
+      setSuccessMessage('Homepage content updated successfully!');
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err) {
+      console.error('Failed to save site content:', err);
+      setError(err.message || 'Failed to save site content');
+    } finally {
+      setSavingSiteContent(false);
+    }
+  }, []);
 
   const handleOrderStatusSave = useCallback(async (orderId, status) => {
     if (!orderId || !status) return;
@@ -874,6 +898,15 @@ if (!isAuthenticated) {
               enquiryFilter={enquiryFilter}
               setEnquiryFilter={setEnquiryFilter}
               handleRespondToEnquiry={handleRespondToEnquiry}
+            />
+          )}
+
+          {/* SITE CONTENT SECTION */}
+          {activeSection === 'site-content' && (
+            <SiteContentSection
+              siteContent={adminSiteContent}
+              onSaveSiteContent={handleSaveSiteContent}
+              saving={savingSiteContent}
             />
           )}
 

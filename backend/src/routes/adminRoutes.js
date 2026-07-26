@@ -18,6 +18,8 @@ import {
   updateCustomOrderStatus,
   replyToCustomOrder,
 } from '../controllers/adminController.js';
+import { getAdminHomeContent, updateAdminHomeContent } from '../controllers/homeContentController.js';
+import { uploadMiddleware, uploadImageToCloudinary } from '../controllers/uploadController.js';
 
 const router = Router();
 
@@ -42,6 +44,10 @@ router.patch('/quotes/:id/status', updateQuoteStatus);
 router.get('/contacts', listAdminContacts);
 router.patch('/contacts/:id/status', updateContactStatus);
 router.post('/contacts/:id/reply', replyToContact);
-router.post('/quotes/:id/reply', replyToQuote);
+
+router.get('/site-content', getAdminHomeContent);
+router.put('/site-content', updateAdminHomeContent);
+router.post('/upload', uploadMiddleware, uploadImageToCloudinary);
+router.post('/site-content/upload', uploadMiddleware, uploadImageToCloudinary);
 
 export default router;

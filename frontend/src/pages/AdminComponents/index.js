@@ -6,3 +6,5 @@ export { OverviewSection } from './OverviewSection';
 export { CatalogSection } from './CatalogSection';
 export { OrdersSection, EnquiriesSection } from './OrdersAndEnquiriesSection';
 export { CustomOrdersSection } from './CustomOrdersSection';
+export { SiteContentSection } from './SiteContentSection';
+

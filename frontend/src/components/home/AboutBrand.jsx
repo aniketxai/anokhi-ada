@@ -3,10 +3,18 @@ import { motion } from 'framer-motion';
 import { FiArrowRight, FiMapPin } from 'react-icons/fi';
 import { BRAND } from '../../data/brand';
 
-export default function AboutBrand() {
+export default function AboutBrand({ aboutData }) {
+  const heading = aboutData?.heading || "We don't just deliver gifts — we deliver moments.";
+  const story = aboutData?.story || `At ${BRAND.name}, every hamper, every wrap, every little detail is chosen with love. Founded in ${BRAND.foundedYear} by ${BRAND.founder}, we've delivered ${BRAND.ordersDelivered} orders to customers across India. Our mission is simple: make gifting feel personal again.`;
+  const image = aboutData?.image || "https://images.pexels.com/photos/6393013/pexels-photo-6393013.jpeg?auto=compress&cs=tinysrgb&w=900";
+  const promise = aboutData?.promise || "Gifting, reimagined with love.";
+  const foundedYear = aboutData?.foundedYear || BRAND.foundedYear;
+  const ordersDelivered = aboutData?.ordersDelivered || BRAND.ordersDelivered;
+  const city = aboutData?.city || BRAND.city;
+
   const stats = [
-    { value: String(BRAND.foundedYear), label: 'Founded' },
-    { value: BRAND.ordersDelivered, label: 'Orders delivered' },
+    { value: String(foundedYear), label: 'Founded' },
+    { value: ordersDelivered, label: 'Orders delivered' },
     { value: 'Pan-India', label: 'Shipping' },
   ];
   return (
@@ -21,7 +29,7 @@ export default function AboutBrand() {
         >
           <div className="relative aspect-[4/5] rounded-3xl overflow-hidden bg-muted">
             <img
-              src="https://images.pexels.com/photos/6393013/pexels-photo-6393013.jpeg?auto=compress&cs=tinysrgb&w=900"
+              src={image}
               alt={BRAND.name}
               className="h-full w-full object-cover"
             />
@@ -29,7 +37,7 @@ export default function AboutBrand() {
           <div className="absolute -bottom-5 -right-2 sm:right-6 glass rounded-2xl p-4 premium-shadow-lg max-w-[200px]">
             <p className="font-serif text-lg text-primary">Our promise</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              &ldquo;Gifting, reimagined with love.&rdquo;
+              &ldquo;{promise}&rdquo;
             </p>
           </div>
         </motion.div>
@@ -44,13 +52,10 @@ export default function AboutBrand() {
             Our Story
           </p>
           <h2 className="font-serif text-3xl sm:text-4xl text-balance">
-            We don&apos;t just deliver gifts — we deliver moments.
+            {heading}
           </h2>
           <p className="mt-4 text-muted-foreground leading-relaxed">
-            At {BRAND.name}, every hamper, every wrap, every little detail is chosen with
-            love. Founded in {BRAND.foundedYear} by {BRAND.founder}, we&apos;ve delivered{' '}
-            {BRAND.ordersDelivered} orders to customers across India. Our mission is
-            simple: make gifting feel personal again.
+            {story}
           </p>
 
           <div className="mt-7 grid grid-cols-3 gap-4">
@@ -62,10 +67,10 @@ export default function AboutBrand() {
             ))}
           </div>
 
-          {BRAND.city && (
+          {city && (
             <div className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
               <FiMapPin className="h-4 w-4 text-primary" />
-              Based in {BRAND.city}
+              Based in {city}
             </div>
           )}
 
@@ -80,3 +85,4 @@ export default function AboutBrand() {
     </section>
   );
 }
+
