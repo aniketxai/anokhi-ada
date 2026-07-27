@@ -30,6 +30,7 @@ const createRazorpayOrder = asyncHandler(async (req, res) => {
     notes = '',
     paymentMethod = 'razorpay',
     isCodAdvance = false,
+    packingMaterial = 'Polybag',
   } = req.body;
 
   if (!Array.isArray(items) || items.length === 0) {
@@ -108,6 +109,7 @@ const createRazorpayOrder = asyncHandler(async (req, res) => {
     codCharge: 0,
     total,
     status: 'pending',
+    packingMaterial: ['Polybag', 'Corrugated Box', 'Tape'].includes(packingMaterial) ? packingMaterial : 'Polybag',
     notes: [
       notes,
       isCodOrder ? `COD Order: ₹${payableNow} advance paid online, ₹${remainingCodAmount} balance payable on delivery.` : '',
@@ -311,6 +313,7 @@ const createOrder = asyncHandler(async (req, res) => {
     shipping,
     payment = {},
     notes = '',
+    packingMaterial = 'Polybag',
   } = req.body;
 
   if (!Array.isArray(items) || items.length === 0) {
@@ -397,6 +400,7 @@ const createOrder = asyncHandler(async (req, res) => {
     codCharge,
     total,
     status: 'pending',
+    packingMaterial: ['Polybag', 'Corrugated Box', 'Tape'].includes(packingMaterial) ? packingMaterial : 'Polybag',
     notes: String(notes ?? '').trim(),
   });
 

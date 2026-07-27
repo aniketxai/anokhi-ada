@@ -14,10 +14,20 @@ import payLinksRouter from './routes/payLinks.js';
 import adminRoutes from './routes/adminRoutes.js';
 import importRoutes from './routes/importRoutes.js';
 import homeContentRoutes from './routes/homeContentRoutes.js';
+import trackingRoutes from './routes/trackingRoutes.js';
+import customerAuthRoutes from './routes/customerAuthRoutes.js';
 import { notFound } from './middleware/notFound.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
 
 const app = express();
+
+// Disable ETag generation globally. Express enables weak ETags by default,
+// which makes fetch() send conditional "If-None-Match" requests. If a proxy/CDN
+// in front of the API (or the browser's HTTP cache) ever short-circuits that
+// conditional request, admin edits (home content, banners, products) can appear
+// "stuck" on the old value until a hard refresh. Turning this off, plus the
+// explicit Cache-Control headers below, guarantees every request always hits real data.
+app.disable('etag');
 
 const allowedOrigins = [
   ...(process.env.CORS_ORIGIN?.split(',').map((s) => s.trim()).filter(Boolean) || []),
@@ -77,6 +87,16 @@ app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
+// Prevent any browser/proxy/CDN from caching API responses. Without this,
+// content saved in the admin panel (home page sections, banners, products)
+// can keep showing old data on the live site until a hard refresh.
+app.use('/api', (req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  next();
+});
+
 /* =========================
    HEALTH ROUTES
 ========================= */
@@ -108,6 +128,8 @@ app.use('/api/custom-orders', customOrderRoutes);
 app.use('/api/admin', importRoutes);
 app.use('/api/pay-links', payLinksRouter);
 app.use('/api/site-content', homeContentRoutes);
+app.use('/api/tracking', trackingRoutes);
+app.use('/api/customer-auth', customerAuthRoutes);
 
 /* =========================
    ERROR HANDLERS

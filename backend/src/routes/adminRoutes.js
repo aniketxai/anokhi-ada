@@ -20,6 +20,15 @@ import {
 } from '../controllers/adminController.js';
 import { getAdminHomeContent, updateAdminHomeContent } from '../controllers/homeContentController.js';
 import { uploadMiddleware, uploadImageToCloudinary } from '../controllers/uploadController.js';
+import {
+  adminSaveShipment,
+  adminCreateShipment,
+  adminSyncShipment,
+  adminCancelShipment,
+  adminGetShipment,
+} from '../controllers/shipmentController.js';
+import { adminListUsers, adminUpdateUserStatus } from '../controllers/customerAuthController.js';
+import { verifyAdminToken } from '../controllers/authController.js';
 
 const router = Router();
 
@@ -44,6 +53,17 @@ router.patch('/quotes/:id/status', updateQuoteStatus);
 router.get('/contacts', listAdminContacts);
 router.patch('/contacts/:id/status', updateContactStatus);
 router.post('/contacts/:id/reply', replyToContact);
+
+// Shipment / Tracking routes (Manual Admin Control)
+router.post('/shipments/:orderId/save', verifyAdminToken, adminSaveShipment);
+router.post('/shipments/:orderId', verifyAdminToken, adminSaveShipment);
+router.post('/shipments/:orderId/sync', verifyAdminToken, adminSyncShipment);
+router.post('/shipments/:orderId/cancel', verifyAdminToken, adminCancelShipment);
+router.get('/shipments/:orderId', verifyAdminToken, adminGetShipment);
+
+// Registered Customers routes
+router.get('/users', verifyAdminToken, adminListUsers);
+router.patch('/users/:id/status', verifyAdminToken, adminUpdateUserStatus);
 
 router.get('/site-content', getAdminHomeContent);
 router.put('/site-content', updateAdminHomeContent);

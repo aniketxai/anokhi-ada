@@ -58,6 +58,14 @@ const orderSchema = new mongoose.Schema(
     total: { type: Number, required: true },
     status: { type: String, enum: ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled'], default: 'pending' },
     notes: { type: String, default: '' },
+    packingMaterial: { type: String, enum: ['Polybag', 'Corrugated Box', 'Tape'], default: 'Polybag' },
+    shipment: {
+      waybill: { type: String, default: '' },
+      referenceNumber: { type: String, default: '' },
+      status: { type: String, default: '' },
+      labelUrl: { type: String, default: '' },
+      lastSyncedAt: { type: Date },
+    },
   },
   { timestamps: true }
 );

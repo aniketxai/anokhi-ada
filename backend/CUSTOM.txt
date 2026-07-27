@@ -1,0 +1,12 @@
+https://sambx-5vc4.vercel.app/api/pay-links
+
+Header
+x-admin-token 
+
+
+JSON
+{
+  "amount": 499,
+  "note": "Complete Your Payment",
+  "ttlHours": 36
+}
