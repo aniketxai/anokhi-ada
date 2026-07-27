@@ -51,7 +51,27 @@ export default function Products() {
     }
 
     if (activeCategory !== 'All') {
-      result = result.filter(p => p.category === activeCategory);
+      const target = activeCategory.toLowerCase().replace(/[-_]/g, ' ');
+      result = result.filter(p => {
+        const cat = (p.category || '').toLowerCase();
+        const sub = (p.subCategory || '').toLowerCase();
+        const name = (p.name || '').toLowerCase();
+
+        if (activeCategory === 'packing-material' || target === 'packing material') {
+          return cat === 'packing material';
+        }
+        if (activeCategory === 'polybag' || target === 'polybag') {
+          return sub === 'polybag' || name.includes('polybag');
+        }
+        if (activeCategory === 'corrugated-box' || target === 'corrugated box') {
+          return sub === 'corrugated box' || name.includes('corrugated');
+        }
+        if (activeCategory === 'tape' || target === 'tape') {
+          return sub === 'tape' || name.includes('tape');
+        }
+
+        return cat === target || cat.includes(target) || sub === target || sub.includes(target);
+      });
     }
 
     switch (sort) {

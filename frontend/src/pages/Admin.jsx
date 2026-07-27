@@ -37,6 +37,7 @@ import {
   EnquiriesSection,
   CustomOrdersSection,
   SiteContentSection,
+  CustomersSection,
   formatPaymentValue,
 } from './AdminComponents';
 
@@ -46,6 +47,7 @@ const navItems = [
   { id: 'catalog', label: 'Catalog', icon: Boxes },
   { id: 'orders', label: 'Orders', icon: ShoppingCart },
   { id: 'custom-orders', label: 'Custom Orders', icon: FileUp },
+  { id: 'customers', label: 'Customers', icon: ShieldCheck },
   { id: 'enquiries', label: 'Enquiries', icon: MessageSquareText },
   { id: 'analytics', label: 'Analytics', icon: LineChart },
   { id: 'settings', label: 'Settings', icon: Settings2 },
@@ -979,6 +981,9 @@ if (!isAuthenticated) {
               sendingReply={sendingCustomOrderReply}
             />
           )}
+
+          {/* CUSTOMERS SECTION */}
+          {activeSection === 'customers' && <CustomersSection />}
 
           {/* ENQUIRIES SECTION */}
           {activeSection === 'enquiries' && (

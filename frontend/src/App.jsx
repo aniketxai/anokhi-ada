@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import { AppProvider } from './context/AppContext.jsx';
+import { AuthProvider } from './context/AuthContext.jsx';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import BackToTop from './components/BackToTop';
@@ -23,6 +24,11 @@ import ShippingPolicy from './pages/ShippingPolicy';
 import TermsOfService from './pages/TermsOfService';
 import LegalNotice from './pages/LegalNotice';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import SignUp from './pages/SignUp';
+import Login from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
+import OrderTracking from './pages/OrderTracking';
+import Profile from './pages/Profile';
 
 function PublicLayout() {
   return (
@@ -64,6 +70,12 @@ function AppContent() {
             <Route path="/terms-and-conditions" element={<TermsOfService />} />
             <Route path="/legal-notice" element={<LegalNotice />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/track-order" element={<OrderTracking />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/account" element={<Profile />} />
             <Route path="/pay/upi" element={<Navigate to="/checkout" replace />} />
             <Route path="/pay/link/:token" element={<PayLinkPayment />} />
           </Route>
@@ -79,7 +91,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <AppProvider>
-        <AppContent />
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
       </AppProvider>
     </BrowserRouter>
   );

@@ -2,6 +2,7 @@ import { X, Package, MapPin, CreditCard, Clock, AlertCircle, Copy, CheckCircle2,
 import { formatINR } from '../../utils/currency';
 import { useState } from 'react';
 import { cancelOrder } from '../../api/index.js';
+import { ShipmentPanel } from './ShipmentPanel';
 
 export function OrderDetailModal({ isOpen, order, onClose, onOrderUpdated, onPaymentVerificationSave }) {
   const [isCanceling, setIsCanceling] = useState(false);
@@ -22,7 +23,7 @@ export function OrderDetailModal({ isOpen, order, onClose, onOrderUpdated, onPay
 
   const handleExportOrder = () => {
     if (!order) return;
-    const { orderNumber, items, shipping, payment, subtotal, shippingFee, codCharge, total, status, notes, createdAt } = order;
+    const { orderNumber, items, shipping, payment, subtotal, shippingFee, codCharge, total, status, notes, packingMaterial, createdAt } = order;
     const orderData = {
       orderNumber,
       items,
@@ -33,6 +34,7 @@ export function OrderDetailModal({ isOpen, order, onClose, onOrderUpdated, onPay
       codCharge,
       total,
       status,
+      packingMaterial: packingMaterial || 'Polybag',
       notes,
       createdAt,
     };
@@ -67,6 +69,7 @@ export function OrderDetailModal({ isOpen, order, onClose, onOrderUpdated, onPay
     notes = '',
     createdAt,
     codCharge = 0,
+    packingMaterial = 'Polybag',
   } = order;
 
   const handleCancelOrder = async () => {
@@ -214,6 +217,14 @@ export function OrderDetailModal({ isOpen, order, onClose, onOrderUpdated, onPay
               <span className="text-foreground">{formatINR(codCharge)}</span>
             </div>
           )}
+          <div className="flex justify-between text-sm pt-1 border-t border-white/5">
+            <span className="text-secondary-text flex items-center gap-1.5">
+              📦 Packing Material
+            </span>
+            <span className="font-semibold text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full text-xs">
+              {packingMaterial}
+            </span>
+          </div>
           <div className="flex justify-between text-lg font-bold border-t border-white/10 pt-2 mt-2">
             <span className="text-foreground">Total</span>
             <span className="text-primary">{formatINR(total)}</span>
@@ -245,6 +256,8 @@ export function OrderDetailModal({ isOpen, order, onClose, onOrderUpdated, onPay
             )}
           </div>
         </div>
+
+        <ShipmentPanel order={order} />
 
         {/* Contact Information */}
         <div className="mb-6">

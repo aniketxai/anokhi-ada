@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, ShieldCheck, CreditCard, Banknote, Loader2 } from 'lucide-react';
+import { ArrowLeft, Check, ShieldCheck, CreditCard, Banknote, Loader2, Package, Box, Layers } from 'lucide-react';
 
 import { useApp } from '../context/useApp';
 import Button from '../components/Button';
@@ -39,6 +39,7 @@ export default function Checkout() {
   });
 
   const [paymentMethod, setPaymentMethod] = useState('razorpay');
+  const [packingMaterial, setPackingMaterial] = useState('Polybag');
 
   const baseShippingFee = cartTotal < 399 ? 80 : 0;
   const ceoDeliveryFee = isCeoDelivery ? 5000 : 0;
@@ -68,6 +69,7 @@ export default function Checkout() {
     discountAmount,
     paymentMethod: effectivePaymentMethod,
     isCodAdvance: effectivePaymentMethod === 'cod',
+    packingMaterial,
     subtotal: cartTotal,
     total: finalTotal,
   });
@@ -652,6 +654,63 @@ export default function Checkout() {
                 </div>
               </div>
 
+              {/* PACKING MATERIAL SECTION */}
+              <div className="mt-6 border-t border-surface-muted pt-6">
+                <h3 className="font-bold text-foreground text-sm mb-3 flex items-center gap-2">
+                  <Package className="w-4 h-4 text-primary" />
+                  Select Packing Material
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {[
+                    {
+                      id: 'Polybag',
+                      title: 'Polybag',
+                      desc: 'Waterproof & durable wrapper',
+                      icon: Package,
+                    },
+                    {
+                      id: 'Corrugated Box',
+                      title: 'Corrugated Box',
+                      desc: 'Extra protective heavy-duty box',
+                      icon: Box,
+                    },
+                    {
+                      id: 'Tape',
+                      title: 'Branded Tape',
+                      desc: 'Tamper-evident sealed tape',
+                      icon: Layers,
+                    },
+                  ].map((mat) => {
+                    const IconComp = mat.icon;
+                    const isSelected = packingMaterial === mat.id;
+                    return (
+                      <div
+                        key={mat.id}
+                        onClick={() => setPackingMaterial(mat.id)}
+                        className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all ${
+                          isSelected
+                            ? 'border-primary bg-primary/10 shadow-md shadow-primary/10'
+                            : 'border-surface-muted bg-background hover:border-white/20'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 mb-1.5">
+                          <input
+                            type="radio"
+                            name="packingMaterial"
+                            checked={isSelected}
+                            onChange={() => setPackingMaterial(mat.id)}
+                            className="accent-primary"
+                          />
+                          <IconComp className={`w-4 h-4 ${isSelected ? 'text-primary' : 'text-secondary-text'}`} />
+                          <span className="text-sm font-semibold text-foreground">{mat.title}</span>
+                        </div>
+                        <p className="text-[11px] text-secondary-text pl-6 leading-tight">{mat.desc}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
               {/* VIP Delivery Option */}
               <CeoDeliveryOption className="mt-6" />
 
@@ -871,6 +930,15 @@ export default function Checkout() {
                     </span>
                   </div>
                 )}
+
+                <div className="flex justify-between text-sm py-1 border-t border-white/5">
+                  <span className="text-secondary-text flex items-center gap-1.5">
+                    <Package className="w-3.5 h-3.5 text-primary" /> Packing Material
+                  </span>
+                  <span className="font-semibold text-foreground bg-primary/10 text-primary px-2.5 py-0.5 rounded-full text-xs">
+                    {packingMaterial}
+                  </span>
+                </div>
 
                 <div className="flex justify-between mt-3 pt-2 border-t border-white/10">
                   <span className="font-bold text-lg text-foreground">

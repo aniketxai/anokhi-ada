@@ -8,8 +8,11 @@ import {
   FiMenu,
   FiX,
   FiChevronDown,
+  FiUser,
+  FiLogOut,
 } from 'react-icons/fi';
 import { useApp } from '../context/useApp';
+import { useAuth } from '../context/useAuth';
 import { categories } from '../data/categories';
 import { BRAND } from '../data/brand';
 
@@ -17,6 +20,7 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { cartCount } = useApp();
+  const { isAuthenticated, user, logout } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [catOpen, setCatOpen] = useState(false);
@@ -120,6 +124,7 @@ export default function Navbar() {
               </div>
 
               <NavLink to="/products" active={isActive('/products')}>Shop</NavLink>
+              <NavLink to="/track-order" active={isActive('/track-order')}>Track Order</NavLink>
               <NavLink to="/about" active={isActive('/about')}>About</NavLink>
               <NavLink to="/contact" active={isActive('/contact')}>Contact</NavLink>
             </div>
@@ -138,6 +143,30 @@ export default function Navbar() {
               <IconBtn label="Search" onClick={() => setSearchOpen((v) => !v)}>
                 <FiSearch className="h-[19px] w-[19px]" />
               </IconBtn>
+
+              {isAuthenticated ? (
+                <div className="flex items-center gap-1">
+                  <Link
+                    to="/profile"
+                    aria-label={`My Profile (${user?.name || 'Account'})`}
+                    className="flex h-9 w-9 items-center justify-center rounded-full text-foreground hover:text-primary hover:bg-accent/50 transition-colors"
+                    title="My Profile"
+                  >
+                    <FiUser className="h-[19px] w-[19px]" />
+                  </Link>
+                  <IconBtn label="Log out" onClick={logout}>
+                    <FiLogOut className="h-[19px] w-[19px]" />
+                  </IconBtn>
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  aria-label="Log in"
+                  className="hidden sm:flex h-9 w-9 items-center justify-center rounded-full text-foreground hover:text-primary hover:bg-accent/50 transition-colors"
+                >
+                  <FiUser className="h-[19px] w-[19px]" />
+                </Link>
+              )}
 
               <Link
                 to="/wishlist"
@@ -242,6 +271,8 @@ function AnnouncementBar() {
 }
 
 function MobileMenu({ open, onClose }) {
+  const { isAuthenticated, user, logout } = useAuth();
+
   return (
     <AnimatePresence>
       {open && (
@@ -274,6 +305,7 @@ function MobileMenu({ open, onClose }) {
             <div className="flex-1 overflow-y-auto py-3">
               <MobileLink to="/" label="Home" onClose={onClose} />
               <MobileLink to="/products" label="Shop All" onClose={onClose} />
+              <MobileLink to="/track-order" label="Track Order" onClose={onClose} />
 
               <p className="px-4 pt-5 pb-2 text-[10px] uppercase tracking-widest font-semibold text-muted-foreground">
                 Categories
@@ -287,6 +319,28 @@ function MobileMenu({ open, onClose }) {
               <MobileLink to="/about" label="About Us" onClose={onClose} />
               <MobileLink to="/contact" label="Contact" onClose={onClose} />
               <MobileLink to="/wishlist" label="Wishlist" onClose={onClose} />
+
+              <div className="my-3 mx-4 border-t border-border" />
+
+              {isAuthenticated ? (
+                <>
+                  <MobileLink to="/profile" label={`My Profile (${user?.name || 'Account'})`} onClose={onClose} />
+                  <button
+                    onClick={() => {
+                      logout();
+                      onClose();
+                    }}
+                    className="flex items-center w-full px-4 py-2.5 text-sm font-medium text-red-400 hover:bg-accent/50 transition-colors"
+                  >
+                    Log Out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <MobileLink to="/login" label="Log In" onClose={onClose} />
+                  <MobileLink to="/signup" label="Sign Up" onClose={onClose} />
+                </>
+              )}
             </div>
 
             <div className="px-4 py-3 border-t border-border">

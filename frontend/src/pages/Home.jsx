@@ -7,6 +7,7 @@ import Collections from '../components/home/Collections';
 import SubcollectionStrip from '../components/home/SubcollectionStrip';
 import ProductSection from '../components/home/ProductSection';
 import FeaturedCategories from '../components/home/FeaturedCategories';
+import PackingMaterialSection from '../components/home/PackingMaterialSection';
 import AboutBrand from '../components/home/AboutBrand';
 import Reviews from '../components/home/Reviews';
 import InstagramGallery from '../components/home/InstagramGallery';
@@ -75,6 +76,9 @@ export default function Home() {
         items={hotSellingStrip.items}
         viewAllHref={hotSellingStrip.viewAllHref}
       />
+
+      {/* Packing Material Section (Pollybag, Corrugated Box, Tape) */}
+      <PackingMaterialSection />
 
       <ProductSection
         eyebrow="Straight from the catalog"

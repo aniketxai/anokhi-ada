@@ -100,8 +100,11 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = REQUEST_TIMEOUT_M
 async function requestJson(path, { method = 'GET', body, params } = {}) {
   const headers = { 'Content-Type': 'application/json' };
 
-  if (path.includes('/admin') || path.includes('/auth')) {
+  if (path.includes('/admin')) {
     const token = localStorage.getItem('adminToken');
+    if (token) headers.Authorization = `Bearer ${token}`;
+  } else {
+    const token = localStorage.getItem('customerToken') || localStorage.getItem('adminToken');
     if (token) headers.Authorization = `Bearer ${token}`;
   }
 
@@ -109,6 +112,7 @@ async function requestJson(path, { method = 'GET', body, params } = {}) {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
+    cache: 'no-store',
   });
 
   if (!res.ok) {
@@ -220,7 +224,7 @@ export async function fetchCategories() {
 
 export async function fetchHomeData() {
   try {
-    const res = await fetchWithTimeout(`${getBaseUrl()}/api/products/home`);
+    const res = await fetchWithTimeout(`${getBaseUrl()}/api/products/home`, { cache: 'no-store' });
     if (!res.ok) throw new Error('Failed to fetch home data');
 
     const data = await res.json();
@@ -511,7 +515,7 @@ export async function markOrderPaymentFailed(payload) {
 
 export async function fetchSiteContent() {
   try {
-    const res = await fetchWithTimeout(`${getBaseUrl()}/api/site-content/public`);
+    const res = await fetchWithTimeout(`${getBaseUrl()}/api/site-content/public`, { cache: 'no-store' });
     if (!res.ok) throw new Error('Failed to fetch site content');
     const data = await res.json();
     const content = data.data || {};
@@ -616,6 +620,151 @@ export async function uploadImageCloudinary(file) {
   });
 }
 
+// ── Customer auth (signup / login / forgot-password OTP flow) ────────────────
+
+function customerAuthHeaders() {
+  const token = localStorage.getItem('customerToken');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+export async function registerCustomer({ name, email, phone, password }) {
+  const res = await fetchWithTimeout(`${getBaseUrl()}/api/customer-auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    cache: 'no-store',
+    body: JSON.stringify({ name, email, phone, password }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Registration failed');
+  return data;
+}
+
+export async function loginCustomer({ email, password }) {
+  const res = await fetchWithTimeout(`${getBaseUrl()}/api/customer-auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    cache: 'no-store',
+    body: JSON.stringify({ email, password }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Login failed');
+  return data;
+}
+
+export async function fetchMyProfile() {
+  const res = await fetchWithTimeout(`${getBaseUrl()}/api/customer-auth/me`, {
+    headers: customerAuthHeaders(),
+    cache: 'no-store',
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Failed to load profile');
+  return data;
+}
+
+export async function updateCustomerProfile(profileData) {
+  const res = await fetchWithTimeout(`${getBaseUrl()}/api/customer-auth/me`, {
+    method: 'PUT',
+    headers: { ...customerAuthHeaders(), 'Content-Type': 'application/json' },
+    cache: 'no-store',
+    body: JSON.stringify(profileData),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Failed to update profile');
+  return data;
+}
+
+export async function fetchCustomerOrders() {
+  const res = await fetchWithTimeout(`${getBaseUrl()}/api/customer-auth/orders`, {
+    headers: customerAuthHeaders(),
+    cache: 'no-store',
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Failed to fetch order history');
+  return data;
+}
+
+export async function requestPasswordResetOtp(email) {
+  const res = await fetchWithTimeout(`${getBaseUrl()}/api/customer-auth/forgot-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    cache: 'no-store',
+    body: JSON.stringify({ email }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Failed to send reset code');
+  return data;
+}
+
+export async function verifyPasswordResetOtp({ email, otp }) {
+  const res = await fetchWithTimeout(`${getBaseUrl()}/api/customer-auth/verify-otp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    cache: 'no-store',
+    body: JSON.stringify({ email, otp }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Invalid code');
+  return data;
+}
+
+export async function resetCustomerPassword({ email, resetToken, newPassword }) {
+  const res = await fetchWithTimeout(`${getBaseUrl()}/api/customer-auth/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    cache: 'no-store',
+    body: JSON.stringify({ email, resetToken, newPassword }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Failed to reset password');
+  return data;
+}
+
+// ── Order tracking (Manual Admin Controlled) ──────────────────────────────────
+
+export async function trackOrder({ orderNumber, contact }) {
+  const res = await fetchWithTimeout(`${getBaseUrl()}/api/tracking/lookup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    cache: 'no-store',
+    body: JSON.stringify({ orderNumber, contact }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Order not found');
+  return data;
+}
+
+// ── Admin: shipments (Manual Control) ─────────────────────────────────────────
+
+export async function adminSaveShipment(orderId, shipmentData = {}) {
+  return requestJson(`/api/admin/shipments/${orderId}/save`, { method: 'POST', body: shipmentData });
+}
+
+export async function adminCreateShipment(orderId, options = {}) {
+  return adminSaveShipment(orderId, options);
+}
+
+export async function adminSyncShipment(orderId) {
+  return requestJson(`/api/admin/shipments/${orderId}/sync`, { method: 'POST' });
+}
+
+export async function adminCancelShipment(orderId, reason) {
+  return requestJson(`/api/admin/shipments/${orderId}/cancel`, { method: 'POST', body: { reason } });
+}
+
+export async function adminGetShipment(orderId) {
+  return requestJson(`/api/admin/shipments/${orderId}`);
+}
+
+// ── Admin: registered customers ───────────────────────────────────────────────
+
+export async function adminFetchUsers(q) {
+  return requestJson('/api/admin/users', { params: { q } });
+}
+
+export async function adminSetUserBlocked(userId, isBlocked) {
+  return requestJson(`/api/admin/users/${userId}/status`, { method: 'PATCH', body: { isBlocked } });
+}
+
 // ── Default export ────────────────────────────────────────────────────────────
 
 export default {
@@ -665,4 +814,20 @@ export default {
   fetchRazorpayKey,
   createRazorpayOrder,
   verifyRazorpayPayment,
+  registerCustomer,
+  loginCustomer,
+  fetchMyProfile,
+  updateCustomerProfile,
+  fetchCustomerOrders,
+  requestPasswordResetOtp,
+  verifyPasswordResetOtp,
+  resetCustomerPassword,
+  trackOrder,
+  adminSaveShipment,
+  adminCreateShipment,
+  adminSyncShipment,
+  adminCancelShipment,
+  adminGetShipment,
+  adminFetchUsers,
+  adminSetUserBlocked,
 };

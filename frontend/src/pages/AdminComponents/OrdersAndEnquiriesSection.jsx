@@ -64,12 +64,13 @@ export function OrdersSection({
           <p>Phone: ${shipping.phone || 'N/A'}</p>
         </div>
         <div class="section">
-          <h3>Shipping Address</h3>
+          <h3>Shipping & Packaging</h3>
           <p>${shipping.address}<br/>
           ${shipping.apartment ? shipping.apartment + '<br/>' : ''}
           ${shipping.landmark ? 'Landmark: ' + shipping.landmark + '<br/>' : ''}
           ${shipping.city}, ${shipping.state} ${shipping.zipCode}<br/>
           ${shipping.country || 'India'}</p>
+          <p><strong>Packing Material:</strong> ${order.packingMaterial || 'Polybag'}</p>
         </div>
         <div class="section">
           <h3>Order Items</h3>
@@ -286,6 +287,9 @@ export function OrdersSection({
                         <div className="flex flex-wrap items-center gap-2 mb-2">
                           <p className="font-semibold text-foreground truncate">{order.orderNumber || order._id}</p>
                           <StatusPill status={order.status} />
+                          <span className="text-[11px] font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                            📦 {order.packingMaterial || 'Polybag'}
+                          </span>
                         </div>
                         <p className="text-sm text-secondary-text mb-1">
                           {customerName} · {order.items?.length || 0} item{order.items?.length !== 1 ? 's' : ''}
