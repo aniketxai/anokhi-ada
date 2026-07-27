@@ -78,7 +78,7 @@ export default function Home() {
       />
 
       {/* Packing Material Section (Pollybag, Corrugated Box, Tape) */}
-      <PackingMaterialSection />
+      {/* <PackingMaterialSection /> */}
 
       <ProductSection
         eyebrow="Straight from the catalog"
