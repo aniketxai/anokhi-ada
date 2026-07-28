@@ -158,6 +158,7 @@ export const ADMIN_CATEGORIES = [
   'Gifts under 499',
   'Custom gifts',
   'Curated for him',
+  'Packing Material',
 ];
 
 export const allSubcollections = [

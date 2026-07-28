@@ -655,7 +655,7 @@ export default function Checkout() {
               </div>
 
               {/* PACKING MATERIAL SECTION */}
-              <div className="mt-6 border-t border-surface-muted pt-6">
+              {/* <div className="mt-6 border-t border-surface-muted pt-6">
                 <h3 className="font-bold text-foreground text-sm mb-3 flex items-center gap-2">
                   <Package className="w-4 h-4 text-primary" />
                   Select Packing Material
@@ -709,7 +709,7 @@ export default function Checkout() {
                     );
                   })}
                 </div>
-              </div>
+              </div> */}
 
               {/* VIP Delivery Option */}
               <CeoDeliveryOption className="mt-6" />
