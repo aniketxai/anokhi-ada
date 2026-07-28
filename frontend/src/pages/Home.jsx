@@ -88,7 +88,7 @@ export default function Home() {
         viewAllHref="/products"
       />
 
-      <FeaturedCategories />
+      {/* <FeaturedCategories /> */}
 
       <SubcollectionStrip
         eyebrow={customPackagingStrip.eyebrow}
