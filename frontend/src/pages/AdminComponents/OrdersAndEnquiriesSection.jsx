@@ -170,40 +170,40 @@ export function OrdersSection({
         <div className="space-y-4">
           {/* Quick Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-            <div className="rounded-2xl bg-linear-to-br from-amber-500/10 to-amber-500/5 border border-amber-500/20 p-3">
+            <div className="rounded-2xl bg-amber-50 border border-amber-200 p-3 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-amber-200 font-semibold">Pending</p>
-                  <p className="text-2xl font-bold text-amber-300 mt-1">{pendingOrders}</p>
+                  <p className="text-xs text-amber-700 font-semibold">Pending</p>
+                  <p className="text-2xl font-bold text-amber-800 mt-1">{pendingOrders}</p>
                 </div>
-                <Clock className="w-8 h-8 text-amber-400/40" />
+                <Clock className="w-8 h-8 text-amber-400" />
               </div>
             </div>
-            <div className="rounded-2xl bg-linear-to-br from-red-500/10 to-red-500/5 border border-red-500/20 p-3">
+            <div className="rounded-2xl bg-red-50 border border-red-200 p-3 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-red-200 font-semibold">Failed Payments</p>
-                  <p className="text-2xl font-bold text-red-300 mt-1">{failedOrdersCount}</p>
+                  <p className="text-xs text-red-700 font-semibold">Failed Payments</p>
+                  <p className="text-2xl font-bold text-red-800 mt-1">{failedOrdersCount}</p>
                 </div>
-                <AlertTriangle className="w-8 h-8 text-red-400/40" />
+                <AlertTriangle className="w-8 h-8 text-red-400" />
               </div>
             </div>
-            <div className="rounded-2xl bg-linear-to-br from-sky-500/10 to-sky-500/5 border border-sky-500/20 p-3">
+            <div className="rounded-2xl bg-sky-50 border border-sky-200 p-3 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-sky-200 font-semibold">In Transit</p>
-                  <p className="text-2xl font-bold text-sky-300 mt-1">{shippedOrders}</p>
+                  <p className="text-xs text-sky-700 font-semibold">In Transit</p>
+                  <p className="text-2xl font-bold text-sky-800 mt-1">{shippedOrders}</p>
                 </div>
-                <TrendingUp className="w-8 h-8 text-sky-400/40" />
+                <TrendingUp className="w-8 h-8 text-sky-400" />
               </div>
             </div>
-            <div className="rounded-2xl bg-linear-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 p-3">
+            <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-3 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-emerald-200 font-semibold">Total Orders</p>
-                  <p className="text-2xl font-bold text-emerald-300 mt-1">{(filteredOrders || []).length}</p>
+                  <p className="text-xs text-emerald-700 font-semibold">Total Orders</p>
+                  <p className="text-2xl font-bold text-emerald-800 mt-1">{(filteredOrders || []).length}</p>
                 </div>
-                <CheckCircle2 className="w-8 h-8 text-emerald-400/40" />
+                <CheckCircle2 className="w-8 h-8 text-emerald-500" />
               </div>
             </div>
           </div>
@@ -213,7 +213,7 @@ export function OrdersSection({
               <button
                 key={option}
                 onClick={() => setOrderFilter(option)}
-                className={`rounded-full px-4 py-2 text-sm font-semibold capitalize transition-material ${orderFilter === option ? 'bg-primary text-white' : 'bg-white/5 text-secondary-text hover:bg-white/10'}`}
+                className={`rounded-full px-4 py-2 text-sm font-semibold capitalize transition-material ${orderFilter === option ? 'bg-primary text-white shadow-sm' : 'bg-secondary text-secondary-text border border-border hover:bg-accent hover:text-foreground'}`}
               >
                 {option}
               </button>
@@ -228,7 +228,7 @@ export function OrdersSection({
               placeholder="Search by order #, customer name, email, or phone..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 rounded-2xl border border-white/8 bg-black/20 text-sm text-foreground placeholder-secondary-text outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
+              className="w-full pl-10 pr-4 py-3 rounded-2xl border border-border bg-white text-sm text-foreground placeholder-secondary-text outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20 shadow-sm"
             />
           </div>
 
@@ -242,20 +242,20 @@ export function OrdersSection({
                 const canCancel = order.status !== 'cancelled' && order.status !== 'delivered';
                 
                 return (
-                  <div key={order._id || order.id} className="rounded-3xl border border-white/8 bg-black/20 p-4">
+                  <div key={order._id || order.id} className="rounded-3xl border border-border bg-white p-4 shadow-sm">
                     {/* Cancel Dialog */}
                     {showCancelDialog === order._id && (
-                      <div className="mb-4 bg-red-500/10 border border-red-500/25 rounded-xl p-3">
-                        <h4 className="text-sm font-semibold text-red-300 mb-2">Cancel Order?</h4>
+                      <div className="mb-4 bg-red-50 border border-red-200 rounded-xl p-3">
+                        <h4 className="text-sm font-semibold text-red-700 mb-2">Cancel Order?</h4>
                         <textarea
                           value={cancelReason}
                           onChange={(e) => setCancelReason(e.target.value)}
                           placeholder="Cancellation reason (optional)"
-                          className="w-full bg-red-500/10 border border-red-500/25 rounded-lg p-2 text-xs text-foreground placeholder-secondary-text focus:outline-none focus:ring-1 focus:ring-red-500/50 resize-none mb-2"
+                          className="w-full bg-white border border-red-200 rounded-lg p-2 text-xs text-foreground placeholder-secondary-text focus:outline-none focus:ring-1 focus:ring-red-400 resize-none mb-2"
                           rows="2"
                         />
                         {cancelError && (
-                          <p className="text-xs text-red-300 mb-2">{cancelError}</p>
+                          <p className="text-xs text-red-700 mb-2">{cancelError}</p>
                         )}
                         <div className="flex gap-2">
                           <button
@@ -272,7 +272,7 @@ export function OrdersSection({
                               setCancelError('');
                             }}
                             disabled={cancelingOrderId === order._id}
-                            className="flex-1 px-2 py-1 rounded-lg border border-white/8 bg-white/5 text-foreground text-xs font-semibold hover:bg-white/10 disabled:opacity-60 transition-colors"
+                            className="flex-1 px-2 py-1 rounded-lg border border-border bg-secondary text-foreground text-xs font-semibold hover:bg-accent disabled:opacity-60 transition-colors"
                           >
                             Cancel
                           </button>
@@ -287,8 +287,8 @@ export function OrdersSection({
                         <div className="flex flex-wrap items-center gap-2 mb-2">
                           <p className="font-semibold text-foreground truncate">{order.orderNumber || order._id}</p>
                           <StatusPill status={order.status} />
-                          <span className="text-[11px] font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-                            📦 {order.packingMaterial || 'Polybag'}
+                          <span className="text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded-full">
+                             📦 {order.packingMaterial || 'Polybag'}
                           </span>
                         </div>
                         <p className="text-sm text-secondary-text mb-1">
@@ -299,13 +299,13 @@ export function OrdersSection({
                         )}
                             </div>
                             <div className="text-right shrink-0">
-                              <p className="text-xs text-outline">Total</p>
+                              <p className="text-xs text-secondary-text">Total</p>
                               <p className="text-xl font-bold text-primary">{formatINR(order.total || order.totalAmount || 0)}</p>
                             </div>
                           </div>
 
                           {/* Payment & Date Info */}
-                          <div className="flex flex-wrap items-center gap-3 text-xs text-outline">
+                          <div className="flex flex-wrap items-center gap-3 text-xs text-secondary-text">
                             <span>Payment: {formatPaymentValue(order.payment)}</span>
                             {order.createdAt && (
                               <span>· {formatDate(order.createdAt)}</span>
@@ -313,12 +313,12 @@ export function OrdersSection({
                           </div>
 
                           {(order.payment?.status === 'failed' || order.payment?.failureReason) && (
-                            <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300 flex items-start justify-between gap-2">
+                            <div className="rounded-2xl border border-red-200 bg-red-50 p-3 text-xs text-red-700 flex items-start justify-between gap-2">
                               <div className="flex items-start gap-2">
-                                <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                                <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                                 <div>
-                                  <p className="font-bold text-red-200">Payment Failure</p>
-                                  <p className="mt-0.5 text-red-300/90">{order.payment?.failureReason || 'Transaction did not complete'}</p>
+                                  <p className="font-bold text-red-800">Payment Failure</p>
+                                  <p className="mt-0.5 text-red-700">{order.payment?.failureReason || 'Transaction did not complete'}</p>
                                 </div>
                               </div>
                               <button
@@ -336,14 +336,14 @@ export function OrdersSection({
                           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
                             <button
                               onClick={() => handleViewOrder(order)}
-                              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-full border border-white/8 bg-white/5 px-3 py-2 text-xs font-semibold text-foreground hover:bg-white/10 transition-material"
+                              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-full border border-border bg-secondary px-3 py-2 text-xs font-semibold text-foreground hover:bg-accent transition-material"
                             >
                               <Eye className="w-3.5 h-3.5" />
                               View
                             </button>
                             <button
                               onClick={() => handlePrintOrder(order)}
-                              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-full border border-white/8 bg-white/5 px-3 py-2 text-xs font-semibold text-foreground hover:bg-white/10 transition-material"
+                              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-full border border-border bg-secondary px-3 py-2 text-xs font-semibold text-foreground hover:bg-accent transition-material"
                             >
                               <Printer className="w-3.5 h-3.5" />
                               Print
@@ -351,7 +351,7 @@ export function OrdersSection({
                             <button
                               onClick={() => handleGeneratePayLink(order)}
                               disabled={generatingPayLinkOrderId === (order._id || order.id)}
-                              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-300 hover:bg-amber-500/20 transition-material"
+                              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800 hover:bg-amber-100 transition-material"
                             >
                               <Link2 className="w-3.5 h-3.5" />
                               Pay Link
@@ -360,7 +360,7 @@ export function OrdersSection({
                               <button
                                 onClick={() => setShowCancelDialog(order._id)}
                                 disabled={cancelingOrderId === order._id}
-                                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-full border border-red-500/25 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300 hover:bg-red-500/20 disabled:opacity-60 transition-material"
+                                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-full border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100 disabled:opacity-60 transition-material"
                               >
                                 <X className="w-3.5 h-3.5" />
                                 Cancel
@@ -376,16 +376,16 @@ export function OrdersSection({
                                   }
                                 }}
                                 disabled={savingOrderId === (order._id || order.id)}
-                                className="flex-1 sm:flex-none rounded-full border border-white/8 bg-black/20 px-3 py-2 text-xs font-semibold capitalize text-foreground outline-none disabled:opacity-60"
+                                className="flex-1 sm:flex-none rounded-full border border-border bg-white px-3 py-2 text-xs font-semibold capitalize text-foreground outline-none disabled:opacity-60 shadow-sm"
                               >
                                 {['pending', 'paid', 'failed', 'processing', 'shipped', 'delivered', 'cancelled'].map((status) => (
-                                  <option key={status} value={status} className="bg-background">
+                                  <option key={status} value={status} className="bg-white text-foreground">
                                     {status}
                                   </option>
                                 ))}
                               </select>
                               {savingOrderId === (order._id || order.id) && (
-                                <span className="inline-flex items-center gap-1 text-xs text-foreground shrink-0">
+                                <span className="inline-flex items-center gap-1 text-xs text-secondary-text shrink-0">
                                   <Loader className="w-3.5 h-3.5 animate-spin" />
                                   Updating...
                                 </span>
@@ -397,7 +397,7 @@ export function OrdersSection({
                 );
               })
             ) : (
-              <div className="rounded-3xl border border-white/8 bg-black/20 p-8 text-center">
+              <div className="rounded-3xl border border-border bg-secondary p-8 text-center">
                 <p className="text-secondary-text">No orders found</p>
               </div>
             )}
@@ -426,7 +426,7 @@ export function EnquiriesSection({
               <button
                 key={option}
                 onClick={() => setEnquiryFilter(option)}
-                className={`rounded-full px-4 py-2 text-sm font-semibold capitalize transition-material ${enquiryFilter === option ? 'bg-primary text-white' : 'bg-white/5 text-secondary-text hover:bg-white/10'}`}
+                className={`rounded-full px-4 py-2 text-sm font-semibold capitalize transition-material ${enquiryFilter === option ? 'bg-primary text-white shadow-sm' : 'bg-secondary text-secondary-text border border-border hover:bg-accent hover:text-foreground'}`}
               >
                 {option}
               </button>
@@ -435,12 +435,12 @@ export function EnquiriesSection({
 
           <div className="space-y-3">
             {(filteredEnquiries || []).map((item, idx) => (
-              <div key={`${item._id || idx}`} className="rounded-3xl border border-white/8 bg-black/20 p-4">
+              <div key={`${item._id || idx}`} className="rounded-3xl border border-border bg-white p-4 shadow-sm">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div>
                     <div className="flex flex-wrap items-center gap-2 mb-2">
                       <p className="font-semibold text-foreground">{item.companyName || item.name}</p>
-                      <span className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-secondary-text">
+                      <span className="rounded-full border border-border bg-secondary px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-secondary-text">
                         {item.enquiryType === 'quote' ? 'Quote' : 'Contact'}
                       </span>
                       <StatusPill status={item.status || 'new'} />
@@ -452,7 +452,7 @@ export function EnquiriesSection({
                   </div>
                   <button 
                     onClick={() => handleRespondToEnquiry(item)}
-                    className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/5 px-3 py-2 text-xs font-semibold text-foreground hover:bg-white/10 transition-material">
+                    className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-3 py-2 text-xs font-semibold text-foreground hover:bg-accent transition-material">
                     Respond
                     <Reply className="w-3.5 h-3.5" />
                   </button>

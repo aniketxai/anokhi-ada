@@ -54,15 +54,15 @@ const navItems = [
 ];
 
 const statusStyles = {
-  pending: 'bg-amber-500/15 text-amber-300 border-amber-500/25',
-  paid: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25',
-  processing: 'bg-sky-500/15 text-sky-300 border-sky-500/25',
-  shipped: 'bg-violet-500/15 text-violet-300 border-violet-500/25',
-  delivered: 'bg-teal-500/15 text-teal-300 border-teal-500/25',
-  new: 'bg-sky-500/15 text-sky-300 border-sky-500/25',
-  'in-review': 'bg-amber-500/15 text-amber-300 border-amber-500/25',
-  quoted: 'bg-purple-500/15 text-purple-300 border-purple-500/25',
-  replied: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25',
+  pending: 'bg-amber-100 text-amber-800 border-amber-300',
+  paid: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+  processing: 'bg-sky-100 text-sky-800 border-sky-300',
+  shipped: 'bg-violet-100 text-violet-800 border-violet-300',
+  delivered: 'bg-teal-100 text-teal-800 border-teal-300',
+  new: 'bg-sky-100 text-sky-800 border-sky-300',
+  'in-review': 'bg-amber-100 text-amber-800 border-amber-300',
+  quoted: 'bg-purple-100 text-purple-800 border-purple-300',
+  replied: 'bg-emerald-100 text-emerald-800 border-emerald-300',
 };
 
 const emptyProductForm = {
