@@ -92,6 +92,24 @@ export default function Contact() {
 
             <div className="bg-surface-container rounded-3xl p-6 border border-border">
               <div className="flex items-start gap-4">
+                <div className="w-11 h-11 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center shrink-0">
+                  <Mail size={20} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-foreground text-base mb-1">✉️ Email Support</h3>
+                  <a
+                    href={`mailto:${BRAND.email}`}
+                    className="text-rose-600 dark:text-rose-400 font-bold text-sm hover:underline block"
+                  >
+                    {BRAND.email}
+                  </a>
+                  <p className="text-xs text-outline mt-1">Send us your queries anytime</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-surface-container rounded-3xl p-6 border border-border">
+              <div className="flex items-start gap-4">
                 <div className="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
                   <Mail size={20} />
                 </div>

@@ -41,6 +41,22 @@ const DEFAULT_SITE_CONTENT = {
       href: '/products?category=luxury-hampers',
       image: '/images/hero/user_banner_hamper.jpg',
     },
+    {
+      id: 'something-for-her',
+      title: 'Something For Her',
+      subtitle: 'Special Gift Hampers & Beauty Curations For Her',
+      cta: 'Shop For Her',
+      href: '/products?category=luxury-hampers',
+      image: 'https://images.pexels.com/photos/1303082/pexels-photo-1303082.jpeg?auto=compress&cs=tinysrgb&w=900',
+    },
+    {
+      id: 'something-for-him',
+      title: 'Something For Him',
+      subtitle: 'Luxury Hampers & Premium Essentials For Him',
+      cta: 'Shop For Him',
+      href: '/products?category=curated-for-him',
+      image: 'https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=900',
+    },
   ],
   announcement: {
     enabled: true,
@@ -97,28 +113,64 @@ const DEFAULT_SITE_CONTENT = {
         { id: 'cp3', name: 'Personalized Gift Tag Box', slug: 'custom-packaging', image: 'https://images.pexels.com/photos/2536965/pexels-photo-2536965.jpeg?auto=compress&cs=tinysrgb&w=600' },
       ],
     },
+    {
+      key: 'forHer',
+      eyebrow: 'Curated for her',
+      title: 'Something For Her',
+      subtitle: 'Thoughtful gifts, hampers & more for her.',
+      viewAllHref: '/products?category=luxury-hampers',
+      items: [
+        { id: 'fh1', name: 'Luxury Hampers', slug: 'luxury-hampers', image: 'https://images.pexels.com/photos/6393013/pexels-photo-6393013.jpeg?auto=compress&cs=tinysrgb&w=600' },
+        { id: 'fh2', name: 'Gifts Under ₹699', slug: 'gifts-699', image: 'https://images.pexels.com/photos/1303082/pexels-photo-1303082.jpeg?auto=compress&cs=tinysrgb&w=600' },
+        { id: 'fh3', name: 'Gifts Under ₹499', slug: 'gifts-499', image: 'https://images.pexels.com/photos/1666067/pexels-photo-1666067.jpeg?auto=compress&cs=tinysrgb&w=600' },
+        { id: 'fh4', name: 'Custom Gifts', slug: 'custom-gifts', image: 'https://images.pexels.com/photos/6211316/pexels-photo-6211316.jpeg?auto=compress&cs=tinysrgb&w=600' },
+      ],
+    },
+    {
+      key: 'forHim',
+      eyebrow: 'Curated for him',
+      title: 'Something For Him',
+      subtitle: 'Thoughtful gifts, hampers & more for him.',
+      viewAllHref: '/products?category=curated-for-him',
+      items: [
+        { id: 'fhim1', name: 'Luxury Hampers for Him', slug: 'luxury-hampers', image: 'https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=600' },
+        { id: 'fhim2', name: 'Perfumes for Him', slug: 'perfume', image: 'https://images.pexels.com/photos/965989/pexels-photo-965989.jpeg?auto=compress&cs=tinysrgb&w=600' },
+        { id: 'fhim3', name: 'Grooming Essentials', slug: 'cosmetics', image: 'https://images.pexels.com/photos/2536965/pexels-photo-2536965.jpeg?auto=compress&cs=tinysrgb&w=600' },
+        { id: 'fhim4', name: 'Custom Gifts for Him', slug: 'custom-gifts', image: 'https://images.pexels.com/photos/6211316/pexels-photo-6211316.jpeg?auto=compress&cs=tinysrgb&w=600' },
+      ],
+    },
   ],
   brandInfo: {
     name: 'Anokhi Ada',
     tagline: 'Gifting, reimagined with love.',
     whatsapp: '+91 9942085352',
+    email: 'anokhiada01@gmail.com',
     instagram: 'https://www.instagram.com/anokhiada_01/',
     supportTime: '10:00 AM – 6:00 PM (Monday to Saturday)',
   },
 };
 
 export function SiteContentSection({ siteContent, onSaveSiteContent, saving }) {
-  const mergeDefaults = (input) => ({
-    ...DEFAULT_SITE_CONTENT,
-    ...(input || {}),
-    heroSlides: input?.heroSlides?.length ? input.heroSlides : DEFAULT_SITE_CONTENT.heroSlides,
-    collections: input?.collections?.length ? input.collections : DEFAULT_SITE_CONTENT.collections,
-    subcollectionStrips: input?.subcollectionStrips?.length ? input.subcollectionStrips : DEFAULT_SITE_CONTENT.subcollectionStrips,
-    instagramPosts: input?.instagramPosts?.length ? input.instagramPosts : DEFAULT_SITE_CONTENT.instagramPosts,
-    aboutSection: { ...DEFAULT_SITE_CONTENT.aboutSection, ...(input?.aboutSection || {}) },
-    announcement: { ...DEFAULT_SITE_CONTENT.announcement, ...(input?.announcement || {}) },
-    brandInfo: { ...DEFAULT_SITE_CONTENT.brandInfo, ...(input?.brandInfo || {}) },
-  });
+  const mergeDefaults = (input) => {
+    let strips = input?.subcollectionStrips?.length ? [...input.subcollectionStrips] : [...DEFAULT_SITE_CONTENT.subcollectionStrips];
+    DEFAULT_SITE_CONTENT.subcollectionStrips.forEach((defStrip) => {
+      if (!strips.some((s) => s.key === defStrip.key)) {
+        strips.push(defStrip);
+      }
+    });
+
+    return {
+      ...DEFAULT_SITE_CONTENT,
+      ...(input || {}),
+      heroSlides: input?.heroSlides?.length ? input.heroSlides : DEFAULT_SITE_CONTENT.heroSlides,
+      collections: input?.collections?.length ? input.collections : DEFAULT_SITE_CONTENT.collections,
+      subcollectionStrips: strips,
+      instagramPosts: input?.instagramPosts?.length ? input.instagramPosts : DEFAULT_SITE_CONTENT.instagramPosts,
+      aboutSection: { ...DEFAULT_SITE_CONTENT.aboutSection, ...(input?.aboutSection || {}) },
+      announcement: { ...DEFAULT_SITE_CONTENT.announcement, ...(input?.announcement || {}) },
+      brandInfo: { ...DEFAULT_SITE_CONTENT.brandInfo, ...(input?.brandInfo || {}) },
+    };
+  };
 
   const [content, setContent] = useState(() => mergeDefaults(siteContent));
   const [uploadingField, setUploadingField] = useState(null);
@@ -178,6 +230,40 @@ export function SiteContentSection({ siteContent, onSaveSiteContent, saving }) {
           cta: 'Shop Collection',
           href: '/products',
           image: 'https://images.pexels.com/photos/6393013/pexels-photo-6393013.jpeg?auto=compress&cs=tinysrgb&w=900',
+        },
+      ],
+    }));
+  };
+
+  const addForHerSlide = () => {
+    setContent((prev) => ({
+      ...prev,
+      heroSlides: [
+        ...(prev.heroSlides || []),
+        {
+          id: `slide-her-${Date.now()}`,
+          title: 'Something For Her',
+          subtitle: 'Special Gift Hampers & Beauty Curations For Her',
+          cta: 'Shop For Her',
+          href: '/products?category=luxury-hampers',
+          image: 'https://images.pexels.com/photos/1303082/pexels-photo-1303082.jpeg?auto=compress&cs=tinysrgb&w=900',
+        },
+      ],
+    }));
+  };
+
+  const addForHimSlide = () => {
+    setContent((prev) => ({
+      ...prev,
+      heroSlides: [
+        ...(prev.heroSlides || []),
+        {
+          id: `slide-him-${Date.now()}`,
+          title: 'Something For Him',
+          subtitle: 'Luxury Hampers & Premium Essentials For Him',
+          cta: 'Shop For Him',
+          href: '/products?category=curated-for-him',
+          image: 'https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=900',
         },
       ],
     }));
@@ -364,13 +450,29 @@ export function SiteContentSection({ siteContent, onSaveSiteContent, saving }) {
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={addHeroSlide}
-            className="inline-flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 transition-colors"
-          >
-            <Plus className="w-4 h-4" /> Add New Slide
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={addHeroSlide}
+              className="inline-flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 transition-colors"
+            >
+              <Plus className="w-4 h-4" /> Add Slide
+            </button>
+            <button
+              type="button"
+              onClick={addForHerSlide}
+              className="inline-flex items-center gap-1.5 rounded-full border border-purple-300 bg-purple-50 px-4 py-2 text-xs font-bold text-purple-700 hover:bg-purple-100 transition-colors"
+            >
+              <Sparkles className="w-4 h-4" /> Add &quot;For Her&quot; Banner
+            </button>
+            <button
+              type="button"
+              onClick={addForHimSlide}
+              className="inline-flex items-center gap-1.5 rounded-full border border-sky-300 bg-sky-50 px-4 py-2 text-xs font-bold text-sky-700 hover:bg-sky-100 transition-colors"
+            >
+              <Sparkles className="w-4 h-4" /> Add &quot;For Him&quot; Banner
+            </button>
+          </div>
         </div>
 
         <div className="grid gap-6">
@@ -974,7 +1076,7 @@ export function SiteContentSection({ siteContent, onSaveSiteContent, saving }) {
             Brand Support & Social Links
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <label className="block">
               <span className="mb-1 block text-xs font-bold text-foreground">
                 WhatsApp Support Number
@@ -983,6 +1085,19 @@ export function SiteContentSection({ siteContent, onSaveSiteContent, saving }) {
                 type="text"
                 value={activeContent.brandInfo?.whatsapp || ''}
                 onChange={(e) => updateNested('brandInfo', 'whatsapp', e.target.value)}
+                className="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-xs text-foreground outline-none focus:border-rose-500"
+              />
+            </label>
+
+            <label className="block">
+              <span className="mb-1 block text-xs font-bold text-foreground">
+                Support Email ID
+              </span>
+              <input
+                type="email"
+                value={activeContent.brandInfo?.email || ''}
+                onChange={(e) => updateNested('brandInfo', 'email', e.target.value)}
+                placeholder="anokhiada01@gmail.com"
                 className="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-xs text-foreground outline-none focus:border-rose-500"
               />
             </label>

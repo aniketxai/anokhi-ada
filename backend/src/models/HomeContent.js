@@ -71,6 +71,7 @@ const HomeContentSchema = new mongoose.Schema(
       name: { type: String, default: 'Anokhi Ada' },
       tagline: { type: String, default: 'Gifting, reimagined with love.' },
       whatsapp: { type: String, default: '+91 9942085352' },
+      email: { type: String, default: 'anokhiada01@gmail.com' },
       instagram: { type: String, default: 'https://www.instagram.com/anokhiada_01/' },
       supportTime: { type: String, default: '10:00 AM – 6:00 PM (Monday to Saturday)' },
     },

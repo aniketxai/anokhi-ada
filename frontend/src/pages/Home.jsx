@@ -80,13 +80,13 @@ export default function Home() {
       {/* Packing Material Section (Pollybag, Corrugated Box, Tape) */}
       {/* <PackingMaterialSection /> */}
 
-      <ProductSection
+      {/* <ProductSection
         eyebrow="Straight from the catalog"
         title="Hot Selling Products"
         subtitle="Fresh favourites, curated just for you."
         products={hotProducts}
         viewAllHref="/products"
-      />
+      /> */}
 
       {/* <FeaturedCategories /> */}
 

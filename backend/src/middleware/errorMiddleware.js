@@ -11,6 +11,10 @@ export function errorHandler(err, req, res, next) {
   console.error('Error handler caught an error:');
   console.error(stack);
 
+
+
+
+  //handle
   const origin = req.headers.origin;
   const allowedOrigins = [
     ...(process.env.CORS_ORIGIN?.split(',').map((value) => value.trim()).filter(Boolean) || []),

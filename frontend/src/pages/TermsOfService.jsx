@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { FileText, Shield, ShoppingBag, CreditCard, Truck, RefreshCw, AlertCircle, Lock, Phone } from 'lucide-react';
+import { FileText, Shield, ShoppingBag, CreditCard, Truck, RefreshCw, AlertCircle, Lock, Phone, Mail } from 'lucide-react';
 import SectionHeading from '../components/SectionHeading';
 import BlurBlob from '../components/BlurBlob';
 import { BRAND } from '../data/brand';
@@ -114,20 +114,28 @@ export default function TermsOfService() {
           {/* Contact Information */}
           <div className="space-y-3 pt-4 border-t border-border">
             <div className="flex items-center gap-2.5 text-emerald-600 font-bold text-lg">
-              <Phone className="w-5 h-5" />
-              <h2>📞 Contact Information</h2>
+              <Mail className="w-5 h-5" />
+              <h2>✉️ Contact Information & Support</h2>
             </div>
-            <p className="text-sm text-secondary-text">
-              For any queries, support, or order concerns:
+            <p className="text-sm text-secondary-text leading-relaxed">
+              For any queries, terms clarification, support, or order concerns, please feel free to reach out to us:
             </p>
-            <a
-              href={BRAND.social.whatsapp}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-emerald-600 text-white px-5 py-2.5 rounded-full font-bold text-xs shadow-sm hover:bg-emerald-700 transition-colors"
-            >
-              📱 WhatsApp: {BRAND.whatsapp}
-            </a>
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <a
+                href={`mailto:${BRAND.email}`}
+                className="inline-flex items-center gap-2 bg-rose-600 text-white px-5 py-2.5 rounded-full font-bold text-xs shadow-sm hover:bg-rose-700 transition-colors"
+              >
+                <Mail className="w-4 h-4" /> Email: {BRAND.email}
+              </a>
+              <a
+                href={BRAND.social.whatsapp}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-emerald-600 text-white px-5 py-2.5 rounded-full font-bold text-xs shadow-sm hover:bg-emerald-700 transition-colors"
+              >
+                📱 WhatsApp: {BRAND.whatsapp}
+              </a>
+            </div>
           </div>
 
           {/* Changes to Terms */}
