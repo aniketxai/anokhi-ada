@@ -8,7 +8,7 @@ export const BRAND = {
   city: 'Patna, Bihar',
   whatsapp: '+91 9942085352',
   whatsappRaw: '919942085352',
-  email: 'anokhiada01@gmail.com',
+  email: 'anokhiada9@gmail.com',
   supportTime: '10:00 AM – 6:00 PM (Monday to Saturday)',
   shippingPartner: 'Shadowfax 360',
   freeShippingThreshold: 499,
