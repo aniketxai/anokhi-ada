@@ -85,9 +85,9 @@ function ToggleSwitch({ enabled, onChange }) {
 export default function AdminSettings() {
   const [settings, setSettings] = useState({
     storeName: 'Anokhi Ada',
-    storeEmail: 'aniketxai@gmail.com',
+    storeEmail: 'anokhiada9@gmail.com',
     storeCurrency: 'INR',
-    adminEmail: 'aniketxai@gmail.com',
+    adminEmail: 'anokhiada9@gmail.com',
     senderName: 'Anokhi Ada',
     smtpHost: 'smtp.gmail.com',
     smtpPort: '587',
