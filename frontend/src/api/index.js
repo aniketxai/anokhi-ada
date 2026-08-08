@@ -513,6 +513,10 @@ export async function markOrderPaymentFailed(payload) {
   }
 }
 
+export function getCachedSiteContent() {
+  return readJsonCache('sambx.siteContent.cache.v1', null);
+}
+
 export async function fetchSiteContent() {
   try {
     const res = await fetchWithTimeout(`${getBaseUrl()}/api/site-content/public`, { cache: 'no-store' });
@@ -773,6 +777,7 @@ export default {
   fetchCategories,
   fetchHomeData,
   fetchSiteContent,
+  getCachedSiteContent,
   fetchAdminSiteContent,
   updateAdminSiteContent,
   uploadImageCloudinary,

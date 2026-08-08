@@ -711,9 +711,6 @@ export default function Checkout() {
                 </div>
               </div> */}
 
-              {/* VIP Delivery Option */}
-              <CeoDeliveryOption className="mt-6" />
-
               <div className="mt-6">
                 <Button type="submit" size="lg">
                   Continue to Payment
@@ -811,9 +808,6 @@ export default function Checkout() {
                 </label>
               </div>
 
-              {/* VIP Delivery Option */}
-              <CeoDeliveryOption className="mt-6" />
-
               <div className="flex gap-3 mt-6">
                 <Button
                   type="button"
@@ -881,6 +875,9 @@ export default function Checkout() {
               </div>
 
               <CouponSelector className="mb-6" />
+
+              {/* VIP Delivery Option */}
+              <CeoDeliveryOption className="mb-6" />
 
               <div className="border-t border-surface-muted pt-3 mb-6 space-y-1.5">
 

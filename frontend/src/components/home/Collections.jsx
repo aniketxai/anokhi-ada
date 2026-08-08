@@ -4,7 +4,25 @@ import { FiArrowRight } from 'react-icons/fi';
 import SectionHeader from '../common/SectionHeader';
 import { collections as fallbackCollections } from '../../data/categories';
 
-export default function Collections({ items }) {
+export default function Collections({ items, loading = false }) {
+  if (loading) {
+    return (
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
+        <SectionHeader
+          eyebrow="Curated for you"
+          title="Our Collections"
+          subtitle="Thoughtfully curated edits for every project and occasion."
+          viewAllHref="/products"
+        />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 lg:gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="rounded-[1.25rem] aspect-[3/4] bg-slate-200/70 animate-pulse" />
+          ))}
+        </div>
+      </section>
+    );
+  }
+
   const activeCollections = Array.isArray(items) && items.length > 0 ? items : fallbackCollections;
 
   return (

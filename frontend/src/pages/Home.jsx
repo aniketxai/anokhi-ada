@@ -17,7 +17,9 @@ import { hotSelling, customPackaging, somethingForHer, somethingForHim } from '.
 export default function Home() {
   const [products, setProducts] = useState(() => api.getCachedProducts());
   const [loading, setLoading] = useState(() => api.getCachedProducts().length === 0);
-  const [siteContent, setSiteContent] = useState(null);
+  const cachedContent = api.getCachedSiteContent();
+  const [siteContent, setSiteContent] = useState(() => cachedContent);
+  const [contentLoading, setContentLoading] = useState(() => !cachedContent);
 
   useEffect(() => {
     let active = true;
@@ -28,7 +30,12 @@ export default function Home() {
     });
 
     api.fetchSiteContent().then((content) => {
-      if (active && content) setSiteContent(content);
+      if (active) {
+        setSiteContent(content || {});
+        setContentLoading(false);
+      }
+    }).catch(() => {
+      if (active) setContentLoading(false);
     });
 
     return () => { active = false; };
@@ -65,9 +72,9 @@ export default function Home() {
 
   return (
     <>
-      <Hero slides={siteContent?.heroSlides} />
+      <Hero slides={siteContent?.heroSlides} loading={contentLoading} />
       <FeatureSection />
-      <Collections items={siteContent?.collections} />
+      <Collections items={siteContent?.collections} loading={contentLoading} />
 
       <SubcollectionStrip
         eyebrow={hotSellingStrip.eyebrow}
@@ -75,6 +82,7 @@ export default function Home() {
         subtitle={hotSellingStrip.subtitle}
         items={hotSellingStrip.items}
         viewAllHref={hotSellingStrip.viewAllHref}
+        loading={contentLoading}
       />
 
       {/* Packing Material Section (Pollybag, Corrugated Box, Tape) */}
@@ -96,6 +104,7 @@ export default function Home() {
         subtitle={customPackagingStrip.subtitle}
         items={customPackagingStrip.items}
         viewAllHref={customPackagingStrip.viewAllHref}
+        loading={contentLoading}
       />
 
       {newArrivals.length > 0 && (
@@ -114,6 +123,7 @@ export default function Home() {
         subtitle={forHerStrip.subtitle}
         items={forHerStrip.items}
         viewAllHref={forHerStrip.viewAllHref}
+        loading={contentLoading}
       />
 
       <SubcollectionStrip
@@ -122,6 +132,7 @@ export default function Home() {
         subtitle={forHimStrip.subtitle}
         items={forHimStrip.items}
         viewAllHref={forHimStrip.viewAllHref}
+        loading={contentLoading}
       />
 
       {bestSellers.length > 0 && (

@@ -3,7 +3,20 @@ import { motion } from 'framer-motion';
 import { FiArrowUpRight } from 'react-icons/fi';
 import SectionHeader from '../common/SectionHeader';
 
-export default function SubcollectionStrip({ eyebrow, title, subtitle, items, viewAllHref }) {
+export default function SubcollectionStrip({ eyebrow, title, subtitle, items, viewAllHref, loading = false }) {
+  if (loading) {
+    return (
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <SectionHeader eyebrow={eyebrow} title={title} subtitle={subtitle} viewAllHref={viewAllHref} />
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 mt-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="aspect-square w-full rounded-2xl sm:rounded-3xl bg-slate-200/70 animate-pulse" />
+          ))}
+        </div>
+      </section>
+    );
+  }
+
   if (!items?.length) return null;
 
   return (

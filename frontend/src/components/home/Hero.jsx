@@ -10,8 +10,23 @@ import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import 'swiper/css/effect-fade';
 
-export default function Hero({ slides }) {
+export default function Hero({ slides, loading = false }) {
   const [, setActiveIndex] = useState(0);
+
+  if (loading) {
+    return (
+      <section className="relative bg-gradient-to-b from-[#FFFDF9] via-[#FAF2EB] to-[#FFFDF9] border-b border-rose-100/60 overflow-hidden py-3 sm:py-6">
+        <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-rose-200/60 bg-[#FDF8F3] w-full h-[220px] xs:h-[280px] sm:h-[380px] md:h-[460px] lg:h-[540px] xl:h-[600px] animate-pulse">
+            <div className="absolute inset-0 bg-slate-200/60" />
+            <div className="absolute bottom-4 left-4 sm:bottom-8 sm:left-8 w-48 sm:w-80 h-16 sm:h-24 bg-slate-300/70 rounded-2xl" />
+            <div className="absolute bottom-4 right-4 sm:bottom-8 sm:right-8 w-24 sm:w-36 h-8 sm:h-12 bg-slate-300/70 rounded-full" />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   const activeSlides = Array.isArray(slides) && slides.length > 0 ? slides : heroSlides;
 
   return (
