@@ -3,12 +3,7 @@ import { Order } from '../models/Order.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { sendOrderNotificationEmail, sendOrderCancellationEmail } from '../utils/mailer.js';
 import { razorpayInstance, isRazorpayConfigured, key_id, key_secret } from '../config/razorpay.js';
-
-function makeOrderNumber() {
-  return `SBX-${Date.now()
-    .toString()
-    .slice(-8)}-${Math.floor(Math.random() * 900 + 100)}`;
-}
+import { getNextOrderNumber } from '../utils/counter.js';
 
 const getRazorpayKey = asyncHandler(async (req, res) => {
   res.status(200).json({
@@ -92,7 +87,7 @@ const createRazorpayOrder = asyncHandler(async (req, res) => {
 
   const amountInPaise = Math.round(payableNow * 100);
 
-  const orderNumber = makeOrderNumber();
+  const orderNumber = await getNextOrderNumber('AA-SALES-');
 
   const order = await Order.create({
     orderNumber,
@@ -382,8 +377,10 @@ const createOrder = asyncHandler(async (req, res) => {
     shippingFee +
     codCharge;
 
+  const orderNumber = await getNextOrderNumber('AA-SALES-');
+
   const order = await Order.create({
-    orderNumber: makeOrderNumber(),
+    orderNumber,
     items: normalizedItems,
     shipping: normalizedShipping,
     payment: {

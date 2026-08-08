@@ -3,15 +3,10 @@ import fetch from 'node-fetch';
 import { CustomOrder } from '../models/CustomOrder.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { sendCustomOrderNotificationEmail } from '../utils/mailer.js';
+import { getNextOrderNumber } from '../utils/counter.js';
 
 const CLOUDINARY_CLOUD_NAME = process.env.VITE_CLOUDINARY_CLOUD_NAME;
 const CLOUDINARY_UPLOAD_PRESET = process.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-
-function makeOrderNumber() {
-  return `CUSTOM-${Date.now()
-    .toString()
-    .slice(-8)}-${Math.floor(Math.random() * 900 + 100)}`;
-}
 
 /**
  * Upload file buffer to Cloudinary
@@ -86,7 +81,7 @@ export const submitCustomOrder = asyncHandler(async (req, res) => {
   }
 
   // Create custom order
-  const orderNumber = makeOrderNumber();
+  const orderNumber = await getNextOrderNumber('AA-SALES-');
   const customOrder = new CustomOrder({
     orderNumber,
     name,

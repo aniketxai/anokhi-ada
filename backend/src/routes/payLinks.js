@@ -9,6 +9,7 @@
 import express from 'express';
 import crypto from 'crypto';
 import PayLink from '../models/PayLink.js';
+import { getNextOrderNumber } from '../utils/counter.js';
 
 const router = express.Router();
 
@@ -123,7 +124,7 @@ router.post('/:token/order', async (req, res) => {
     // ── Replace this block with your actual Order model ──────────────────
     // Example using a generic orders collection:
     const db          = req.app.get('db'); // or import your Order model directly
-    const orderNumber = `ANOKHI-${Date.now()}`;
+    const orderNumber = await getNextOrderNumber('AA-SALES-');
 
     // If you have an Order model, replace the lines below:
     // await Order.create({ ... });
