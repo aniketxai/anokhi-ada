@@ -811,6 +811,9 @@ export default function Checkout() {
                 </label>
               </div>
 
+              {/* VIP Delivery Option */}
+              <CeoDeliveryOption className="mt-6" />
+
               <div className="flex gap-3 mt-6">
                 <Button
                   type="button"
