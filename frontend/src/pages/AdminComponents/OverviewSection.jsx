@@ -169,20 +169,24 @@ export function OverviewSection({
 
         <SectionCard title="Recent Activity" description="The latest actions across store operations.">
           <div className="space-y-3">
-            {activity.map((item) => (
-              <div key={item.title} className="flex items-start gap-3 rounded-2xl border border-white/8 bg-black/20 p-4">
-                <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/15 text-primary">
-                  <ArrowUpRight className="w-[18px] h-[18px]" />
+            {(!activity || activity.length === 0) ? (
+              <p className="text-sm text-secondary-text py-4 text-center">No recent activity</p>
+            ) : (
+              activity.map((item, idx) => (
+                <div key={item.id || item.title || idx} className="flex items-start gap-3 rounded-2xl border border-white/8 bg-black/20 p-4">
+                  <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                    <ArrowUpRight className="w-[18px] h-[18px]" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-foreground">{item.title}</p>
+                    <p className="text-xs text-secondary-text mt-1">{item.time}</p>
+                  </div>
+                  <span className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[11px] font-semibold text-outline capitalize">
+                    {item.type}
+                  </span>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium text-foreground">{item.title}</p>
-                  <p className="text-xs text-secondary-text mt-1">{item.time}</p>
-                </div>
-                <span className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[11px] font-semibold text-outline capitalize">
-                  {item.type}
-                </span>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </SectionCard>
       </div>
@@ -212,7 +216,7 @@ export function OverviewSection({
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div>
                     <div className="flex flex-wrap items-center gap-2 mb-2">
-                      <p className="font-semibold text-foreground">{order._id || order.id}</p>
+                      <p className="font-semibold text-foreground">{order.orderNumber || order._id || order.id}</p>
                       <StatusPill status={order.status} />
                     </div>
                     <p className="text-sm text-secondary-text">

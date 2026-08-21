@@ -41,6 +41,39 @@ import {
   formatPaymentValue,
 } from './AdminComponents';
 
+function formatRelativeTime(dateInput) {
+  if (!dateInput) return 'Recently';
+  const date = new Date(dateInput);
+  if (isNaN(date.getTime())) return 'Recently';
+
+  const now = new Date();
+  const diffInSeconds = Math.floor((now - date) / 1000);
+
+  if (diffInSeconds < 0 || diffInSeconds < 60) {
+    return 'just now';
+  }
+
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} min ago`;
+  }
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) {
+    return `${diffInHours} ${diffInHours === 1 ? 'hr' : 'hrs'} ago`;
+  }
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) {
+    return `${diffInDays} ${diffInDays === 1 ? 'day' : 'days'} ago`;
+  }
+
+  return date.toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+  });
+}
+
 const navItems = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'site-content', label: 'Homepage & Banners', icon: ImageIcon },
@@ -202,29 +235,79 @@ const loadAdminData = useCallback(async ({ showLoading = true } = {}) => {
       
       
 
-      const recentActivity = [
-        ...(customOrdersData.slice(0, 1).map((co) => ({
-          title: `Custom order from ${co.name}`,
-          time: 'just now',
-          type: 'custom-order',
-        })) || []),
-        ...(ordersData.slice(0, 1).map((o) => ({
-          title: `New order ${o._id || o.id} accepted`,
-          time: '4 min ago',
-          type: 'order',
-        })) || []),
-        ...(quotesData.slice(0, 1).map((q) => ({
-          title: `Quote request from ${q.companyName || q.name}`,
-          time: '17 min ago',
-          type: 'quote',
-        })) || []),
-        ...(productsData.slice(0, 1).map((p) => ({
-          title: `Product ${p.id} updated`,
-          time: '43 min ago',
-          type: 'catalog',
-        })) || []),
+      const allActivities = [
+        ...(ordersData || []).map((o) => {
+          const orderNum = o.orderNumber || (o._id ? `#${String(o._id).slice(-6)}` : 'Order');
+          const customerName = o.shipping?.firstName
+            ? `${o.shipping.firstName} ${o.shipping.lastName || ''}`.trim()
+            : o.customerName || o.customer || '';
+          const statusText = o.status ? o.status.charAt(0).toUpperCase() + o.status.slice(1) : 'Pending';
+          const title = customerName
+            ? `Order ${orderNum} (${statusText}) - ${customerName}`
+            : `Order ${orderNum} (${statusText})`;
+          const rawDate = o.createdAt || o.updatedAt;
+          return {
+            id: o._id || o.id,
+            title,
+            timestamp: rawDate ? new Date(rawDate).getTime() : 0,
+            time: formatRelativeTime(rawDate),
+            type: 'order',
+          };
+        }),
+        ...(customOrdersData || []).map((co) => {
+          const name = co.name || co.customerName || 'Customer';
+          const statusText = co.status ? co.status.charAt(0).toUpperCase() + co.status.slice(1) : 'New';
+          const title = `Custom order from ${name} (${statusText})`;
+          const rawDate = co.createdAt || co.updatedAt;
+          return {
+            id: co._id || co.id,
+            title,
+            timestamp: rawDate ? new Date(rawDate).getTime() : 0,
+            time: formatRelativeTime(rawDate),
+            type: 'custom-order',
+          };
+        }),
+        ...(quotesData || []).map((q) => {
+          const name = q.companyName || q.name || 'Customer';
+          const statusText = q.status ? q.status.charAt(0).toUpperCase() + q.status.slice(1) : 'New';
+          const title = `Quote request from ${name} (${statusText})`;
+          const rawDate = q.createdAt || q.updatedAt;
+          return {
+            id: q._id || q.id,
+            title,
+            timestamp: rawDate ? new Date(rawDate).getTime() : 0,
+            time: formatRelativeTime(rawDate),
+            type: 'quote',
+          };
+        }),
+        ...(contactsData || []).map((c) => {
+          const name = c.name || 'Customer';
+          const title = `Enquiry from ${name}: ${c.subject || 'Message'}`;
+          const rawDate = c.createdAt || c.updatedAt;
+          return {
+            id: c._id || c.id,
+            title,
+            timestamp: rawDate ? new Date(rawDate).getTime() : 0,
+            time: formatRelativeTime(rawDate),
+            type: 'contact',
+          };
+        }),
+        ...(productsData || []).map((p) => {
+          const name = p.name || p.id || 'Product';
+          const title = `Catalog product "${name}" updated`;
+          const rawDate = p.updatedAt || p.createdAt;
+          return {
+            id: p._id || p.id,
+            title,
+            timestamp: rawDate ? new Date(rawDate).getTime() : 0,
+            time: formatRelativeTime(rawDate),
+            type: 'catalog',
+          };
+        }),
       ];
-      setActivity(recentActivity.slice(0, 4));
+
+      allActivities.sort((a, b) => b.timestamp - a.timestamp);
+      setActivity(allActivities.slice(0, 6));
     } catch (err) {
       console.error('Failed to fetch admin data:', err);
       setError(err.message || 'Failed to load admin data');

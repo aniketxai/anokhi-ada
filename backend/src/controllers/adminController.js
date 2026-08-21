@@ -156,11 +156,12 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
     return;
   }
 
-  const [products, allOrders, quotes, contacts] = await Promise.all([
+  const [products, allOrders, quotes, contacts, customOrders] = await Promise.all([
     Product.find().sort({ createdAt: -1 }).lean(),
     Order.find().sort({ createdAt: -1 }).lean(),
     QuoteRequest.find().sort({ createdAt: -1 }).limit(8).lean(),
     ContactMessage.find().sort({ createdAt: -1 }).limit(8).lean(),
+    CustomOrder.find().sort({ createdAt: -1 }).limit(8).lean(),
   ]);
 
   const recentOrders = allOrders.slice(0, 8);
@@ -210,22 +211,37 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
       recentQuotes: quotes.slice(0, 5),
       recentContacts: contacts.slice(0, 5),
       recentActivity: [
-        ...recentOrders.slice(0, 3).map((order) => ({
-          type: 'order',
-          title: `Order ${order.orderNumber} ${order.status}`,
-          time: order.createdAt,
+        ...recentOrders.slice(0, 4).map((order) => {
+          const orderNum = order.orderNumber || (order._id ? `#${String(order._id).slice(-6)}` : 'Order');
+          const statusText = order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'Pending';
+          return {
+            type: 'order',
+            title: `Order ${orderNum} (${statusText})`,
+            time: order.createdAt,
+            createdAt: order.createdAt,
+          };
+        }),
+        ...customOrders.slice(0, 3).map((co) => ({
+          type: 'custom-order',
+          title: `Custom order from ${co.name || 'Customer'} (${co.status || 'new'})`,
+          time: co.createdAt,
+          createdAt: co.createdAt,
         })),
         ...quotes.slice(0, 3).map((quote) => ({
           type: 'quote',
-          title: `Quote from ${quote.name}`,
+          title: `Quote request from ${quote.companyName || quote.name || 'Customer'}`,
           time: quote.createdAt,
+          createdAt: quote.createdAt,
         })),
         ...contacts.slice(0, 3).map((message) => ({
           type: 'contact',
-          title: `Message from ${message.name}`,
+          title: `Message from ${message.name || 'Customer'}: ${message.subject || 'Enquiry'}`,
           time: message.createdAt,
+          createdAt: message.createdAt,
         })),
-      ].slice(0, 8),
+      ]
+        .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+        .slice(0, 8),
       lowStockProducts: lowStockProducts.map((product) => ({
         ...product,
         stockQty: deriveStockQty(product),
