@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Settings2,
   Bell,
@@ -12,9 +12,9 @@ import {
   EyeOff,
   Save,
   Loader,
-  X,
-  CheckCircle,
+  CheckCircle2,
   AlertCircle,
+  KeyRound,
 } from 'lucide-react';
 import { changeAdminPassword, fetchAdminSettings, updateAdminSettings } from '../api';
 
@@ -23,15 +23,15 @@ function SettingsSection({ title, description, icon: Icon, children }) {
     <motion.section
       initial={{ opacity: 0, y: 10 }}
       whileInView={{ opacity: 1, y: 0 }}
-      className="rounded-[28px] border border-white/8 bg-white/3 p-5 sm:p-6 shadow-soft"
+      className="rounded-[24px] border border-border bg-card p-5 sm:p-6 shadow-sm"
     >
       <div className="flex items-start gap-4 mb-5">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary shrink-0">
-          <Icon size={20} />
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary shrink-0">
+          <Icon size={22} />
         </div>
         <div>
-          <h2 className="text-lg sm:text-xl font-semibold text-foreground">{title}</h2>
-          {description && <p className="mt-1 text-sm text-secondary-text">{description}</p>}
+          <h2 className="text-lg sm:text-xl font-bold text-foreground">{title}</h2>
+          {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
         </div>
       </div>
       {children}
@@ -44,22 +44,22 @@ function SettingField({ label, type = 'text', value, onChange, placeholder = '' 
 
   return (
     <label className="block">
-      <span className="mb-2 block text-xs uppercase tracking-[0.2em] text-outline">{label}</span>
+      <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-outline">{label}</span>
       <div className="relative">
         <input
           type={type === 'password' && !showPassword ? 'password' : type}
-          value={value}
+          value={value || ''}
           onChange={onChange}
           placeholder={placeholder}
-          className="w-full rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-sm text-foreground outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
+          className="w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-xs"
         />
         {type === 'password' && (
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-text hover:text-foreground"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
           >
-            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         )}
       </div>
@@ -72,12 +72,12 @@ function ToggleSwitch({ enabled, onChange }) {
     <button
       type="button"
       onClick={() => onChange(!enabled)}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-material ${
-        enabled ? 'bg-primary' : 'bg-white/10'
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
+        enabled ? 'bg-primary' : 'bg-secondary'
       }`}
     >
       <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-material ${
+        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-xs transition-transform ${
           enabled ? 'translate-x-6' : 'translate-x-1'
         }`}
       />
@@ -111,8 +111,7 @@ export default function AdminSettings() {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Password Modal state
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  // Password inline form state
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
     newPassword: '',
@@ -151,9 +150,9 @@ export default function AdminSettings() {
       setSaving(true);
       setSuccessMessage('');
       setErrorMessage('');
-      
+
       await updateAdminSettings(settings);
-      
+
       setSuccessMessage('Settings saved successfully');
       setTimeout(() => setSuccessMessage(''), 3500);
     } catch (error) {
@@ -188,13 +187,6 @@ export default function AdminSettings() {
     setTimeout(() => setSuccessMessage(''), 3500);
   };
 
-  const handleOpenPasswordModal = () => {
-    setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    setPasswordError('');
-    setPasswordSuccess('');
-    setIsPasswordModalOpen(true);
-  };
-
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     setPasswordError('');
@@ -225,11 +217,7 @@ export default function AdminSettings() {
       const res = await changeAdminPassword(passwordForm.currentPassword, passwordForm.newPassword);
       setPasswordSuccess(res.message || 'Password updated successfully!');
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-
-      setTimeout(() => {
-        setIsPasswordModalOpen(false);
-        setPasswordSuccess('');
-      }, 2000);
+      setTimeout(() => setPasswordSuccess(''), 4000);
     } catch (err) {
       setPasswordError(err.message || 'Failed to update password.');
     } finally {
@@ -238,20 +226,126 @@ export default function AdminSettings() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-5xl mx-auto pb-12">
+      {/* Top Banner Notifications */}
       {successMessage && (
-        <div className="flex items-center gap-2 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-          <CheckCircle size={18} className="shrink-0 text-emerald-400" />
+        <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-50 p-4 text-sm font-medium text-emerald-900 shadow-xs">
+          <CheckCircle2 size={20} className="shrink-0 text-emerald-600" />
           <span>{successMessage}</span>
         </div>
       )}
 
       {errorMessage && (
-        <div className="flex items-center gap-2 rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
-          <AlertCircle size={18} className="shrink-0 text-rose-400" />
+        <div className="flex items-center gap-3 rounded-2xl border border-rose-500/30 bg-rose-50 p-4 text-sm font-medium text-rose-900 shadow-xs">
+          <AlertCircle size={20} className="shrink-0 text-rose-600" />
           <span>{errorMessage}</span>
         </div>
       )}
+
+      {/* Change Password Section (High Visibility) */}
+      <SettingsSection
+        title="Change Admin Password"
+        description="Update your admin account login password"
+        icon={KeyRound}
+      >
+        <form onSubmit={handlePasswordSubmit} className="space-y-5">
+          {passwordSuccess && (
+            <div className="flex items-center gap-3 rounded-xl border border-emerald-500/30 bg-emerald-50 p-3.5 text-sm font-medium text-emerald-800">
+              <CheckCircle2 size={18} className="shrink-0 text-emerald-600" />
+              <span>{passwordSuccess}</span>
+            </div>
+          )}
+
+          {passwordError && (
+            <div className="flex items-center gap-3 rounded-xl border border-rose-500/30 bg-rose-50 p-3.5 text-sm font-medium text-rose-800">
+              <AlertCircle size={18} className="shrink-0 text-rose-600" />
+              <span>{passwordError}</span>
+            </div>
+          )}
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            {/* Current Password */}
+            <div>
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-outline">
+                Current Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showCurrentPw ? 'text' : 'password'}
+                  value={passwordForm.currentPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                  placeholder="Enter current password"
+                  className="w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-xs"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPw(!showCurrentPw)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                >
+                  {showCurrentPw ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            {/* New Password */}
+            <div>
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-outline">
+                New Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showNewPw ? 'text' : 'password'}
+                  value={passwordForm.newPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                  placeholder="New password (min 6 chars)"
+                  className="w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-xs"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPw(!showNewPw)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                >
+                  {showNewPw ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Confirm New Password */}
+            <div>
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-outline">
+                Confirm New Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showConfirmPw ? 'text' : 'password'}
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                  placeholder="Confirm new password"
+                  className="w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-xs"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPw(!showConfirmPw)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                >
+                  {showConfirmPw ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <button
+              type="submit"
+              disabled={passwordSaving}
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary/90 transition-all disabled:opacity-60 cursor-pointer"
+            >
+              {passwordSaving ? <Loader size={16} className="animate-spin" /> : <Lock size={16} />}
+              {passwordSaving ? 'Updating Password...' : 'Update Password'}
+            </button>
+          </div>
+        </form>
+      </SettingsSection>
 
       {/* Store Information */}
       <SettingsSection
@@ -293,7 +387,7 @@ export default function AdminSettings() {
       >
         <div className="space-y-6">
           <div>
-            <h3 className="text-sm font-semibold mb-4">General Email Settings</h3>
+            <h3 className="text-sm font-bold text-foreground mb-4">General Email Settings</h3>
             <div className="grid gap-4 sm:grid-cols-2">
               <SettingField
                 label="Admin Email"
@@ -309,8 +403,8 @@ export default function AdminSettings() {
             </div>
           </div>
 
-          <div className="border-t border-white/8 pt-6">
-            <h3 className="text-sm font-semibold mb-4">SMTP Configuration</h3>
+          <div className="border-t border-border pt-6">
+            <h3 className="text-sm font-bold text-foreground mb-4">SMTP Configuration</h3>
             <div className="grid gap-4 sm:grid-cols-2">
               <SettingField
                 label="SMTP Host"
@@ -340,7 +434,7 @@ export default function AdminSettings() {
                 enabled={settings.smtpSecure}
                 onChange={(value) => handleSettingChange('smtpSecure', value)}
               />
-              <span className="text-sm text-secondary-text">Use secure connection (TLS/SSL)</span>
+              <span className="text-sm font-medium text-muted-foreground">Use secure connection (TLS/SSL)</span>
             </label>
           </div>
         </div>
@@ -353,10 +447,10 @@ export default function AdminSettings() {
         icon={Bell}
       >
         <div className="space-y-3">
-          <div className="flex items-center justify-between rounded-2xl border border-white/8 bg-black/20 px-4 py-3">
+          <div className="flex items-center justify-between rounded-xl border border-border bg-white px-4 py-3.5 shadow-xs">
             <div>
-              <p className="font-medium text-foreground">Order Notifications</p>
-              <p className="text-xs text-secondary-text mt-1">Get alerted when new orders arrive</p>
+              <p className="font-semibold text-foreground">Order Notifications</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Get alerted when new orders arrive</p>
             </div>
             <ToggleSwitch
               enabled={settings.orderNotifications}
@@ -364,10 +458,10 @@ export default function AdminSettings() {
             />
           </div>
 
-          <div className="flex items-center justify-between rounded-2xl border border-white/8 bg-black/20 px-4 py-3">
+          <div className="flex items-center justify-between rounded-xl border border-border bg-white px-4 py-3.5 shadow-xs">
             <div>
-              <p className="font-medium text-foreground">Quote Request Emails</p>
-              <p className="text-xs text-secondary-text mt-1">Send confirmations for quote requests</p>
+              <p className="font-semibold text-foreground">Quote Request Emails</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Send confirmations for quote requests</p>
             </div>
             <ToggleSwitch
               enabled={settings.quoteEmails}
@@ -375,10 +469,10 @@ export default function AdminSettings() {
             />
           </div>
 
-          <div className="flex items-center justify-between rounded-2xl border border-white/8 bg-black/20 px-4 py-3">
+          <div className="flex items-center justify-between rounded-xl border border-border bg-white px-4 py-3.5 shadow-xs">
             <div>
-              <p className="font-medium text-foreground">Inventory Alerts</p>
-              <p className="text-xs text-secondary-text mt-1">Alert when products are low in stock</p>
+              <p className="font-semibold text-foreground">Inventory Alerts</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Alert when products are low in stock</p>
             </div>
             <ToggleSwitch
               enabled={settings.inventoryAlerts}
@@ -386,10 +480,10 @@ export default function AdminSettings() {
             />
           </div>
 
-          <div className="flex items-center justify-between rounded-2xl border border-white/8 bg-black/20 px-4 py-3">
+          <div className="flex items-center justify-between rounded-xl border border-border bg-white px-4 py-3.5 shadow-xs">
             <div>
-              <p className="font-medium text-foreground">Auto Status Updates</p>
-              <p className="text-xs text-secondary-text mt-1">Automatically send order status update emails</p>
+              <p className="font-semibold text-foreground">Auto Status Updates</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Automatically send order status update emails</p>
             </div>
             <ToggleSwitch
               enabled={settings.autoStatusUpdates}
@@ -407,10 +501,10 @@ export default function AdminSettings() {
       >
         <div className="space-y-6">
           <div>
-            <div className="flex items-center justify-between rounded-2xl border border-white/8 bg-black/20 px-4 py-3 mb-4">
+            <div className="flex items-center justify-between rounded-xl border border-border bg-white px-4 py-3.5 mb-4 shadow-xs">
               <div>
-                <p className="font-medium text-foreground">Payment Gateway</p>
-                <p className="text-xs text-secondary-text mt-1">Enable online payments (Razorpay, Stripe, etc)</p>
+                <p className="font-semibold text-foreground">Payment Gateway</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Enable online payments (Razorpay, Stripe, etc)</p>
               </div>
               <ToggleSwitch
                 enabled={settings.enablePaymentGateway}
@@ -419,8 +513,8 @@ export default function AdminSettings() {
             </div>
           </div>
 
-          <div className="border-t border-white/8 pt-6">
-            <h3 className="text-sm font-semibold mb-4">Shipping Settings</h3>
+          <div className="border-t border-border pt-6">
+            <h3 className="text-sm font-bold text-foreground mb-4">Shipping Settings</h3>
             <div className="grid gap-4 sm:grid-cols-2">
               <SettingField
                 label="Default Shipping Cost (₹)"
@@ -429,7 +523,7 @@ export default function AdminSettings() {
                 onChange={(e) => handleSettingChange('defaultShippingCost', e.target.value)}
               />
             </div>
-            <p className="text-xs text-secondary-text mt-4">Additional shipping providers can be configured through integrations</p>
+            <p className="text-xs text-muted-foreground mt-4">Additional shipping providers can be configured through integrations</p>
           </div>
         </div>
       </SettingsSection>
@@ -437,206 +531,47 @@ export default function AdminSettings() {
       {/* Security */}
       <SettingsSection
         title="Security & Access"
-        description="Manage security settings and access control"
-        icon={Lock}
+        description="Manage additional security settings and access control"
+        icon={ShieldCheck}
       >
         <div className="space-y-3">
-          <div className="rounded-2xl border border-white/8 bg-black/20 p-4">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+          <div className="rounded-xl border border-border bg-white p-4 flex items-center justify-between shadow-xs">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <ShieldCheck size={18} />
               </div>
               <div>
-                <p className="font-medium">Two-Factor Authentication</p>
-                <p className="text-xs text-secondary-text mt-1">Add an extra layer of security to your account</p>
+                <p className="font-semibold text-foreground">Two-Factor Authentication</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Add an extra layer of security to your account</p>
               </div>
             </div>
-            <button className="text-sm font-semibold text-primary hover:text-primary-light">
+            <button type="button" className="text-sm font-bold text-primary hover:underline cursor-pointer">
               Enable 2FA
             </button>
-          </div>
-
-          <div className="rounded-2xl border border-white/8 bg-black/20 p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/15 text-primary">
-                  <Lock size={18} />
-                </div>
-                <div>
-                  <p className="font-medium">Change Password</p>
-                  <p className="text-xs text-secondary-text mt-1">Update your admin account password</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={handleOpenPasswordModal}
-                className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow-soft hover:bg-primary-light transition-material"
-              >
-                Change Password
-              </button>
-            </div>
           </div>
         </div>
       </SettingsSection>
 
       {/* Action Buttons */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+      <div className="flex flex-col gap-3 sm:flex-row sm:justify-end pt-4">
         <button
           type="button"
           onClick={handleResetDefaults}
-          className="inline-flex items-center justify-center gap-2 rounded-full border border-white/8 bg-white/5 px-6 py-3 text-sm font-semibold text-foreground hover:bg-white/10 transition-material"
+          className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-white px-6 py-3 text-sm font-semibold text-foreground hover:bg-secondary transition-colors cursor-pointer"
         >
           <Settings2 size={16} />
           Reset to Defaults
         </button>
         <button
+          type="button"
           onClick={handleSaveSettings}
           disabled={saving || loadingSettings}
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white shadow-soft hover:bg-primary-light transition-material disabled:opacity-60"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary/90 transition-all disabled:opacity-60 cursor-pointer"
         >
           {saving ? <Loader size={16} className="animate-spin" /> : <Save size={16} />}
           {saving ? 'Saving...' : 'Save Settings'}
         </button>
       </div>
-
-      {/* Change Password Modal */}
-      <AnimatePresence>
-        {isPasswordModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-md rounded-3xl border border-white/10 bg-neutral-900 p-6 shadow-2xl space-y-5"
-            >
-              {/* Modal Header */}
-              <div className="flex items-center justify-between border-b border-white/8 pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/15 text-primary">
-                    <Lock size={20} />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-foreground">Change Password</h3>
-                    <p className="text-xs text-secondary-text">Update your admin account credentials</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setIsPasswordModalOpen(false)}
-                  className="rounded-full p-2 text-secondary-text hover:bg-white/10 hover:text-foreground"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* Alert Messages */}
-              {passwordError && (
-                <div className="flex items-center gap-2 rounded-2xl border border-rose-500/25 bg-rose-500/10 p-3 text-xs text-rose-300">
-                  <AlertCircle size={16} className="shrink-0 text-rose-400" />
-                  <span>{passwordError}</span>
-                </div>
-              )}
-
-              {passwordSuccess && (
-                <div className="flex items-center gap-2 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-3 text-xs text-emerald-300">
-                  <CheckCircle size={16} className="shrink-0 text-emerald-400" />
-                  <span>{passwordSuccess}</span>
-                </div>
-              )}
-
-              {/* Form */}
-              <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                {/* Current Password */}
-                <div>
-                  <label className="mb-1 block text-xs uppercase tracking-wider text-outline font-medium">
-                    Current Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showCurrentPw ? 'text' : 'password'}
-                      value={passwordForm.currentPassword}
-                      onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-                      placeholder="Enter current password"
-                      className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-foreground outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowCurrentPw(!showCurrentPw)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-text hover:text-foreground"
-                    >
-                      {showCurrentPw ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* New Password */}
-                <div>
-                  <label className="mb-1 block text-xs uppercase tracking-wider text-outline font-medium">
-                    New Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showNewPw ? 'text' : 'password'}
-                      value={passwordForm.newPassword}
-                      onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                      placeholder="Enter new password (min. 6 characters)"
-                      className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-foreground outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowNewPw(!showNewPw)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-text hover:text-foreground"
-                    >
-                      {showNewPw ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Confirm New Password */}
-                <div>
-                  <label className="mb-1 block text-xs uppercase tracking-wider text-outline font-medium">
-                    Confirm New Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showConfirmPw ? 'text' : 'password'}
-                      value={passwordForm.confirmPassword}
-                      onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                      placeholder="Confirm new password"
-                      className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-foreground outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPw(!showConfirmPw)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-text hover:text-foreground"
-                    >
-                      {showConfirmPw ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/8">
-                  <button
-                    type="button"
-                    onClick={() => setIsPasswordModalOpen(false)}
-                    className="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-semibold text-foreground hover:bg-white/10"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={passwordSaving}
-                    className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-xs font-semibold text-white shadow-soft hover:bg-primary-light disabled:opacity-60"
-                  >
-                    {passwordSaving ? <Loader size={14} className="animate-spin" /> : null}
-                    {passwordSaving ? 'Updating...' : 'Update Password'}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
