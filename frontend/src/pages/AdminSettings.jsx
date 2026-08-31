@@ -1,19 +1,22 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Settings2,
   Bell,
   Lock,
   Mail,
   Globe,
-  Truck,
   DollarSign,
   ShieldCheck,
   Eye,
   EyeOff,
   Save,
   Loader,
+  X,
+  CheckCircle,
+  AlertCircle,
 } from 'lucide-react';
+import { changeAdminPassword, fetchAdminSettings, updateAdminSettings } from '../api';
 
 function SettingsSection({ title, description, icon: Icon, children }) {
   return (
@@ -44,7 +47,7 @@ function SettingField({ label, type = 'text', value, onChange, placeholder = '' 
       <span className="mb-2 block text-xs uppercase tracking-[0.2em] text-outline">{label}</span>
       <div className="relative">
         <input
-          type={type === 'password' && !showPassword ? 'password' : 'text'}
+          type={type === 'password' && !showPassword ? 'password' : type}
           value={value}
           onChange={onChange}
           placeholder={placeholder}
@@ -104,7 +107,40 @@ export default function AdminSettings() {
   });
 
   const [saving, setSaving] = useState(false);
+  const [loadingSettings, setLoadingSettings] = useState(true);
   const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  // Password Modal state
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        setLoadingSettings(true);
+        const data = await fetchAdminSettings();
+        if (data && Object.keys(data).length > 0) {
+          setSettings((prev) => ({ ...prev, ...data }));
+        }
+      } catch (err) {
+        console.warn('Could not load settings from server, using defaults:', err);
+      } finally {
+        setLoadingSettings(false);
+      }
+    }
+    loadSettings();
+  }, []);
 
   const handleSettingChange = (key, value) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
@@ -114,24 +150,106 @@ export default function AdminSettings() {
     try {
       setSaving(true);
       setSuccessMessage('');
+      setErrorMessage('');
       
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await updateAdminSettings(settings);
       
       setSuccessMessage('Settings saved successfully');
-      setTimeout(() => setSuccessMessage(''), 3000);
+      setTimeout(() => setSuccessMessage(''), 3500);
     } catch (error) {
       console.error('Failed to save settings:', error);
+      setErrorMessage(error.message || 'Failed to save settings');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleResetDefaults = () => {
+    setSettings({
+      storeName: 'Anokhi Ada',
+      storeEmail: 'anokhiada9@gmail.com',
+      storeCurrency: 'INR',
+      adminEmail: 'anokhiada9@gmail.com',
+      senderName: 'Anokhi Ada',
+      smtpHost: 'smtp.gmail.com',
+      smtpPort: '587',
+      smtpUser: '',
+      smtpPassword: '',
+      smtpSecure: true,
+      orderNotifications: true,
+      quoteEmails: true,
+      inventoryAlerts: true,
+      autoStatusUpdates: true,
+      enablePaymentGateway: true,
+      defaultShippingCost: '50',
+      taxRate: '18',
+    });
+    setSuccessMessage('Settings reset to defaults (click Save Settings to persist)');
+    setTimeout(() => setSuccessMessage(''), 3500);
+  };
+
+  const handleOpenPasswordModal = () => {
+    setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    setPasswordError('');
+    setPasswordSuccess('');
+    setIsPasswordModalOpen(true);
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess('');
+
+    if (!passwordForm.currentPassword) {
+      setPasswordError('Please enter your current password.');
+      return;
+    }
+
+    if (!passwordForm.newPassword) {
+      setPasswordError('Please enter a new password.');
+      return;
+    }
+
+    if (passwordForm.newPassword.length < 6) {
+      setPasswordError('New password must be at least 6 characters long.');
+      return;
+    }
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordError('New password and confirm password do not match.');
+      return;
+    }
+
+    try {
+      setPasswordSaving(true);
+      const res = await changeAdminPassword(passwordForm.currentPassword, passwordForm.newPassword);
+      setPasswordSuccess(res.message || 'Password updated successfully!');
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+
+      setTimeout(() => {
+        setIsPasswordModalOpen(false);
+        setPasswordSuccess('');
+      }, 2000);
+    } catch (err) {
+      setPasswordError(err.message || 'Failed to update password.');
+    } finally {
+      setPasswordSaving(false);
     }
   };
 
   return (
     <div className="space-y-6">
       {successMessage && (
-        <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-          {successMessage}
+        <div className="flex items-center gap-2 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+          <CheckCircle size={18} className="shrink-0 text-emerald-400" />
+          <span>{successMessage}</span>
+        </div>
+      )}
+
+      {errorMessage && (
+        <div className="flex items-center gap-2 rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+          <AlertCircle size={18} className="shrink-0 text-rose-400" />
+          <span>{errorMessage}</span>
         </div>
       )}
 
@@ -217,7 +335,7 @@ export default function AdminSettings() {
                 onChange={(e) => handleSettingChange('smtpPassword', e.target.value)}
               />
             </div>
-            <label className="mt-4 flex items-center gap-3">
+            <label className="mt-4 flex items-center gap-3 cursor-pointer">
               <ToggleSwitch
                 enabled={settings.smtpSecure}
                 onChange={(value) => handleSettingChange('smtpSecure', value)}
@@ -339,37 +457,186 @@ export default function AdminSettings() {
           </div>
 
           <div className="rounded-2xl border border-white/8 bg-black/20 p-4">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/15 text-primary">
-                <Lock size={18} />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                  <Lock size={18} />
+                </div>
+                <div>
+                  <p className="font-medium">Change Password</p>
+                  <p className="text-xs text-secondary-text mt-1">Update your admin account password</p>
+                </div>
               </div>
-              <div>
-                <p className="font-medium">Change Password</p>
-                <p className="text-xs text-secondary-text mt-1">Update your admin account password</p>
-              </div>
+              <button
+                type="button"
+                onClick={handleOpenPasswordModal}
+                className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow-soft hover:bg-primary-light transition-material"
+              >
+                Change Password
+              </button>
             </div>
-            <button className="text-sm font-semibold text-primary hover:text-primary-light">
-              Change Password
-            </button>
           </div>
         </div>
       </SettingsSection>
 
       {/* Action Buttons */}
       <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
-        <button className="inline-flex items-center justify-center gap-2 rounded-full border border-white/8 bg-white/5 px-6 py-3 text-sm font-semibold text-foreground hover:bg-white/10 transition-material">
+        <button
+          type="button"
+          onClick={handleResetDefaults}
+          className="inline-flex items-center justify-center gap-2 rounded-full border border-white/8 bg-white/5 px-6 py-3 text-sm font-semibold text-foreground hover:bg-white/10 transition-material"
+        >
           <Settings2 size={16} />
           Reset to Defaults
         </button>
         <button
           onClick={handleSaveSettings}
-          disabled={saving}
+          disabled={saving || loadingSettings}
           className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white shadow-soft hover:bg-primary-light transition-material disabled:opacity-60"
         >
           {saving ? <Loader size={16} className="animate-spin" /> : <Save size={16} />}
           {saving ? 'Saving...' : 'Save Settings'}
         </button>
       </div>
+
+      {/* Change Password Modal */}
+      <AnimatePresence>
+        {isPasswordModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-md rounded-3xl border border-white/10 bg-neutral-900 p-6 shadow-2xl space-y-5"
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between border-b border-white/8 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                    <Lock size={20} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-foreground">Change Password</h3>
+                    <p className="text-xs text-secondary-text">Update your admin account credentials</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsPasswordModalOpen(false)}
+                  className="rounded-full p-2 text-secondary-text hover:bg-white/10 hover:text-foreground"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Alert Messages */}
+              {passwordError && (
+                <div className="flex items-center gap-2 rounded-2xl border border-rose-500/25 bg-rose-500/10 p-3 text-xs text-rose-300">
+                  <AlertCircle size={16} className="shrink-0 text-rose-400" />
+                  <span>{passwordError}</span>
+                </div>
+              )}
+
+              {passwordSuccess && (
+                <div className="flex items-center gap-2 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-3 text-xs text-emerald-300">
+                  <CheckCircle size={16} className="shrink-0 text-emerald-400" />
+                  <span>{passwordSuccess}</span>
+                </div>
+              )}
+
+              {/* Form */}
+              <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                {/* Current Password */}
+                <div>
+                  <label className="mb-1 block text-xs uppercase tracking-wider text-outline font-medium">
+                    Current Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showCurrentPw ? 'text' : 'password'}
+                      value={passwordForm.currentPassword}
+                      onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                      placeholder="Enter current password"
+                      className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-foreground outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowCurrentPw(!showCurrentPw)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-text hover:text-foreground"
+                    >
+                      {showCurrentPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* New Password */}
+                <div>
+                  <label className="mb-1 block text-xs uppercase tracking-wider text-outline font-medium">
+                    New Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showNewPw ? 'text' : 'password'}
+                      value={passwordForm.newPassword}
+                      onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                      placeholder="Enter new password (min. 6 characters)"
+                      className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-foreground outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPw(!showNewPw)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-text hover:text-foreground"
+                    >
+                      {showNewPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Confirm New Password */}
+                <div>
+                  <label className="mb-1 block text-xs uppercase tracking-wider text-outline font-medium">
+                    Confirm New Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPw ? 'text' : 'password'}
+                      value={passwordForm.confirmPassword}
+                      onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                      placeholder="Confirm new password"
+                      className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-foreground outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPw(!showConfirmPw)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-text hover:text-foreground"
+                    >
+                      {showConfirmPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/8">
+                  <button
+                    type="button"
+                    onClick={() => setIsPasswordModalOpen(false)}
+                    className="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-semibold text-foreground hover:bg-white/10"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={passwordSaving}
+                    className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-xs font-semibold text-white shadow-soft hover:bg-primary-light disabled:opacity-60"
+                  >
+                    {passwordSaving ? <Loader size={14} className="animate-spin" /> : null}
+                    {passwordSaving ? 'Updating...' : 'Update Password'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

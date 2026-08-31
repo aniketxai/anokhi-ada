@@ -5,6 +5,7 @@ import { Order } from '../models/Order.js';
 import { CustomOrder } from '../models/CustomOrder.js';
 import { ContactMessage } from '../models/ContactMessage.js';
 import { QuoteRequest } from '../models/QuoteRequest.js';
+import { AdminSettings } from '../models/AdminSettings.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { sendCustomEmail } from '../utils/mailer.js';
 
@@ -665,4 +666,26 @@ export const replyToQuote = asyncHandler(async (req, res) => {
   const updated = await QuoteRequest.findByIdAndUpdate(id, { $set: { status: 'quoted' } }, { new: true, runValidators: true }).lean();
 
   res.json({ success: true, message: 'Reply sent', data: updated });
+});
+
+export const getAdminSettings = asyncHandler(async (req, res) => {
+  let settings = await AdminSettings.findOne({ key: 'admin_settings' }).lean();
+  if (!settings) {
+    settings = await AdminSettings.create({ key: 'admin_settings' });
+  }
+  res.json({ success: true, data: settings });
+});
+
+export const updateAdminSettings = asyncHandler(async (req, res) => {
+  const payload = req.body || {};
+  delete payload.key;
+  delete payload._id;
+
+  const settings = await AdminSettings.findOneAndUpdate(
+    { key: 'admin_settings' },
+    { $set: payload },
+    { upsert: true, new: true, runValidators: true }
+  ).lean();
+
+  res.json({ success: true, message: 'Settings saved successfully', data: settings });
 });

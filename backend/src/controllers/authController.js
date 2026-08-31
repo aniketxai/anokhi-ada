@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { AdminAuth } from '../models/AdminAuth.js';
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'shiv@123';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
@@ -12,7 +14,16 @@ export const adminLogin = asyncHandler(async (req, res) => {
     throw new Error('Password is required');
   }
 
-  if (password !== ADMIN_PASSWORD) {
+  const adminAuth = await AdminAuth.findOne({ key: 'admin' });
+
+  let isValid = false;
+  if (adminAuth && adminAuth.passwordHash) {
+    isValid = await bcrypt.compare(password, adminAuth.passwordHash);
+  } else {
+    isValid = password === ADMIN_PASSWORD;
+  }
+
+  if (!isValid) {
     res.status(401);
     throw new Error('Invalid password');
   }
@@ -28,6 +39,46 @@ export const adminLogin = asyncHandler(async (req, res) => {
     success: true,
     message: 'Login successful',
     token,
+  });
+});
+
+export const changeAdminPassword = asyncHandler(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    res.status(400);
+    throw new Error('Current password and new password are required');
+  }
+
+  if (newPassword.length < 6) {
+    res.status(400);
+    throw new Error('New password must be at least 6 characters long');
+  }
+
+  const adminAuth = await AdminAuth.findOne({ key: 'admin' });
+
+  let isCurrentValid = false;
+  if (adminAuth && adminAuth.passwordHash) {
+    isCurrentValid = await bcrypt.compare(currentPassword, adminAuth.passwordHash);
+  } else {
+    isCurrentValid = currentPassword === ADMIN_PASSWORD;
+  }
+
+  if (!isCurrentValid) {
+    res.status(400);
+    throw new Error('Current password is incorrect');
+  }
+
+  const newHash = await bcrypt.hash(newPassword, 10);
+  await AdminAuth.findOneAndUpdate(
+    { key: 'admin' },
+    { passwordHash: newHash },
+    { upsert: true, new: true }
+  );
+
+  res.json({
+    success: true,
+    message: 'Admin password updated successfully',
   });
 });
 
@@ -49,3 +100,4 @@ export const verifyAdminToken = asyncHandler(async (req, res, next) => {
     next();
   }
 });
+

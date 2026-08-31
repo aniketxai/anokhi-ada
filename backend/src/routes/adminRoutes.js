@@ -17,6 +17,8 @@ import {
   listAdminCustomOrders,
   updateCustomOrderStatus,
   replyToCustomOrder,
+  getAdminSettings,
+  updateAdminSettings,
 } from '../controllers/adminController.js';
 import { getAdminHomeContent, updateAdminHomeContent } from '../controllers/homeContentController.js';
 import { uploadMiddleware, uploadImageToCloudinary } from '../controllers/uploadController.js';
@@ -34,7 +36,11 @@ const router = Router();
 
 router.get('/summary', getDashboardSummary);
 
+router.get('/settings', verifyAdminToken, getAdminSettings);
+router.put('/settings', verifyAdminToken, updateAdminSettings);
+
 router.get('/products', listAdminProducts);
+
 router.post('/products', createAdminProduct);
 router.put('/products/:id', updateAdminProduct);
 router.delete('/products/:id', deleteAdminProduct);

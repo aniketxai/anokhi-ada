@@ -769,6 +769,28 @@ export async function adminSetUserBlocked(userId, isBlocked) {
   return requestJson(`/api/admin/users/${userId}/status`, { method: 'PATCH', body: { isBlocked } });
 }
 
+// ── Admin: Password & Settings ────────────────────────────────────────────────
+
+export async function changeAdminPassword(currentPassword, newPassword) {
+  return requestJson('/api/auth/change-password', {
+    method: 'POST',
+    body: { currentPassword, newPassword },
+  });
+}
+
+export async function fetchAdminSettings() {
+  const data = await requestJson('/api/admin/settings');
+  return data.data || {};
+}
+
+export async function updateAdminSettings(settingsData) {
+  return requestJson('/api/admin/settings', {
+    method: 'PUT',
+    body: settingsData,
+  });
+}
+
+
 // ── Default export ────────────────────────────────────────────────────────────
 
 export default {
@@ -835,4 +857,7 @@ export default {
   adminGetShipment,
   adminFetchUsers,
   adminSetUserBlocked,
+  changeAdminPassword,
+  fetchAdminSettings,
+  updateAdminSettings,
 };
