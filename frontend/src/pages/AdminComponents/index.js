@@ -2,6 +2,7 @@ export { StatusPill, SectionCard } from './Helpers';
 export { MiniFeature, StatTile, Field, AlertRow, ToggleRow, formatPaymentValue } from './UIComponents';
 export { ProductEditModal } from './ProductEditModal';
 export { AddCategoryModal } from './AddCategoryModal';
+export { ManageCategoriesModal } from './ManageCategoriesModal';
 export { OrderDetailModal } from './OrderDetailModal';
 export { OverviewSection } from './OverviewSection';
 export { CatalogSection } from './CatalogSection';

@@ -1,32 +1,58 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Loader, Plus, FolderPlus } from 'lucide-react';
+import { X, Loader, Plus, FolderPlus, Sparkles, AlertCircle, Tag, Check } from 'lucide-react';
+
+const CATEGORY_PRESETS = [
+  { name: 'Home Decor', subs: ['Wall Art', 'Candles', 'Vases', 'Fairy Lights'] },
+  { name: 'Stationery', subs: ['Notebooks', 'Pens', 'Planners', 'Stickers'] },
+  { name: 'Apparel & Kurtis', subs: ['Cotton Kurti', 'Anarkali', 'Dupatta', 'Ethnic Wear'] },
+  { name: 'Organic Skincare', subs: ['Face Wash', 'Serums', 'Moisturizer', 'Masks'] },
+  { name: 'Gifts & Souvenirs', subs: ['Custom Mugs', 'Photo Frames', 'Keychains', 'Gift Hampers'] },
+  { name: 'Accessories', subs: ['Handbags', 'Wallets', 'Belts', 'Sunglasses'] },
+];
 
 export function AddCategoryModal({
   isOpen,
   onClose,
   onSaveCategory,
+  existingCategories = [],
   loading,
 }) {
   const [categoryName, setCategoryName] = useState('');
   const [subCategoriesInput, setSubCategoriesInput] = useState('');
 
+  const subCategoryList = useMemo(() => {
+    return subCategoriesInput
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }, [subCategoriesInput]);
+
+  const isDuplicate = useMemo(() => {
+    if (!categoryName.trim()) return false;
+    const norm = categoryName.trim().toLowerCase();
+    return (existingCategories || []).some((c) => {
+      const name = typeof c === 'string' ? c : c?.name;
+      return String(name || '').toLowerCase() === norm;
+    });
+  }, [categoryName, existingCategories]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!categoryName.trim()) return;
 
-    const subCats = subCategoriesInput
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean);
-
     onSaveCategory({
       name: categoryName.trim(),
-      subCategories: subCats,
+      subCategories: subCategoryList,
     }).then(() => {
       setCategoryName('');
       setSubCategoriesInput('');
     });
+  };
+
+  const applyPreset = (preset) => {
+    setCategoryName(preset.name);
+    setSubCategoriesInput(preset.subs.join(', '));
   };
 
   return (
@@ -48,11 +74,11 @@ export function AddCategoryModal({
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6"
           >
-            <div className="w-full max-w-md rounded-[28px] border border-border bg-card shadow-2xl overflow-hidden flex flex-col">
+            <div className="w-full max-w-lg rounded-[28px] border border-border bg-card shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
               {/* Header */}
               <div className="flex items-center justify-between border-b border-border p-6 bg-surface-muted">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/15 text-primary shadow-xs">
                     <FolderPlus className="w-5 h-5" />
                   </div>
                   <div>
@@ -60,7 +86,7 @@ export function AddCategoryModal({
                       Add Custom Category
                     </h2>
                     <p className="text-xs font-medium text-secondary-text">
-                      Save custom category directly to DB
+                      Create and permanently store new category in MongoDB
                     </p>
                   </div>
                 </div>
@@ -74,40 +100,93 @@ export function AddCategoryModal({
                 </button>
               </div>
 
-              {/* Form */}
-              <form onSubmit={handleSubmit} className="p-6 space-y-4 bg-card">
+              {/* Body */}
+              <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-5 bg-card">
+                {/* Category Name */}
                 <div>
-                  <label className="block mb-2 text-xs font-bold uppercase tracking-wider text-foreground">
-                    Category Name *
+                  <label className="block mb-2 text-xs font-bold uppercase tracking-wider text-foreground flex items-center justify-between">
+                    <span>Category Name *</span>
+                    {isDuplicate && (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-800 dark:text-amber-400">
+                        <AlertCircle className="w-3.5 h-3.5" />
+                        Exists in database (will merge)
+                      </span>
+                    )}
                   </label>
                   <input
                     required
                     type="text"
-                    placeholder="e.g. Handmade Crafts"
+                    placeholder="e.g. Organic Skincare"
                     value={categoryName}
                     onChange={(e) => setCategoryName(e.target.value)}
                     className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
 
+                {/* Subcategories Input */}
                 <div>
                   <label className="block mb-2 text-xs font-bold uppercase tracking-wider text-foreground">
                     Sub Categories (Optional, comma-separated)
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Wooden, Resin, Clay"
+                    placeholder="e.g. Face Wash, Serums, Moisturizer"
                     value={subCategoriesInput}
                     onChange={(e) => setSubCategoriesInput(e.target.value)}
                     className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
-                  <p className="mt-1 text-xs text-secondary-text">
-                    Subcategories will be available in dropdowns for this category.
+                  <p className="mt-1.5 text-xs text-secondary-text">
+                    Type subcategory names separated by commas.
                   </p>
+
+                  {/* Subcategory Live Badges Preview */}
+                  {subCategoryList.length > 0 && (
+                    <div className="mt-3 rounded-2xl border border-border bg-surface-muted p-3">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-secondary-text mb-2 flex items-center gap-1.5">
+                        <Tag className="w-3.5 h-3.5 text-primary" />
+                        Subcategories Tag Preview ({subCategoryList.length})
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {subCategoryList.map((sub, i) => (
+                          <span
+                            key={`${sub}-${i}`}
+                            className="inline-flex items-center gap-1 rounded-full bg-primary/15 border border-primary/30 px-3 py-1 text-xs font-bold text-primary"
+                          >
+                            <Check className="w-3 h-3" />
+                            {sub}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                {/* Footer buttons */}
-                <div className="pt-4 flex gap-3">
+                {/* Quick Presets */}
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-secondary-text mb-2 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                    Quick Suggestions
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {CATEGORY_PRESETS.map((preset) => (
+                      <button
+                        key={preset.name}
+                        type="button"
+                        onClick={() => applyPreset(preset)}
+                        className={`rounded-xl border border-border px-3 py-1.5 text-xs font-semibold transition-all ${
+                          categoryName === preset.name
+                            ? 'bg-primary text-white border-primary shadow-xs font-bold'
+                            : 'bg-surface-muted text-foreground hover:bg-muted'
+                        }`}
+                      >
+                        + {preset.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Footer Actions */}
+                <div className="pt-3 flex gap-3 border-t border-border">
                   <button
                     type="button"
                     onClick={onClose}

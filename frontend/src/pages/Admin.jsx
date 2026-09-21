@@ -31,6 +31,7 @@ import { AdminLogin, AdminLogoutButton } from './AdminLogin';
 import {
   ProductEditModal,
   AddCategoryModal,
+  ManageCategoriesModal,
   OrderDetailModal,
   OverviewSection,
   CatalogSection,
@@ -169,6 +170,7 @@ export default function Admin() {
   const [editingProductId, setEditingProductId] = useState(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
+  const [isManageCategoriesModalOpen, setIsManageCategoriesModalOpen] = useState(false);
   const [savingCategory, setSavingCategory] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isOrderDetailOpen, setIsOrderDetailOpen] = useState(false);
@@ -602,6 +604,36 @@ const loadAdminData = useCallback(async ({ showLoading = true } = {}) => {
       setError(err.message || 'Failed to save category');
     } finally {
       setSavingCategory(false);
+    }
+  }, [refreshData]);
+
+  const handleAddSubCategoryToCategory = useCallback(async (categoryName, subCategoryName) => {
+    try {
+      setSavingCategory(true);
+      setError(null);
+      await api.createAdminCategory({ name: categoryName, subCategories: [subCategoryName] });
+      setSuccessMessage(`Subcategory "${subCategoryName}" added to "${categoryName}"!`);
+      await refreshData();
+    } catch (err) {
+      console.error('Failed to add subcategory:', err);
+      setError(err.message || 'Failed to add subcategory');
+    } finally {
+      setSavingCategory(false);
+    }
+  }, [refreshData]);
+
+  const handleDeleteCategory = useCallback(async (categoryName) => {
+    const confirmed = window.confirm(`Delete custom category "${categoryName}" from database?`);
+    if (!confirmed) return;
+
+    try {
+      setError(null);
+      await api.deleteAdminCategory(categoryName);
+      setSuccessMessage(`Category "${categoryName}" deleted from database`);
+      await refreshData();
+    } catch (err) {
+      console.error('Failed to delete category:', err);
+      setError(err.message || 'Failed to delete category');
     }
   }, [refreshData]);
 
@@ -1084,6 +1116,7 @@ if (!isAuthenticated) {
                 setIsProductModalOpen={setIsProductModalOpen}
                 setIsImportModalOpen={setIsImportModalOpen}
                 setIsAddCategoryModalOpen={setIsAddCategoryModalOpen}
+                setIsManageCategoriesModalOpen={setIsManageCategoriesModalOpen}
               />
 
               {/* Product Edit Modal */}
@@ -1113,6 +1146,18 @@ if (!isAuthenticated) {
                 isOpen={isAddCategoryModalOpen}
                 onClose={() => setIsAddCategoryModalOpen(false)}
                 onSaveCategory={handleSaveCategory}
+                existingCategories={categoryOptions}
+                loading={savingCategory}
+              />
+
+              {/* Manage DB Categories Modal */}
+              <ManageCategoriesModal
+                isOpen={isManageCategoriesModalOpen}
+                onClose={() => setIsManageCategoriesModalOpen(false)}
+                dbCategories={dbCategories}
+                onOpenAddCategory={() => setIsAddCategoryModalOpen(true)}
+                onAddSubCategory={handleAddSubCategoryToCategory}
+                onDeleteCategory={handleDeleteCategory}
                 loading={savingCategory}
               />
             </>
