@@ -253,6 +253,19 @@ export async function fetchAdminSummary() {
   return data.data || {};
 }
 
+export async function fetchAdminCategories() {
+  const data = await requestJson('/api/admin/categories');
+  return data;
+}
+
+export async function createAdminCategory(payload) {
+  return requestJson('/api/admin/categories', { method: 'POST', body: payload });
+}
+
+export async function deleteAdminCategory(name) {
+  return requestJson(`/api/admin/categories/${encodeURIComponent(name)}`, { method: 'DELETE' });
+}
+
 export async function fetchAdminProducts(params = {}) {
   const data = await requestJson('/api/admin/products', { params });
   return data.data || [];

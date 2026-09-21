@@ -1,4 +1,4 @@
-import { Search, Filter, Plus, Upload, Eye, Trash2, Star, PackageCheck, AlertCircle } from 'lucide-react';
+import { Search, Filter, Plus, Upload, Eye, Trash2, Star, PackageCheck, AlertCircle, FolderPlus } from 'lucide-react';
 import { SectionCard } from './Helpers';
 import { formatINR } from '../../utils/currency';
 import { sanitizeImageUrl } from '../../utils/image';
@@ -23,6 +23,7 @@ export function CatalogSection({
   setEditingProductId,
   setIsProductModalOpen,
   setIsImportModalOpen,
+  setIsAddCategoryModalOpen,
 }) {
   return (
     <div className="space-y-6">
@@ -31,7 +32,7 @@ export function CatalogSection({
           title="Product Catalog"
           description="Search, filter, and manage published products."
           action={
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button 
                 onClick={() => {
                   resetProductForm();
@@ -40,7 +41,13 @@ export function CatalogSection({
                 }}
                 className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground hover:opacity-90 transition-opacity shadow-xs">
                 <Plus className="w-4 h-4" />
-                Add
+                Add Product
+              </button>
+              <button 
+                onClick={() => setIsAddCategoryModalOpen?.(true)}
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-xs font-bold text-foreground hover:bg-muted transition-colors shadow-xs">
+                <FolderPlus className="w-4 h-4 text-primary" />
+                Add Category
               </button>
               <button 
                 onClick={() => setIsImportModalOpen(true)}

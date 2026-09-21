@@ -24,9 +24,13 @@ export function ProductEditModal({
   onClose,
   loading,
   uploadingImages,
+  categoryOptions = [],
 }) {
+  const [isCustomCat, setIsCustomCat] = useState(false);
   const [isCustomSubCat, setIsCustomSubCat] = useState(false);
   const imageList = getImageList(form.images);
+
+  const categoriesToDisplay = Array.from(new Set([...ADMIN_CATEGORIES, ...(categoryOptions || [])])).filter((c) => c && c !== 'All');
 
   const availableSubCategories = (form.category && CATEGORY_SUBCATEGORIES[form.category])
     ? CATEGORY_SUBCATEGORIES[form.category]
@@ -47,7 +51,7 @@ export function ProductEditModal({
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            exit={{ opacity: 0, scale: 0.95, y: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             className="fixed inset-0 z-50 flex items-start sm:items-center justify-center px-4 py-10 sm:py-12"
           >
@@ -97,24 +101,53 @@ export function ProductEditModal({
                     <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-foreground">
                       Category *
                     </span>
-                    <select
-                      required
-                      value={form.category}
-                      onChange={(e) => onChange('category', e.target.value)}
-                      className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-                    >
-                      <option value="">Select Category</option>
-                      {ADMIN_CATEGORIES.map((cat) => (
-                        <option key={cat} value={cat} className="bg-card text-foreground">
-                          {cat}
+                    {isCustomCat ? (
+                      <div className="flex gap-2">
+                        <input
+                          required
+                          type="text"
+                          placeholder="Enter custom category"
+                          value={form.category || ''}
+                          onChange={(e) => onChange('category', e.target.value)}
+                          className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setIsCustomCat(false)}
+                          className="px-3 py-2 text-xs font-bold border border-border bg-card rounded-2xl hover:bg-muted text-foreground"
+                        >
+                          List
+                        </button>
+                      </div>
+                    ) : (
+                      <select
+                        required
+                        value={form.category}
+                        onChange={(e) => {
+                          if (e.target.value === '__custom__') {
+                            setIsCustomCat(true);
+                          } else {
+                            onChange('category', e.target.value);
+                          }
+                        }}
+                        className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                      >
+                        <option value="">Select Category</option>
+                        {categoriesToDisplay.map((cat) => (
+                          <option key={cat} value={cat} className="bg-card text-foreground">
+                            {cat}
+                          </option>
+                        ))}
+                        {form.category && !categoriesToDisplay.includes(form.category) && (
+                          <option value={form.category} className="bg-card text-foreground">
+                            {form.category}
+                          </option>
+                        )}
+                        <option value="__custom__" className="bg-card text-primary font-bold">
+                          + Custom Category...
                         </option>
-                      ))}
-                      {form.category && !ADMIN_CATEGORIES.includes(form.category) && (
-                        <option value={form.category} className="bg-card text-foreground">
-                          {form.category}
-                        </option>
-                      )}
-                    </select>
+                      </select>
+                    )}
                   </label>
 
                   <label className="block">

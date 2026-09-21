@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 import { Product } from '../models/Product.js';
+import { Category } from '../models/Category.js';
 import { Order } from '../models/Order.js';
 import { CustomOrder } from '../models/CustomOrder.js';
 import { ContactMessage } from '../models/ContactMessage.js';
@@ -8,6 +9,22 @@ import { QuoteRequest } from '../models/QuoteRequest.js';
 import { AdminSettings } from '../models/AdminSettings.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { sendCustomEmail } from '../utils/mailer.js';
+
+async function ensureCategorySaved(categoryName, subCategoryName) {
+  if (!categoryName || !isDatabaseReady()) return;
+  const name = String(categoryName).trim();
+  if (!name) return;
+
+  try {
+    const update = { $setOnInsert: { name, isCustom: true } };
+    if (subCategoryName) {
+      update.$addToSet = { subCategories: String(subCategoryName).trim() };
+    }
+    await Category.updateOne({ name }, update, { upsert: true });
+  } catch (err) {
+    console.error('Failed to auto-save custom category to DB:', err);
+  }
+}
 
 function escapeRegex(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -296,6 +313,8 @@ export const createAdminProduct = asyncHandler(async (req, res) => {
     inStock: payload.stockQty > 0 ? payload.inStock : false,
   });
 
+  await ensureCategorySaved(payload.category, payload.subCategory);
+
   res.status(201).json({ success: true, message: 'Product created', data: product });
 });
 
@@ -325,6 +344,8 @@ export const updateAdminProduct = asyncHandler(async (req, res) => {
     },
     { new: true, runValidators: true }
   ).lean();
+
+  await ensureCategorySaved(payload.category, payload.subCategory);
 
   res.json({ success: true, message: 'Product updated', data: updated });
 });
@@ -694,4 +715,73 @@ export const updateAdminSettings = asyncHandler(async (req, res) => {
   ).lean();
 
   res.json({ success: true, message: 'Settings saved successfully', data: settings });
+});
+
+export const listAdminCategories = asyncHandler(async (req, res) => {
+  let dbCategories = [];
+  let distinctProductCategories = [];
+
+  if (isDatabaseReady()) {
+    try {
+      [dbCategories, distinctProductCategories] = await Promise.all([
+        Category.find().lean(),
+        Product.distinct('category'),
+      ]);
+    } catch (err) {
+      console.error('Failed to fetch categories:', err);
+    }
+  }
+
+  const resultNames = Array.from(new Set([
+    ...(dbCategories || []).map((c) => c.name),
+    ...(distinctProductCategories || []).filter(Boolean),
+  ]));
+
+  res.json({
+    success: true,
+    data: dbCategories,
+    categories: resultNames,
+  });
+});
+
+export const createAdminCategory = asyncHandler(async (req, res) => {
+  const { name, subCategories } = req.body;
+
+  if (!name || !name.trim()) {
+    res.status(400);
+    throw new Error('Category name is required');
+  }
+
+  const cleanName = name.trim();
+  const subs = Array.isArray(subCategories)
+    ? subCategories.map((s) => String(s).trim()).filter(Boolean)
+    : typeof subCategories === 'string'
+    ? subCategories.split(',').map((s) => s.trim()).filter(Boolean)
+    : [];
+
+  const category = await Category.findOneAndUpdate(
+    { name: cleanName },
+    {
+      $set: { name: cleanName, isCustom: true },
+      $addToSet: { subCategories: { $each: subs } },
+    },
+    { upsert: true, new: true, runValidators: true }
+  ).lean();
+
+  res.status(201).json({
+    success: true,
+    message: 'Category saved to database',
+    data: category,
+  });
+});
+
+export const deleteAdminCategory = asyncHandler(async (req, res) => {
+  const { name } = req.params;
+  if (!name) {
+    res.status(400);
+    throw new Error('Category name is required');
+  }
+
+  await Category.deleteOne({ name: decodeURIComponent(name) });
+  res.json({ success: true, message: 'Category deleted from database' });
 });

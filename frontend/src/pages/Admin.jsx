@@ -30,6 +30,7 @@ import ReplyModal from '../components/ReplyModal';
 import { AdminLogin, AdminLogoutButton } from './AdminLogin';
 import {
   ProductEditModal,
+  AddCategoryModal,
   OrderDetailModal,
   OverviewSection,
   CatalogSection,
@@ -167,6 +168,8 @@ export default function Admin() {
   const [productForm, setProductForm] = useState(emptyProductForm);
   const [editingProductId, setEditingProductId] = useState(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
+  const [savingCategory, setSavingCategory] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isOrderDetailOpen, setIsOrderDetailOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -183,6 +186,7 @@ export default function Admin() {
   const [error, setError] = useState(null);
   const [summary, setSummary] = useState(null);
   const [adminProducts, setAdminProducts] = useState([]);
+  const [dbCategories, setDbCategories] = useState([]);
   const [adminOrders, setAdminOrders] = useState([]);
   const [adminCustomOrders, setAdminCustomOrders] = useState([]);
   const [adminQuotes, setAdminQuotes] = useState([]);
@@ -197,7 +201,17 @@ useEffect(() => {
   setIsAuthenticated(!!token);
 }, []);
 
-const categoryOptions = ['All', ...ADMIN_CATEGORIES];
+const categoryOptions = useMemo(() => {
+  const set = new Set(ADMIN_CATEGORIES);
+  (dbCategories || []).forEach((c) => {
+    if (c?.name) set.add(c.name);
+    if (typeof c === 'string') set.add(c);
+  });
+  (adminProducts || []).forEach((p) => {
+    if (p.category) set.add(p.category);
+  });
+  return ['All', ...Array.from(set)];
+}, [dbCategories, adminProducts]);
 
 const subCategoryOptions = useMemo(() => {
   const set = new Set(ADMIN_SUBCATEGORIES);
@@ -215,9 +229,10 @@ const loadAdminData = useCallback(async ({ showLoading = true } = {}) => {
     try {
       setError(null);
 
-      const [summaryResult, productsResult, ordersResult, customOrdersResult, quotesResult, contactsResult, siteContentResult] = await Promise.allSettled([
+      const [summaryResult, productsResult, categoriesResult, ordersResult, customOrdersResult, quotesResult, contactsResult, siteContentResult] = await Promise.allSettled([
         api.fetchAdminSummary(),
         api.fetchAdminProducts(),
+        api.fetchAdminCategories(),
         api.fetchAdminOrders(),
         api.fetchAdminCustomOrders(),
         api.fetchAdminQuotes(),
@@ -229,6 +244,7 @@ const loadAdminData = useCallback(async ({ showLoading = true } = {}) => {
 
       const summaryData = summaryResult.status === 'fulfilled' ? summaryResult.value : null;
       const productsData = productsResult.status === 'fulfilled' ? productsResult.value : [];
+      const categoriesData = categoriesResult.status === 'fulfilled' ? (categoriesResult.value?.data || categoriesResult.value?.categories || []) : [];
       const ordersData = ordersResult.status === 'fulfilled' ? ordersResult.value : [];
       const customOrdersData = customOrdersResult.status === 'fulfilled' ? customOrdersResult.value : [];
       const quotesData = quotesResult.status === 'fulfilled' ? quotesResult.value : [];
@@ -237,6 +253,7 @@ const loadAdminData = useCallback(async ({ showLoading = true } = {}) => {
 
       setSummary(summaryData);
       setAdminProducts(productsData);
+      setDbCategories(categoriesData);
       setAdminOrders(ordersData);
       setAdminCustomOrders(customOrdersData);
       setAdminQuotes(quotesData);
@@ -571,6 +588,22 @@ const loadAdminData = useCallback(async ({ showLoading = true } = {}) => {
       setSavingProduct(false);
     }
   }, [productForm, editingProductId, refreshData, resetProductForm]);
+
+  const handleSaveCategory = useCallback(async ({ name, subCategories }) => {
+    try {
+      setSavingCategory(true);
+      setError(null);
+      await api.createAdminCategory({ name, subCategories });
+      setSuccessMessage(`Custom category "${name}" saved to database!`);
+      setIsAddCategoryModalOpen(false);
+      await refreshData();
+    } catch (err) {
+      console.error('Failed to save category:', err);
+      setError(err.message || 'Failed to save category');
+    } finally {
+      setSavingCategory(false);
+    }
+  }, [refreshData]);
 
   const handleQuickUpdateSubCategory = useCallback(async (product, newSubCategory) => {
     const id = product.id || product._id;
@@ -1050,6 +1083,7 @@ if (!isAuthenticated) {
                 setEditingProductId={setEditingProductId}
                 setIsProductModalOpen={setIsProductModalOpen}
                 setIsImportModalOpen={setIsImportModalOpen}
+                setIsAddCategoryModalOpen={setIsAddCategoryModalOpen}
               />
 
               {/* Product Edit Modal */}
@@ -1071,6 +1105,15 @@ if (!isAuthenticated) {
                 }}
                 loading={savingProduct}
                 uploadingImages={uploadingImages}
+                categoryOptions={categoryOptions}
+              />
+
+              {/* Add Custom Category Modal */}
+              <AddCategoryModal
+                isOpen={isAddCategoryModalOpen}
+                onClose={() => setIsAddCategoryModalOpen(false)}
+                onSaveCategory={handleSaveCategory}
+                loading={savingCategory}
               />
             </>
           )}

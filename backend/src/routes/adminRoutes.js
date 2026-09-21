@@ -19,6 +19,9 @@ import {
   replyToCustomOrder,
   getAdminSettings,
   updateAdminSettings,
+  listAdminCategories,
+  createAdminCategory,
+  deleteAdminCategory,
 } from '../controllers/adminController.js';
 import { getAdminHomeContent, updateAdminHomeContent } from '../controllers/homeContentController.js';
 import { uploadMiddleware, uploadImageToCloudinary } from '../controllers/uploadController.js';
@@ -38,6 +41,10 @@ router.get('/summary', getDashboardSummary);
 
 router.get('/settings', verifyAdminToken, getAdminSettings);
 router.put('/settings', verifyAdminToken, updateAdminSettings);
+
+router.get('/categories', listAdminCategories);
+router.post('/categories', createAdminCategory);
+router.delete('/categories/:name', deleteAdminCategory);
 
 router.get('/products', listAdminProducts);
 

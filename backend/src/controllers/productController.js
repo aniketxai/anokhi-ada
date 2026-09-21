@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 import { Product } from '../models/Product.js';
+import { Category } from '../models/Category.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import {
   categories as defaultCategories,
@@ -183,7 +184,12 @@ export const getCategories = asyncHandler(async (req, res) => {
 
   if (isDatabaseReady()) {
     try {
-      categories = await Product.distinct('category');
+      const [distinctList, customList] = await Promise.all([
+        Product.distinct('category'),
+        Category.find().lean(),
+      ]);
+      const customNames = (customList || []).map((c) => c.name);
+      categories = Array.from(new Set([...distinctList, ...customNames])).filter(Boolean);
     } catch (error) {
       console.error('Category lookup failed, falling back to static data:', error);
     }
