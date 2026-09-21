@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader, Save, UploadCloud, Trash2 } from 'lucide-react';
 import { sanitizeImageUrl } from '../../utils/image';
-import { ADMIN_CATEGORIES } from '../../data/categories';
+import { ADMIN_CATEGORIES, ADMIN_SUBCATEGORIES, CATEGORY_SUBCATEGORIES } from '../../data/categories';
 
 const DEFAULT_FALLBACK_IMAGE = 'https://images.pexels.com/photos/1112598/pexels-photo-1112598.jpeg?auto=compress&cs=tinysrgb&w=600';
 
@@ -24,7 +25,12 @@ export function ProductEditModal({
   loading,
   uploadingImages,
 }) {
+  const [isCustomSubCat, setIsCustomSubCat] = useState(false);
   const imageList = getImageList(form.images);
+
+  const availableSubCategories = (form.category && CATEGORY_SUBCATEGORIES[form.category])
+    ? CATEGORY_SUBCATEGORIES[form.category]
+    : ADMIN_SUBCATEGORIES;
 
   return (
     <AnimatePresence>
@@ -73,8 +79,8 @@ export function ProductEditModal({
                 onSubmit={onSave}
                 className="flex-1 overflow-y-auto p-6 space-y-4 bg-card"
               >
-                {/* Name + Category */}
-                <div className="grid gap-4 sm:grid-cols-2">
+                {/* Name + Category + Sub Category */}
+                <div className="grid gap-4 sm:grid-cols-3">
                   <label className="block">
                     <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-foreground">
                       Name *
@@ -109,6 +115,57 @@ export function ProductEditModal({
                         </option>
                       )}
                     </select>
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-foreground">
+                      Sub Category
+                    </span>
+                    {isCustomSubCat ? (
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Enter subcategory"
+                          value={form.subCategory || ''}
+                          onChange={(e) => onChange('subCategory', e.target.value)}
+                          className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setIsCustomSubCat(false)}
+                          className="px-3 py-2 text-xs font-bold border border-border bg-card rounded-2xl hover:bg-muted text-foreground"
+                        >
+                          List
+                        </button>
+                      </div>
+                    ) : (
+                      <select
+                        value={form.subCategory || ''}
+                        onChange={(e) => {
+                          if (e.target.value === '__custom__') {
+                            setIsCustomSubCat(true);
+                          } else {
+                            onChange('subCategory', e.target.value);
+                          }
+                        }}
+                        className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                      >
+                        <option value="">Select Sub Category</option>
+                        {availableSubCategories.map((sub) => (
+                          <option key={sub} value={sub} className="bg-card text-foreground">
+                            {sub}
+                          </option>
+                        ))}
+                        {form.subCategory && !availableSubCategories.includes(form.subCategory) && (
+                          <option value={form.subCategory} className="bg-card text-foreground">
+                            {form.subCategory}
+                          </option>
+                        )}
+                        <option value="__custom__" className="bg-card text-primary font-bold">
+                          + Custom Sub Category...
+                        </option>
+                      </select>
+                    )}
                   </label>
                 </div>
 

@@ -20,7 +20,7 @@ import {
   Eye,
   Image as ImageIcon,
 } from 'lucide-react';
-import { categories, ADMIN_CATEGORIES } from '../data/categories';
+import { categories, ADMIN_CATEGORIES, ADMIN_SUBCATEGORIES } from '../data/categories';
 import { formatINR } from '../utils/currency';
 import api from '../api/index.js';
 import AdminAnalytics from './AdminAnalytics';
@@ -102,6 +102,7 @@ const emptyProductForm = {
   id: '',
   name: '',
   category: '',
+  subCategory: '',
   price: '',
   originalPrice: '',
   rating: '',
@@ -159,6 +160,7 @@ export default function Admin() {
   const [activeSection, setActiveSection] = useState('overview');
   const [productQuery, setProductQuery] = useState('');
   const [productCategory, setProductCategory] = useState('All');
+  const [productSubCategory, setProductSubCategory] = useState('All');
   const [orderFilter, setOrderFilter] = useState('All');
   const [customOrderFilter, setCustomOrderFilter] = useState('All');
   const [enquiryFilter, setEnquiryFilter] = useState('All');
@@ -196,6 +198,14 @@ useEffect(() => {
 }, []);
 
 const categoryOptions = ['All', ...ADMIN_CATEGORIES];
+
+const subCategoryOptions = useMemo(() => {
+  const set = new Set(ADMIN_SUBCATEGORIES);
+  (adminProducts || []).forEach((p) => {
+    if (p.subCategory) set.add(p.subCategory);
+  });
+  return ['All', ...Array.from(set)];
+}, [adminProducts]);
 
 const loadAdminData = useCallback(async ({ showLoading = true } = {}) => {
     let cancelled = false;
@@ -339,12 +349,14 @@ const loadAdminData = useCallback(async ({ showLoading = true } = {}) => {
         !q ||
         (product.name || '').toLowerCase().includes(q) ||
         (product.category || '').toLowerCase().includes(q) ||
+        (product.subCategory || '').toLowerCase().includes(q) ||
         (product.description || '').toLowerCase().includes(q);
 
       const matchesCategory = productCategory === 'All' || product.category === productCategory;
-      return matchesQuery && matchesCategory;
+      const matchesSubCategory = productSubCategory === 'All' || product.subCategory === productSubCategory;
+      return matchesQuery && matchesCategory && matchesSubCategory;
     });
-  }, [productQuery, productCategory, adminProducts]);
+  }, [productQuery, productCategory, productSubCategory, adminProducts]);
 
   const filteredOrders = useMemo(() => {
     if (orderFilter === 'All') return adminOrders;
@@ -449,6 +461,7 @@ const loadAdminData = useCallback(async ({ showLoading = true } = {}) => {
       id: product.id || '',
       name: product.name || '',
       category: product.category || '',
+      subCategory: product.subCategory || product.subcategory || '',
       price: product.price ?? '',
       originalPrice: product.originalPrice ?? '',
       rating: product.rating ?? '',
@@ -518,6 +531,8 @@ const loadAdminData = useCallback(async ({ showLoading = true } = {}) => {
 
     const payload = {
       ...productForm,
+      category: productForm.category,
+      subCategory: productForm.subCategory,
       price: productForm.price === '' ? '' : Number(productForm.price),
       originalPrice: productForm.originalPrice === '' ? '' : Number(productForm.originalPrice),
       rating: productForm.rating === '' ? '' : Number(productForm.rating),
@@ -556,6 +571,25 @@ const loadAdminData = useCallback(async ({ showLoading = true } = {}) => {
       setSavingProduct(false);
     }
   }, [productForm, editingProductId, refreshData, resetProductForm]);
+
+  const handleQuickUpdateSubCategory = useCallback(async (product, newSubCategory) => {
+    const id = product.id || product._id;
+    if (!id) return;
+
+    try {
+      setError(null);
+      setSuccessMessage(null);
+      await api.updateAdminProduct(id, {
+        ...product,
+        subCategory: newSubCategory,
+      });
+      setSuccessMessage(`Updated subcategory for "${product.name}" to "${newSubCategory || 'None'}"`);
+      await refreshData();
+    } catch (err) {
+      console.error('Failed to update subcategory:', err);
+      setError(err.message || 'Failed to update subcategory');
+    }
+  }, [refreshData]);
 
   const handleDeleteProduct = useCallback(async (product) => {
     const id = product.id || product._id;
@@ -1004,10 +1038,14 @@ if (!isAuthenticated) {
                 productCategory={productCategory}
                 setProductCategory={setProductCategory}
                 categoryOptions={categoryOptions}
+                productSubCategory={productSubCategory}
+                setProductSubCategory={setProductSubCategory}
+                subCategoryOptions={subCategoryOptions}
                 filteredProducts={filteredProducts}
                 adminProducts={adminProducts}
                 beginEditProduct={beginEditProduct}
                 handleDeleteProduct={handleDeleteProduct}
+                handleQuickUpdateSubCategory={handleQuickUpdateSubCategory}
                 resetProductForm={resetProductForm}
                 setEditingProductId={setEditingProductId}
                 setIsProductModalOpen={setIsProductModalOpen}

@@ -62,6 +62,7 @@ function toProductPayload(body = {}) {
     id: String(body.id || '').trim(),
     name: String(body.name || '').trim(),
     category: String(body.category || 'Uncategorized').trim(),
+    subCategory: String(body.subCategory || body.subcategory || '').trim(),
     price: normalizeNumber(body.price),
     originalPrice: body.originalPrice === null || body.originalPrice === '' ? null : normalizeNumber(body.originalPrice),
     rating: normalizeNumber(body.rating),
@@ -86,6 +87,10 @@ function buildProductFilter(query = {}) {
     filter.category = query.category;
   }
 
+  if (query.subCategory && query.subCategory !== 'All') {
+    filter.subCategory = query.subCategory;
+  }
+
   if (query.inStock === 'true') {
     filter.inStock = true;
   } else if (query.inStock === 'false') {
@@ -104,6 +109,7 @@ function buildProductFilter(query = {}) {
       { id: { $regex: search, $options: 'i' } },
       { name: { $regex: search, $options: 'i' } },
       { category: { $regex: search, $options: 'i' } },
+      { subCategory: { $regex: search, $options: 'i' } },
       { description: { $regex: search, $options: 'i' } },
     ];
   }

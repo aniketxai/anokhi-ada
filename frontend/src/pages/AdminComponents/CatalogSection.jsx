@@ -11,10 +11,14 @@ export function CatalogSection({
   productCategory,
   setProductCategory,
   categoryOptions,
+  productSubCategory,
+  setProductSubCategory,
+  subCategoryOptions,
   filteredProducts,
   adminProducts,
   beginEditProduct,
   handleDeleteProduct,
+  handleQuickUpdateSubCategory,
   resetProductForm,
   setEditingProductId,
   setIsProductModalOpen,
@@ -47,7 +51,7 @@ export function CatalogSection({
             </div>
           }
         >
-          <div className="mb-5 grid gap-3 md:grid-cols-[1fr_220px]">
+          <div className="mb-5 grid gap-3 md:grid-cols-[1fr_200px_200px]">
             <div className="relative">
               <Search className="w-4 h-4 pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
@@ -64,7 +68,23 @@ export function CatalogSection({
                 onChange={(e) => setProductCategory(e.target.value)}
                 className="w-full appearance-none rounded-2xl border border-border bg-background py-3 pl-11 pr-4 text-sm font-semibold text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               >
-                {categoryOptions.map((option) => (
+                <option value="All">Category: All</option>
+                {categoryOptions.filter(o => o !== 'All').map((option) => (
+                  <option key={option} value={option} className="bg-card text-foreground">
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="relative">
+              <Filter className="w-4 h-4 pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <select
+                value={productSubCategory || 'All'}
+                onChange={(e) => setProductSubCategory(e.target.value)}
+                className="w-full appearance-none rounded-2xl border border-border bg-background py-3 pl-11 pr-4 text-sm font-semibold text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="All">Sub Category: All</option>
+                {(subCategoryOptions || []).filter(o => o !== 'All').map((option) => (
                   <option key={option} value={option} className="bg-card text-foreground">
                     {option}
                   </option>
@@ -80,6 +100,7 @@ export function CatalogSection({
                   <tr>
                     <th className="px-4 py-3.5 font-bold">Product</th>
                     <th className="px-4 py-3.5 font-bold">Category</th>
+                    <th className="px-4 py-3.5 font-bold">Sub Category</th>
                     <th className="px-4 py-3.5 font-bold">Net wt</th>
                     <th className="px-4 py-3.5 font-bold">Price</th>
                     <th className="px-4 py-3.5 font-bold">Rating</th>
@@ -91,7 +112,7 @@ export function CatalogSection({
                 <tbody className="divide-y divide-border bg-card">
                   {(filteredProducts || []).length === 0 ? (
                     <tr>
-                      <td colSpan="8" className="px-4 py-8 text-center">
+                      <td colSpan="9" className="px-4 py-8 text-center">
                         <p className="text-secondary-text font-medium">No products found. {adminProducts.length === 0 ? 'Create your first product by clicking "Add product".' : 'Try adjusting your search or filters.'}</p>
                       </td>
                     </tr>
@@ -117,6 +138,28 @@ export function CatalogSection({
                         </div>
                       </td>
                       <td className="px-4 py-4 text-sm font-medium text-foreground">{product.category}</td>
+                      <td className="px-4 py-4 text-sm">
+                        <select
+                          value={product.subCategory || ''}
+                          onChange={(e) => handleQuickUpdateSubCategory?.(product, e.target.value)}
+                          className="rounded-xl border border-border bg-background px-2.5 py-1.5 text-xs font-semibold text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                          title="Edit Sub Category"
+                        >
+                          <option value="">- Select -</option>
+                          {(subCategoryOptions || [])
+                            .filter((opt) => opt !== 'All')
+                            .map((opt) => (
+                              <option key={opt} value={opt} className="bg-card text-foreground">
+                                {opt}
+                              </option>
+                            ))}
+                          {product.subCategory && !(subCategoryOptions || []).includes(product.subCategory) && (
+                            <option value={product.subCategory} className="bg-card text-foreground">
+                              {product.subCategory}
+                            </option>
+                          )}
+                        </select>
+                      </td>
                       <td className="px-4 py-4 text-sm font-medium text-foreground">{product.netWeight ? `${product.netWeight}${product.netWeightUnit || 'g'}` : '-'}</td>
                       <td className="px-4 py-4 text-sm">
                         <div className="flex flex-col">

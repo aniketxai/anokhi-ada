@@ -105,6 +105,7 @@ router.post('/import-products', upload.single('file'), async (req, res) => {
           id: product.id || Date.now().toString(),
           name: product.name,
           category: product.category || 'general',
+          subCategory: product.subCategory || product.subcategory || '',
           price: product.price || 0,
           originalPrice: product.originalPrice || null,
           rating: product.rating || 0,

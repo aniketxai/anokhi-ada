@@ -7,6 +7,7 @@ const productSchema = new mongoose.Schema(
     id: { type: String, required: true, unique: true, index: true },
     name: { type: String, required: true, trim: true },
     category: { type: String, required: true, trim: true, index: true },
+    subCategory: { type: String, trim: true, index: true, default: '' },
     price: { type: Number, required: true },
     originalPrice: { type: Number, default: null },
     rating: { type: Number, default: 0 },

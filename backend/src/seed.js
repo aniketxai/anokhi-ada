@@ -15,6 +15,7 @@ function normalizeImportedProduct(product, index) {
           .replace(/^[a-z]/, (char) => char.toUpperCase())
           .replace(/\b[a-z]/g, (char) => char.toUpperCase())
       : 'Uncategorized',
+    subCategory: product.subCategory || product.subcategory || '',
     price: Number(product.price) || 0,
     originalPrice: product.originalPrice ?? null,
     rating: Number(product.rating) || 0,

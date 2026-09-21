@@ -38,29 +38,31 @@ function sortProducts(products, sort = 'featured') {
   }
 }
 
-function filterFallbackProducts({ category, q, sort }) {
+function filterFallbackProducts({ category, subCategory, q, sort }) {
   const search = q ? new RegExp(escapeRegex(q), 'i') : null;
 
   const filtered = fallbackProducts.filter((product) => {
     const matchesCategory = !category || category === 'All' || product.category === category;
+    const matchesSubCategory = !subCategory || subCategory === 'All' || product.subCategory === subCategory;
     const matchesQuery =
       !search ||
       search.test(product.name) ||
       search.test(product.category) ||
+      search.test(product.subCategory) ||
       search.test(product.description);
 
-    return matchesCategory && matchesQuery;
+    return matchesCategory && matchesSubCategory && matchesQuery;
   });
 
   return sortProducts(filtered, sort);
 }
 
-async function loadProducts({ category, q, sort }) {
+async function loadProducts({ category, subCategory, q, sort }) {
   if (!isDatabaseReady()) {
     if (process.env.NODE_ENV === 'production') {
       return [];
     }
-    return filterFallbackProducts({ category, q, sort });
+    return filterFallbackProducts({ category, subCategory, q, sort });
   }
 
   const filter = {};
@@ -69,10 +71,15 @@ async function loadProducts({ category, q, sort }) {
     filter.category = category;
   }
 
+  if (subCategory && subCategory !== 'All') {
+    filter.subCategory = subCategory;
+  }
+
   if (q) {
     filter.$or = [
       { name: { $regex: q, $options: 'i' } },
       { category: { $regex: q, $options: 'i' } },
+      { subCategory: { $regex: q, $options: 'i' } },
       { description: { $regex: q, $options: 'i' } },
     ];
   }
@@ -93,7 +100,7 @@ async function loadProducts({ category, q, sort }) {
     if (process.env.NODE_ENV === 'production') {
       return [];
     }
-    return filterFallbackProducts({ category, q, sort });
+    return filterFallbackProducts({ category, subCategory, q, sort });
   }
 }
 
@@ -134,9 +141,9 @@ function sanitizeProduct(product) {
 }
 
 export const getProducts = asyncHandler(async (req, res) => {
-  const { category, q, sort } = req.query;
+  const { category, subCategory, q, sort } = req.query;
 
-  const products = await loadProducts({ category, q, sort });
+  const products = await loadProducts({ category, subCategory, q, sort });
   const sanitized = (products || []).map(sanitizeProduct);
   const dataSource = isDatabaseReady() ? 'db' : (sanitized.length ? 'fallback' : 'none');
   res.json({ success: true, count: sanitized.length, data: sanitized, dataSource });
