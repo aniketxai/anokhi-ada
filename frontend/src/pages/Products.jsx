@@ -1,13 +1,12 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, SlidersHorizontal, X, ChevronDown, Folder } from 'lucide-react';
+import { Search, SlidersHorizontal, X, ChevronDown } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
 import ProductsPageSkeleton from '../components/ProductsPageSkeleton';
 import SectionHeading from '../components/SectionHeading';
 import api from '../api';
-import { CATEGORY_SUBCATEGORIES } from '../data/categories';
 
 const sortOptions = [
   { value: 'featured', label: 'Featured' },
@@ -17,10 +16,8 @@ const sortOptions = [
   { value: 'newest', label: 'Newest' },
 ];
 
-const mainCategories = ['All', 'Packing Material', 'Earrings', 'Hair Accessories'];
-
 export default function Products() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [search, setSearch] = useState(() => searchParams.get('q') || '');
   const [activeCategory, setActiveCategory] = useState(() => searchParams.get('category') || 'All');
   const [activeSubCategory, setActiveSubCategory] = useState(() => searchParams.get('subCategory') || 'All');
@@ -45,14 +42,6 @@ export default function Products() {
   const [showFilters, setShowFilters] = useState(false);
   const [products, setProducts] = useState(() => api.getCachedProducts());
   const [loading, setLoading] = useState(() => api.getCachedProducts().length === 0);
-
-  // Available sub-categories for current active main category
-  const availableSubCategories = useMemo(() => {
-    if (activeCategory === 'All') {
-      return Object.values(CATEGORY_SUBCATEGORIES).flat();
-    }
-    return CATEGORY_SUBCATEGORIES[activeCategory] || [];
-  }, [activeCategory]);
 
   const filtered = useMemo(() => {
     let result = [...products];
@@ -122,11 +111,6 @@ export default function Products() {
     };
   }, []);
 
-  const handleSelectCategory = (cat) => {
-    setActiveCategory(cat);
-    setActiveSubCategory('All');
-  };
-
   if (loading) {
     return <ProductsPageSkeleton />;
   }
@@ -182,61 +166,6 @@ export default function Products() {
             Filters
           </button>
         </div>
-
-        {/* Category Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-3 scrollbar-none">
-          {mainCategories.map((cat) => {
-            const isActive = activeCategory === cat;
-            return (
-              <button
-                key={cat}
-                onClick={() => handleSelectCategory(cat)}
-                className={`px-4 py-2 rounded-full text-xs font-extrabold whitespace-nowrap transition-all ${
-                  isActive
-                    ? 'bg-primary text-white shadow-md scale-105'
-                    : 'bg-surface-container text-foreground/70 hover:bg-surface-container/80'
-                }`}
-              >
-                {cat}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Sub-Category / Folder Tabs */}
-        {availableSubCategories.length > 0 && (
-          <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 scrollbar-none border-b border-border/50">
-            <span className="text-[11px] font-bold text-outline uppercase tracking-wider flex items-center gap-1 shrink-0 mr-1">
-              <Folder size={13} /> Subfolders:
-            </span>
-            <button
-              onClick={() => setActiveSubCategory('All')}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-                activeSubCategory === 'All'
-                  ? 'bg-foreground text-background font-bold'
-                  : 'bg-surface-muted text-foreground/60 hover:text-foreground'
-              }`}
-            >
-              All Subfolders
-            </button>
-            {availableSubCategories.map((sub) => {
-              const isActive = activeSubCategory.toLowerCase() === sub.toLowerCase();
-              return (
-                <button
-                  key={sub}
-                  onClick={() => setActiveSubCategory(sub)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1 ${
-                    isActive
-                      ? 'bg-primary/10 text-primary font-bold border border-primary/30'
-                      : 'bg-surface-muted text-foreground/60 hover:text-foreground'
-                  }`}
-                >
-                  <Folder size={12} /> {sub}
-                </button>
-              );
-            })}
-          </div>
-        )}
 
         <AnimatePresence>
           {showFilters && (
