@@ -40,8 +40,11 @@ export default function Products() {
 
   const [sort, setSort] = useState('featured');
   const [showFilters, setShowFilters] = useState(false);
+  const [products, setProducts] = useState(() => api.getCachedProducts());
+  const [loading, setLoading] = useState(() => api.getCachedProducts().length === 0);
+
   const categories = useMemo(
-    () => [...new Set(products.map(product => product.category).filter(Boolean))],
+    () => [...new Set((products || []).map(product => product.category).filter(Boolean))],
     [products]
   );
 
