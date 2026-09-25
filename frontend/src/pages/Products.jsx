@@ -40,8 +40,12 @@ export default function Products() {
 
   const [sort, setSort] = useState('featured');
   const [showFilters, setShowFilters] = useState(false);
-  const [products, setProducts] = useState(() => api.getCachedProducts());
-  const [loading, setLoading] = useState(() => api.getCachedProducts().length === 0);
+  const categories = useMemo(
+    () => [...new Set(products.map(product => product.category).filter(Boolean))],
+    [products]
+  );
+
+  const showCategoryPills = activeCategory === 'All';
 
   const filtered = useMemo(() => {
     let result = [...products];
@@ -57,10 +61,10 @@ export default function Products() {
     }
 
     if (activeCategory !== 'All') {
-      const targetCat = activeCategory.toLowerCase();
+      const targetCat = activeCategory.toLowerCase().replace(/[-_]/g, ' ');
       result = result.filter(p => {
-        const cat = (p.category || '').toLowerCase();
-        return cat === targetCat;
+        const cat = (p.category || '').toLowerCase().replace(/[-_]/g, ' ');
+        return cat === targetCat || cat.includes(targetCat);
       });
     }
 
@@ -119,8 +123,12 @@ export default function Products() {
     <div className="pt-24 pb-20 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeading
-          label="Catalogue"
-          title="Products"
+          label={activeCategory !== 'All' ? 'Category' : 'Catalogue'}
+          title={
+            activeCategory !== 'All'
+              ? activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1).replace(/[-_]/g, ' ')
+              : 'Products'
+          }
           description="Browse products organized by folder categories & subfolders."
         />
 
@@ -188,10 +196,46 @@ export default function Products() {
                   </select>
                   <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none" />
                 </div>
+                {showCategoryPills && (
+                  <div className="flex flex-wrap gap-2">
+                    {['All', ...categories].map(cat => (
+                      <button
+                        key={cat}
+                        onClick={() => setActiveCategory(cat)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-material cursor-pointer ${
+                          activeCategory === cat
+                            ? 'bg-primary text-white'
+                            : 'bg-background text-secondary-text hover:bg-surface-muted'
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Category pills - shown on main products page (/products) */}
+        {showCategoryPills && (
+          <div className="hidden sm:flex flex-wrap gap-2 mb-8">
+            {['All', ...categories].map(cat => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-material cursor-pointer ${
+                  activeCategory === cat
+                    ? 'bg-primary text-white'
+                    : 'bg-surface-container text-secondary-text hover:bg-surface-muted'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        )}
 
         <p className="text-sm text-outline mb-6">{filtered.length} product{filtered.length !== 1 ? 's' : ''} found</p>
 
