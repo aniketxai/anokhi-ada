@@ -17,12 +17,6 @@ export default function ProductsPageSkeleton() {
           <Skeleton className="h-12 w-full sm:w-28 rounded-2xl sm:hidden" />
         </div>
 
-        <div className="hidden sm:flex flex-wrap gap-2 mb-8">
-          {Array.from({ length: 7 }).map((_, index) => (
-            <Skeleton key={index} className="w-24 h-10 rounded-full" />
-          ))}
-        </div>
-
         <Skeleton className="w-40 h-4 mb-6" />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">

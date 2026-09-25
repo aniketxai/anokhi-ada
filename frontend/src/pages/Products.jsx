@@ -33,11 +33,6 @@ export default function Products() {
   const [products, setProducts] = useState(() => api.getCachedProducts());
   const [loading, setLoading] = useState(() => api.getCachedProducts().length === 0);
 
-  const categories = useMemo(
-    () => [...new Set(products.map(product => product.category).filter(Boolean))],
-    [products]
-  );
-
   const filtered = useMemo(() => {
     let result = [...products];
 
@@ -189,42 +184,10 @@ export default function Products() {
                   </select>
                   <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none" />
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {['All', ...categories].map(cat => (
-                    <button
-                      key={cat}
-                      onClick={() => setActiveCategory(cat)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-material cursor-pointer ${
-                        activeCategory === cat
-                          ? 'bg-primary text-white'
-                          : 'bg-background text-secondary-text hover:bg-surface-muted'
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Category pills */}
-        <div className="hidden sm:flex flex-wrap gap-2 mb-8">
-          {['All', ...categories].map(cat => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-material cursor-pointer ${
-                activeCategory === cat
-                  ? 'bg-primary text-white'
-                  : 'bg-surface-container text-secondary-text hover:bg-surface-muted'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
 
         <p className="text-sm text-outline mb-6">{filtered.length} product{filtered.length !== 1 ? 's' : ''} found</p>
 
