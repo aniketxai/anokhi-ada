@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, ShieldCheck, Box, ShoppingBag, Check, ArrowRight, Star, Tag } from 'lucide-react';
+import { Package, ShieldCheck, Box, ShoppingBag, Check, ArrowRight, Star, Tag, FileText, Layers } from 'lucide-react';
 import { products } from '../../data/products';
 import { formatINR } from '../../utils/currency';
 import { useApp } from '../../context/useApp';
@@ -8,8 +8,10 @@ import { useApp } from '../../context/useApp';
 const PACKING_CATEGORIES = [
   { id: 'all', label: 'All Packing Material', icon: Package },
   { id: 'polybag', label: '1. Polybag', icon: ShieldCheck },
-  { id: 'corrugated-box', label: '2. Corrugated Box', icon: Box },
+  { id: 'corrugated-boxes', label: '2. Corrugated boxes', icon: Box },
   { id: 'tape', label: '3. Tape', icon: Tag },
+  { id: 'thermal-roll', label: '4. Thermal roll', icon: FileText },
+  { id: 'bubble-wrap', label: '5. Bubble wrap', icon: Layers },
 ];
 
 export default function PackingMaterialSection() {
@@ -23,8 +25,10 @@ export default function PackingMaterialSection() {
   const filteredProducts = packingProducts.filter((p) => {
     if (activeTab === 'all') return true;
     if (activeTab === 'polybag') return p.subCategory === 'Polybag' || p.name.toLowerCase().includes('polybag');
-    if (activeTab === 'corrugated-box') return p.subCategory === 'Corrugated Box' || p.name.toLowerCase().includes('corrugated');
+    if (activeTab === 'corrugated-boxes') return p.subCategory === 'Corrugated boxes' || p.name.toLowerCase().includes('corrugated');
     if (activeTab === 'tape') return p.subCategory === 'Tape' || p.name.toLowerCase().includes('tape');
+    if (activeTab === 'thermal-roll') return p.subCategory === 'Thermal roll' || p.name.toLowerCase().includes('thermal');
+    if (activeTab === 'bubble-wrap') return p.subCategory === 'Bubble wrap' || p.name.toLowerCase().includes('bubble');
     return true;
   });
 
