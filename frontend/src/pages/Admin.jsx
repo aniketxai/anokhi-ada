@@ -622,6 +622,24 @@ const loadAdminData = useCallback(async ({ showLoading = true } = {}) => {
     }
   }, [refreshData]);
 
+  const handleDeleteSubCategoryFromCategory = useCallback(async (categoryName, subCategoryName) => {
+    const confirmed = window.confirm(`Remove subcategory "${subCategoryName}" from "${categoryName}"?`);
+    if (!confirmed) return;
+
+    try {
+      setSavingCategory(true);
+      setError(null);
+      await api.deleteAdminCategorySubcategory(categoryName, subCategoryName);
+      setSuccessMessage(`Subcategory "${subCategoryName}" removed from "${categoryName}"`);
+      await refreshData();
+    } catch (err) {
+      console.error('Failed to remove subcategory:', err);
+      setError(err.message || 'Failed to remove subcategory');
+    } finally {
+      setSavingCategory(false);
+    }
+  }, [refreshData]);
+
   const handleDeleteCategory = useCallback(async (categoryName) => {
     const confirmed = window.confirm(`Delete custom category "${categoryName}" from database?`);
     if (!confirmed) return;
@@ -1157,6 +1175,7 @@ if (!isAuthenticated) {
                 dbCategories={dbCategories}
                 onOpenAddCategory={() => setIsAddCategoryModalOpen(true)}
                 onAddSubCategory={handleAddSubCategoryToCategory}
+                onDeleteSubCategory={handleDeleteSubCategoryFromCategory}
                 onDeleteCategory={handleDeleteCategory}
                 loading={savingCategory}
               />

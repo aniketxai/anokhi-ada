@@ -717,6 +717,12 @@ export const updateAdminSettings = asyncHandler(async (req, res) => {
   res.json({ success: true, message: 'Settings saved successfully', data: settings });
 });
 
+const DEFAULT_CATEGORY_MAPPINGS = {
+  'Packing Material': ['Polybag', 'Corrugated boxes', 'Tape', 'Thermal roll', 'Bubble wrap'],
+  'Earrings': ['Earrings', 'Earrings box'],
+  'Hair Accessories': ['Claws', 'Hair clips', 'Hair accessories kit', 'Hair bands'],
+};
+
 export const listAdminCategories = asyncHandler(async (req, res) => {
   let dbCategories = [];
   let distinctProductCategories = [];
@@ -727,6 +733,19 @@ export const listAdminCategories = asyncHandler(async (req, res) => {
         Category.find().lean(),
         Product.distinct('category'),
       ]);
+
+      // Seed default categories into DB if missing
+      for (const [catName, subCats] of Object.entries(DEFAULT_CATEGORY_MAPPINGS)) {
+        const existing = dbCategories.find((c) => c.name.toLowerCase() === catName.toLowerCase());
+        if (!existing) {
+          const newCat = await Category.create({
+            name: catName,
+            subCategories: subCats,
+            isCustom: false,
+          });
+          dbCategories.push(newCat.toObject());
+        }
+      }
     } catch (err) {
       console.error('Failed to fetch categories:', err);
     }
@@ -735,17 +754,19 @@ export const listAdminCategories = asyncHandler(async (req, res) => {
   const resultNames = Array.from(new Set([
     ...(dbCategories || []).map((c) => c.name),
     ...(distinctProductCategories || []).filter(Boolean),
+    ...Object.keys(DEFAULT_CATEGORY_MAPPINGS),
   ]));
 
   res.json({
     success: true,
     data: dbCategories,
     categories: resultNames,
+    defaultMappings: DEFAULT_CATEGORY_MAPPINGS,
   });
 });
 
 export const createAdminCategory = asyncHandler(async (req, res) => {
-  const { name, subCategories } = req.body;
+  const { name, subCategories, image } = req.body;
 
   if (!name || !name.trim()) {
     res.status(400);
@@ -759,18 +780,74 @@ export const createAdminCategory = asyncHandler(async (req, res) => {
     ? subCategories.split(',').map((s) => s.trim()).filter(Boolean)
     : [];
 
+  const updateDoc = {
+    $set: { name: cleanName, isCustom: true },
+    $addToSet: { subCategories: { $each: subs } },
+  };
+
+  if (image) {
+    updateDoc.$set.image = String(image).trim();
+  }
+
   const category = await Category.findOneAndUpdate(
     { name: cleanName },
-    {
-      $set: { name: cleanName, isCustom: true },
-      $addToSet: { subCategories: { $each: subs } },
-    },
+    updateDoc,
     { upsert: true, new: true, runValidators: true }
   ).lean();
 
   res.status(201).json({
     success: true,
     message: 'Category saved to database',
+    data: category,
+  });
+});
+
+export const updateAdminCategorySubcategories = asyncHandler(async (req, res) => {
+  const { name } = req.params;
+  const { subCategories } = req.body;
+
+  if (!name) {
+    res.status(400);
+    throw new Error('Category name is required');
+  }
+
+  const cleanName = decodeURIComponent(name).trim();
+  const subs = Array.isArray(subCategories)
+    ? subCategories.map((s) => String(s).trim()).filter(Boolean)
+    : [];
+
+  const category = await Category.findOneAndUpdate(
+    { name: cleanName },
+    { $set: { subCategories: subs } },
+    { upsert: true, new: true }
+  ).lean();
+
+  res.json({
+    success: true,
+    message: 'Subcategories updated successfully',
+    data: category,
+  });
+});
+
+export const deleteAdminCategorySubcategory = asyncHandler(async (req, res) => {
+  const { name, subName } = req.params;
+  if (!name || !subName) {
+    res.status(400);
+    throw new Error('Category name and subcategory name are required');
+  }
+
+  const cleanName = decodeURIComponent(name).trim();
+  const cleanSubName = decodeURIComponent(subName).trim();
+
+  const category = await Category.findOneAndUpdate(
+    { name: cleanName },
+    { $pull: { subCategories: cleanSubName } },
+    { new: true }
+  ).lean();
+
+  res.json({
+    success: true,
+    message: `Subcategory "${cleanSubName}" removed from "${cleanName}"`,
     data: category,
   });
 });

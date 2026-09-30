@@ -262,6 +262,20 @@ export async function createAdminCategory(payload) {
   return requestJson('/api/admin/categories', { method: 'POST', body: payload });
 }
 
+export async function updateAdminCategorySubcategories(categoryName, subCategories) {
+  return requestJson(`/api/admin/categories/${encodeURIComponent(categoryName)}/subcategories`, {
+    method: 'PUT',
+    body: { subCategories },
+  });
+}
+
+export async function deleteAdminCategorySubcategory(categoryName, subName) {
+  return requestJson(
+    `/api/admin/categories/${encodeURIComponent(categoryName)}/subcategories/${encodeURIComponent(subName)}`,
+    { method: 'DELETE' }
+  );
+}
+
 export async function deleteAdminCategory(name) {
   return requestJson(`/api/admin/categories/${encodeURIComponent(name)}`, { method: 'DELETE' });
 }
@@ -833,6 +847,8 @@ export default {
   fetchAdminSummary,
   fetchAdminCategories,
   createAdminCategory,
+  updateAdminCategorySubcategories,
+  deleteAdminCategorySubcategory,
   deleteAdminCategory,
   fetchAdminProducts,
   createAdminProduct,

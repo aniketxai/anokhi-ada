@@ -8,6 +8,7 @@ export function ManageCategoriesModal({
   dbCategories = [],
   onOpenAddCategory,
   onAddSubCategory,
+  onDeleteSubCategory,
   onDeleteCategory,
   loading,
 }) {
@@ -56,10 +57,10 @@ export function ManageCategoriesModal({
                   </div>
                   <div>
                     <h2 className="text-lg font-bold text-foreground">
-                      Manage Database Categories
+                      Manage Database Categories & Subcategories
                     </h2>
                     <p className="text-xs font-medium text-secondary-text">
-                      View, edit subcategories, or delete custom categories in MongoDB
+                      View, create subcategories, or remove subcategories & categories
                     </p>
                   </div>
                 </div>
@@ -102,8 +103,8 @@ export function ManageCategoriesModal({
               <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-card divide-y divide-border/50">
                 {filteredCategories.length === 0 ? (
                   <div className="py-12 text-center text-secondary-text">
-                    <p className="font-semibold text-sm">No custom categories found.</p>
-                    <p className="text-xs mt-1">Click "+ New Category" to create your first custom category.</p>
+                    <p className="font-semibold text-sm">No categories found.</p>
+                    <p className="text-xs mt-1">Click "+ New Category" to create a category.</p>
                   </div>
                 ) : (
                   filteredCategories.map((item, index) => {
@@ -190,10 +191,18 @@ export function ManageCategoriesModal({
                             {subCats.map((sub, sIdx) => (
                               <span
                                 key={`${catName}-${sub}-${sIdx}`}
-                                className="inline-flex items-center gap-1 rounded-full border border-border bg-surface-muted px-2.5 py-0.5 text-xs font-semibold text-secondary-text"
+                                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-muted px-2.5 py-1 text-xs font-semibold text-foreground group"
                               >
-                                <Tag className="w-3 h-3 text-muted-foreground" />
+                                <Tag className="w-3 h-3 text-primary" />
                                 {sub}
+                                <button
+                                  type="button"
+                                  onClick={() => onDeleteSubCategory?.(catName, sub)}
+                                  className="ml-0.5 text-muted-foreground hover:text-rose-600 transition-colors p-0.5 rounded-full hover:bg-rose-100"
+                                  title={`Remove ${sub}`}
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
                               </span>
                             ))}
                           </div>

@@ -29,6 +29,7 @@ import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import OrderTracking from './pages/OrderTracking';
 import Profile from './pages/Profile';
+import CategorySelection from './pages/CategorySelection';
 
 function PublicLayout() {
   return (
@@ -52,6 +53,8 @@ function AppContent() {
         <Routes>
           <Route element={<PublicLayout />}>
             <Route path="/" element={<Home />} />
+            <Route path="/collections/:categorySlug" element={<CategorySelection />} />
+            <Route path="/category/:categorySlug" element={<CategorySelection />} />
             <Route path="/products" element={<Products />} />
             <Route path="/products/:id" element={<ProductDetail />} />
             <Route path="/services" element={<Services />} />

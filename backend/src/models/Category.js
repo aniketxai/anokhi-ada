@@ -4,6 +4,7 @@ const categorySchema = new mongoose.Schema(
   {
     name: { type: String, required: true, unique: true, trim: true },
     slug: { type: String, trim: true },
+    image: { type: String, default: '' },
     subCategories: [{ type: String, trim: true }],
     isCustom: { type: Boolean, default: true },
   },

@@ -161,6 +161,20 @@ export const ADMIN_SUBCATEGORIES = [
   'Hair bands',
 ];
 
+export const SUBCATEGORY_IMAGES = {
+  'polybag': 'https://images.pexels.com/photos/4464819/pexels-photo-4464819.jpeg?auto=compress&cs=tinysrgb&w=600',
+  'corrugated boxes': 'https://images.pexels.com/photos/6393013/pexels-photo-6393013.jpeg?auto=compress&cs=tinysrgb&w=600',
+  'tape': 'https://images.pexels.com/photos/4464821/pexels-photo-4464821.jpeg?auto=compress&cs=tinysrgb&w=600',
+  'thermal roll': 'https://images.pexels.com/photos/4464820/pexels-photo-4464820.jpeg?auto=compress&cs=tinysrgb&w=600',
+  'bubble wrap': 'https://images.pexels.com/photos/6211263/pexels-photo-6211263.jpeg?auto=compress&cs=tinysrgb&w=600',
+  'earrings': 'https://images.pexels.com/photos/1454171/pexels-photo-1454171.jpeg?auto=compress&cs=tinysrgb&w=600',
+  'earrings box': 'https://images.pexels.com/photos/1191531/pexels-photo-1191531.jpeg?auto=compress&cs=tinysrgb&w=600',
+  'claws': 'https://images.pexels.com/photos/6068943/pexels-photo-6068943.jpeg?auto=compress&cs=tinysrgb&w=600',
+  'hair clips': 'https://images.pexels.com/photos/3762875/pexels-photo-3762875.jpeg?auto=compress&cs=tinysrgb&w=600',
+  'hair accessories kit': 'https://images.pexels.com/photos/2688992/pexels-photo-2688992.jpeg?auto=compress&cs=tinysrgb&w=600',
+  'hair bands': 'https://images.pexels.com/photos/2533266/pexels-photo-2533266.jpeg?auto=compress&cs=tinysrgb&w=600',
+};
+
 export const allSubcollections = [
   ...packingMaterialItems,
   ...hotSelling,

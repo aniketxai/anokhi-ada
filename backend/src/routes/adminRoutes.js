@@ -22,6 +22,8 @@ import {
   listAdminCategories,
   createAdminCategory,
   deleteAdminCategory,
+  updateAdminCategorySubcategories,
+  deleteAdminCategorySubcategory,
 } from '../controllers/adminController.js';
 import { getAdminHomeContent, updateAdminHomeContent } from '../controllers/homeContentController.js';
 import { uploadMiddleware, uploadImageToCloudinary } from '../controllers/uploadController.js';
@@ -44,6 +46,8 @@ router.put('/settings', verifyAdminToken, updateAdminSettings);
 
 router.get('/categories', listAdminCategories);
 router.post('/categories', createAdminCategory);
+router.put('/categories/:name/subcategories', updateAdminCategorySubcategories);
+router.delete('/categories/:name/subcategories/:subName', deleteAdminCategorySubcategory);
 router.delete('/categories/:name', deleteAdminCategory);
 
 router.get('/products', listAdminProducts);

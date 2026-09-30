@@ -7,6 +7,7 @@ import ProductCardSkeleton from '../components/ProductCardSkeleton';
 import ProductsPageSkeleton from '../components/ProductsPageSkeleton';
 import SectionHeading from '../components/SectionHeading';
 import api from '../api';
+import { CATEGORY_SUBCATEGORIES } from '../data/categories';
 
 const sortOptions = [
   { value: 'featured', label: 'Featured' },
@@ -47,6 +48,26 @@ export default function Products() {
     () => [...new Set((products || []).map(product => product.category).filter(Boolean))],
     [products]
   );
+
+  const subCategoryPills = useMemo(() => {
+    if (activeCategory === 'All') return [];
+    const normCat = activeCategory.toLowerCase().replace(/[-_]/g, ' ');
+
+    let list = [];
+    for (const [k, v] of Object.entries(CATEGORY_SUBCATEGORIES)) {
+      if (k.toLowerCase() === normCat || normCat.includes(k.toLowerCase())) {
+        list = [...v];
+        break;
+      }
+    }
+
+    const fromProds = (products || [])
+      .filter((p) => (p.category || '').toLowerCase().replace(/[-_]/g, ' ').includes(normCat))
+      .map((p) => p.subCategory)
+      .filter(Boolean);
+
+    return Array.from(new Set([...list, ...fromProds]));
+  }, [activeCategory, products]);
 
   const showCategoryPills = activeCategory === 'All';
 
@@ -222,7 +243,7 @@ export default function Products() {
         </AnimatePresence>
 
         {/* Category pills - shown on main products page (/products) */}
-        {showCategoryPills && (
+        {showCategoryPills ? (
           <div className="hidden sm:flex flex-wrap gap-2 mb-8">
             {['All', ...categories].map(cat => (
               <button
@@ -230,7 +251,7 @@ export default function Products() {
                 onClick={() => setActiveCategory(cat)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-material cursor-pointer ${
                   activeCategory === cat
-                    ? 'bg-primary text-white'
+                    ? 'bg-primary text-white shadow-sm'
                     : 'bg-surface-container text-secondary-text hover:bg-surface-muted'
                 }`}
               >
@@ -238,9 +259,52 @@ export default function Products() {
               </button>
             ))}
           </div>
+        ) : (
+          /* Subcategory pills - shown when a specific category is selected */
+          <div className="flex flex-wrap items-center gap-2 mb-8">
+            <span className="text-xs font-bold uppercase tracking-wider text-secondary-text mr-1">
+              Subcategories:
+            </span>
+            <button
+              onClick={() => setActiveSubCategory('All')}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                activeSubCategory === 'All'
+                  ? 'bg-primary text-primary-foreground shadow-xs'
+                  : 'bg-surface-container text-secondary-text hover:bg-surface-muted'
+              }`}
+            >
+              All {activeCategory}
+            </button>
+            {subCategoryPills.map((sub) => (
+              <button
+                key={sub}
+                onClick={() => setActiveSubCategory(sub)}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  activeSubCategory.toLowerCase().replace(/[-_]/g, ' ') === sub.toLowerCase().replace(/[-_]/g, ' ')
+                    ? 'bg-primary text-primary-foreground shadow-xs'
+                    : 'bg-surface-container text-secondary-text hover:bg-surface-muted border border-border/60'
+                }`}
+              >
+                {sub}
+              </button>
+            ))}
+          </div>
         )}
 
-        <p className="text-sm text-outline mb-6">{filtered.length} product{filtered.length !== 1 ? 's' : ''} found</p>
+        <div className="flex items-center justify-between mb-6">
+          <p className="text-sm text-outline font-medium">{filtered.length} product{filtered.length !== 1 ? 's' : ''} found</p>
+          {activeCategory !== 'All' && (
+            <button
+              onClick={() => {
+                setActiveCategory('All');
+                setActiveSubCategory('All');
+              }}
+              className="text-xs text-primary font-bold hover:underline"
+            >
+              Reset Category Filters
+            </button>
+          )}
+        </div>
 
         {/* Grid */}
         <AnimatePresence mode="wait">
