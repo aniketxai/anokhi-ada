@@ -23,7 +23,27 @@ export default function Collections({ items, loading = false }) {
     );
   }
 
-  const activeCollections = Array.isArray(items) && items.length > 0 ? items : fallbackCollections;
+  const KNOWN_SUBCATS = [
+    'polybag',
+    'corrugated boxes',
+    'tape',
+    'thermal roll',
+    'bubble wrap',
+    'earrings box',
+    'claws',
+    'hair clips',
+    'hair accessories kit',
+    'hair bands',
+  ];
+
+  const rawCollections = Array.isArray(items) && items.length > 0 ? items : fallbackCollections;
+
+  // Only show main categories, filter out subcategory items
+  const activeCollections = rawCollections.filter((c) => {
+    if (!c || !c.name) return false;
+    const norm = c.name.toLowerCase().trim();
+    return !KNOWN_SUBCATS.includes(norm);
+  });
 
   return (
     <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
@@ -61,7 +81,7 @@ export default function Collections({ items, loading = false }) {
                     {c.name}
                   </h3>
                   <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur-sm shadow-sm group-hover:gap-2 transition-all">
-                    View subcategories <FiArrowRight className="h-3.5 w-3.5" />
+                    Explore Collection <FiArrowRight className="h-3.5 w-3.5" />
                   </span>
                 </div>
               </Link>
