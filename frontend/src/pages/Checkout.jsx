@@ -41,11 +41,11 @@ export default function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState('razorpay');
   const [packingMaterial, setPackingMaterial] = useState('Polybag');
 
-  const baseShippingFee = cartTotal < 399 ? 80 : 0;
+  const baseShippingFee = cartTotal < 1999 ? 80 : 0;
   const ceoDeliveryFee = isCeoDelivery ? 5000 : 0;
   const shippingFee = baseShippingFee;
 
-  const isCodAvailable = cartTotal >= 399;
+  const isCodAvailable = cartTotal >= 1999;
   const effectivePaymentMethod = isCodAvailable ? paymentMethod : 'razorpay';
 
   const finalTotal = Math.max(0, cartTotal - discountAmount) + baseShippingFee + ceoDeliveryFee;
@@ -801,7 +801,7 @@ export default function Checkout() {
                       <p className="text-xs text-outline mt-1">
                         {isCodAvailable
                           ? 'Pay ₹100 online advance via Razorpay now to confirm order. Remaining balance paid on delivery!'
-                          : 'Add items worth ₹' + (399 - cartTotal) + ' more to unlock COD option.'}
+                          : 'Add items worth ₹' + (1999 - cartTotal) + ' more to unlock COD option.'}
                       </p>
                     </div>
                   </div>

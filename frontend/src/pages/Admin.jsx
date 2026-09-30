@@ -1107,6 +1107,7 @@ if (!isAuthenticated) {
           {activeSection === 'site-content' && (
             <SiteContentSection
               siteContent={adminSiteContent}
+              dbCategories={dbCategories}
               onSaveSiteContent={handleSaveSiteContent}
               saving={savingSiteContent}
             />

@@ -81,14 +81,14 @@ export default function ShippingPolicy() {
             <li className="flex items-start gap-3 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300">
               <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
               <div>
-                <strong className="text-foreground">FREE Shipping on all orders above ₹499:</strong> No extra delivery fees applied at checkout for orders meeting this value.
+                <strong className="text-foreground">FREE Shipping on all orders above ₹1999:</strong> No extra delivery fees applied at checkout for orders meeting this value.
               </div>
             </li>
 
             <li className="flex items-start gap-3 p-3 rounded-2xl bg-surface-muted border border-border">
               <span className="text-primary font-bold text-lg">•</span>
               <div>
-                <strong className="text-foreground">Orders below ₹499:</strong> Incur a flat shipping charge of ₹80 across all standard deliveries in India.
+                <strong className="text-foreground">Orders below ₹1999:</strong> Incur a flat shipping charge of ₹80 across all standard deliveries in India.
               </div>
             </li>
 

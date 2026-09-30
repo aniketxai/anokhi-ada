@@ -28,10 +28,10 @@ export default function Cart() {
     );
   }
 
-  const shippingFee = cartTotal < 399 ? 80 : 0;
+  const shippingFee = cartTotal < 1999 ? 80 : 0;
   const ceoDeliveryFee = isCeoDelivery ? 5000 : 0;
   const grandTotal = Math.max(0, cartTotal - discountAmount) + shippingFee + ceoDeliveryFee;
-  const remainingForFreeShipping = Math.max(0, 399 - cartTotal);
+  const remainingForFreeShipping = Math.max(0, 1999 - cartTotal);
 
   return (
     <div className="pt-24 pb-20 min-h-screen">
@@ -46,16 +46,16 @@ export default function Cart() {
                 <span className="text-amber-600 dark:text-amber-400">
                   Add {formatINR(remainingForFreeShipping)} more for FREE Shipping & Cash on Delivery (COD)!
                 </span>
-                <span>{formatINR(cartTotal)} / {formatINR(399)}</span>
+                <span>{formatINR(cartTotal)} / {formatINR(1999)}</span>
               </div>
               <div className="w-full bg-surface-muted h-2 rounded-full overflow-hidden">
                 <div
                   className="bg-amber-500 h-full rounded-full transition-all duration-300"
-                  style={{ width: `${Math.min(100, (cartTotal / 399) * 100)}%` }}
+                  style={{ width: `${Math.min(100, (cartTotal / 1999) * 100)}%` }}
                 />
               </div>
               <p className="text-[11px] text-secondary-text mt-1.5">
-                Orders below ₹399 incur a flat ₹80 shipping fee and are strictly online payment only (No COD).
+                Orders below ₹1999 incur a flat ₹80 shipping fee and are strictly online payment only (No COD).
               </p>
             </div>
           ) : (

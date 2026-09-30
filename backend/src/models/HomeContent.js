@@ -50,7 +50,7 @@ const HomeContentSchema = new mongoose.Schema(
     heroSlides: [HeroSlideSchema],
     announcement: {
       enabled: { type: Boolean, default: true },
-      text: { type: String, default: '✨ Free shipping on orders above ₹499 | Handcrafted with Love' },
+      text: { type: String, default: '✨ Free shipping on orders above ₹1999 | Handcrafted with Love' },
       link: { type: String, default: '/products' },
     },
     aboutSection: {

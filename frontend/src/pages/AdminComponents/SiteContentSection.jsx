@@ -60,7 +60,7 @@ const DEFAULT_SITE_CONTENT = {
   ],
   announcement: {
     enabled: true,
-    text: '✨ Free shipping on orders above ₹499 | Handcrafted with Love',
+    text: '✨ Free shipping on orders above ₹1999 | Handcrafted with Love',
     link: '/products',
   },
   aboutSection: {
@@ -82,10 +82,91 @@ const DEFAULT_SITE_CONTENT = {
     { id: 'ig6', image: 'https://images.pexels.com/photos/4467687/pexels-photo-4467687.jpeg?auto=compress&cs=tinysrgb&w=600', likes: 1330 },
   ],
   collections: [
-    { id: 'cosmetics', name: 'Cosmetics', slug: 'cosmetics', image: 'https://images.pexels.com/photos/2536965/pexels-photo-2536965.jpeg?auto=compress&cs=tinysrgb&w=900' },
-    { id: 'custom-packaging', name: 'Custom Packaging', slug: 'custom-packaging', image: 'https://images.pexels.com/photos/6211263/pexels-photo-6211263.jpeg?auto=compress&cs=tinysrgb&w=900' },
-    { id: 'luxury-hampers', name: 'Luxury Hampers', slug: 'luxury-hampers', image: 'https://images.pexels.com/photos/6393013/pexels-photo-6393013.jpeg?auto=compress&cs=tinysrgb&w=900' },
-    { id: 'gift-collection', name: 'Gift Collection', slug: 'gift-collection', image: 'https://images.pexels.com/photos/6211641/pexels-photo-6211641.jpeg?auto=compress&cs=tinysrgb&w=900' },
+    {
+      id: 'packing-material',
+      name: 'Packing Material',
+      slug: 'packing-material',
+      image: 'https://images.pexels.com/photos/4464819/pexels-photo-4464819.jpeg?auto=compress&cs=tinysrgb&w=900',
+      subCategories: [
+        { id: 'sub-pm-1', name: 'Polybag', image: 'https://images.pexels.com/photos/4464819/pexels-photo-4464819.jpeg?auto=compress&cs=tinysrgb&w=600' },
+        { id: 'sub-pm-2', name: 'Corrugated boxes', image: 'https://images.pexels.com/photos/6393013/pexels-photo-6393013.jpeg?auto=compress&cs=tinysrgb&w=600' },
+        { id: 'sub-pm-3', name: 'Tape', image: 'https://images.pexels.com/photos/4464821/pexels-photo-4464821.jpeg?auto=compress&cs=tinysrgb&w=600' },
+        { id: 'sub-pm-4', name: 'Thermal roll', image: 'https://images.pexels.com/photos/4464820/pexels-photo-4464820.jpeg?auto=compress&cs=tinysrgb&w=600' },
+        { id: 'sub-pm-5', name: 'Bubble wrap', image: 'https://images.pexels.com/photos/6211263/pexels-photo-6211263.jpeg?auto=compress&cs=tinysrgb&w=600' },
+      ],
+    },
+    {
+      id: 'earrings',
+      name: 'Earrings',
+      slug: 'earrings',
+      image: 'https://images.pexels.com/photos/1454171/pexels-photo-1454171.jpeg?auto=compress&cs=tinysrgb&w=900',
+      subCategories: [
+        { id: 'sub-er-1', name: 'Earrings', image: 'https://images.pexels.com/photos/1454171/pexels-photo-1454171.jpeg?auto=compress&cs=tinysrgb&w=600' },
+        { id: 'sub-er-2', name: 'Earrings box', image: 'https://images.pexels.com/photos/1191531/pexels-photo-1191531.jpeg?auto=compress&cs=tinysrgb&w=600' },
+      ],
+    },
+    {
+      id: 'hair-accessories',
+      name: 'Hair Accessories',
+      slug: 'hair-accessories',
+      image: 'https://images.pexels.com/photos/6068943/pexels-photo-6068943.jpeg?auto=compress&cs=tinysrgb&w=900',
+      subCategories: [
+        { id: 'sub-ha-1', name: 'Claws', image: 'https://images.pexels.com/photos/6068943/pexels-photo-6068943.jpeg?auto=compress&cs=tinysrgb&w=600' },
+        { id: 'sub-ha-2', name: 'Hair clips', image: 'https://images.pexels.com/photos/3762875/pexels-photo-3762875.jpeg?auto=compress&cs=tinysrgb&w=600' },
+        { id: 'sub-ha-3', name: 'Hair accessories kit', image: 'https://images.pexels.com/photos/2688992/pexels-photo-2688992.jpeg?auto=compress&cs=tinysrgb&w=600' },
+        { id: 'sub-ha-4', name: 'Hair bands', image: 'https://images.pexels.com/photos/2533266/pexels-photo-2533266.jpeg?auto=compress&cs=tinysrgb&w=600' },
+      ],
+    },
+    {
+      id: 'cosmetics',
+      name: 'Cosmetics',
+      slug: 'cosmetics',
+      image: 'https://images.pexels.com/photos/2536965/pexels-photo-2536965.jpeg?auto=compress&cs=tinysrgb&w=900',
+      subCategories: [
+        { id: 'sub-cos-1', name: 'Lipstick & Makeup', image: 'https://images.pexels.com/photos/2536965/pexels-photo-2536965.jpeg?auto=compress&cs=tinysrgb&w=600' },
+        { id: 'sub-cos-2', name: 'Skincare Essentials', image: 'https://images.pexels.com/photos/3762875/pexels-photo-3762875.jpeg?auto=compress&cs=tinysrgb&w=600' },
+      ],
+    },
+    {
+      id: 'custom-packaging',
+      name: 'Custom Packaging',
+      slug: 'custom-packaging',
+      image: 'https://images.pexels.com/photos/6211263/pexels-photo-6211263.jpeg?auto=compress&cs=tinysrgb&w=900',
+      subCategories: [
+        { id: 'sub-cp-1', name: 'Satin Ribbon Boxes', image: 'https://images.pexels.com/photos/6211263/pexels-photo-6211263.jpeg?auto=compress&cs=tinysrgb&w=600' },
+        { id: 'sub-cp-2', name: 'Golden Foil Wraps', image: 'https://images.pexels.com/photos/6393013/pexels-photo-6393013.jpeg?auto=compress&cs=tinysrgb&w=600' },
+      ],
+    },
+    {
+      id: 'luxury-hampers',
+      name: 'Luxury Hampers',
+      slug: 'luxury-hampers',
+      image: 'https://images.pexels.com/photos/6393013/pexels-photo-6393013.jpeg?auto=compress&cs=tinysrgb&w=900',
+      subCategories: [
+        { id: 'sub-lh-1', name: 'Birthday Hampers', image: 'https://images.pexels.com/photos/6393013/pexels-photo-6393013.jpeg?auto=compress&cs=tinysrgb&w=600' },
+        { id: 'sub-lh-2', name: 'Wedding Gifts', image: 'https://images.pexels.com/photos/1303082/pexels-photo-1303082.jpeg?auto=compress&cs=tinysrgb&w=600' },
+      ],
+    },
+    {
+      id: 'gift-collection',
+      name: 'Gift Collection',
+      slug: 'gift-collection',
+      image: 'https://images.pexels.com/photos/6211641/pexels-photo-6211641.jpeg?auto=compress&cs=tinysrgb&w=900',
+      subCategories: [
+        { id: 'sub-gc-1', name: 'Gifts Under ₹499', image: 'https://images.pexels.com/photos/1666067/pexels-photo-1666067.jpeg?auto=compress&cs=tinysrgb&w=600' },
+        { id: 'sub-gc-2', name: 'Gifts Under ₹699', image: 'https://images.pexels.com/photos/1303082/pexels-photo-1303082.jpeg?auto=compress&cs=tinysrgb&w=600' },
+      ],
+    },
+    {
+      id: 'curated-for-him',
+      name: 'Curated For Him',
+      slug: 'curated-for-him',
+      image: 'https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=900',
+      subCategories: [
+        { id: 'sub-him-1', name: 'Grooming Essentials', image: 'https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=600' },
+        { id: 'sub-him-2', name: 'Perfumes for Him', image: 'https://images.pexels.com/photos/965989/pexels-photo-965989.jpeg?auto=compress&cs=tinysrgb&w=600' },
+      ],
+    },
   ],
   subcollectionStrips: [
     {
@@ -150,7 +231,7 @@ const DEFAULT_SITE_CONTENT = {
   },
 };
 
-export function SiteContentSection({ siteContent, onSaveSiteContent, saving }) {
+export function SiteContentSection({ siteContent, dbCategories = [], onSaveSiteContent, saving }) {
   const mergeDefaults = (input) => {
     let strips = input?.subcollectionStrips?.length ? [...input.subcollectionStrips] : [...DEFAULT_SITE_CONTENT.subcollectionStrips];
     DEFAULT_SITE_CONTENT.subcollectionStrips.forEach((defStrip) => {
@@ -159,11 +240,69 @@ export function SiteContentSection({ siteContent, onSaveSiteContent, saving }) {
       }
     });
 
+    let rawCols = input?.collections?.length ? [...input.collections] : [...DEFAULT_SITE_CONTENT.collections];
+
+    // Make sure DEFAULT collections (like Earrings, Packing Material, Hair Accessories) exist in rawCols
+    DEFAULT_SITE_CONTENT.collections.forEach((defCol) => {
+      const existing = rawCols.find(
+        (c) => (c.name || '').toLowerCase() === defCol.name.toLowerCase() || (c.slug || '').toLowerCase() === defCol.slug.toLowerCase()
+      );
+      if (!existing) {
+        rawCols.push(defCol);
+      } else {
+        if ((!existing.subCategories || existing.subCategories.length === 0) && defCol.subCategories?.length) {
+          existing.subCategories = defCol.subCategories;
+        }
+      }
+    });
+
+    // Sync DB Categories if provided
+    if (Array.isArray(dbCategories)) {
+      dbCategories.forEach((dbCat) => {
+        if (!dbCat || !dbCat.name) return;
+        const catName = dbCat.name.trim();
+        const catSlug = dbCat.slug || catName.toLowerCase().replace(/\s+/g, '-');
+        const foundCol = rawCols.find(
+          (c) => (c.name || '').toLowerCase() === catName.toLowerCase() || (c.slug || '').toLowerCase() === catSlug.toLowerCase()
+        );
+
+        const dbSubs = Array.isArray(dbCat.subCategories) ? dbCat.subCategories : [];
+
+        if (!foundCol) {
+          rawCols.push({
+            id: `db-col-${catSlug}`,
+            name: catName,
+            slug: catSlug,
+            image: dbCat.image || 'https://images.pexels.com/photos/1454171/pexels-photo-1454171.jpeg?auto=compress&cs=tinysrgb&w=900',
+            subCategories: dbSubs.map((sub, i) => ({
+              id: `db-sub-${i}`,
+              name: typeof sub === 'string' ? sub : sub.name,
+              image: typeof sub === 'object' && sub.image ? sub.image : '',
+            })),
+          });
+        } else {
+          // If collection exists, populate missing subcategories from DB
+          const currentSubNames = (foundCol.subCategories || []).map((s) => (typeof s === 'string' ? s : s.name).toLowerCase());
+          dbSubs.forEach((dbSubName) => {
+            const sName = typeof dbSubName === 'string' ? dbSubName : dbSubName.name;
+            if (sName && !currentSubNames.includes(sName.toLowerCase())) {
+              foundCol.subCategories = foundCol.subCategories || [];
+              foundCol.subCategories.push({
+                id: `db-sub-${Date.now()}-${sName}`,
+                name: sName,
+                image: typeof dbSubName === 'object' && dbSubName.image ? dbSubName.image : '',
+              });
+            }
+          });
+        }
+      });
+    }
+
     return {
       ...DEFAULT_SITE_CONTENT,
       ...(input || {}),
       heroSlides: input?.heroSlides?.length ? input.heroSlides : DEFAULT_SITE_CONTENT.heroSlides,
-      collections: input?.collections?.length ? input.collections : DEFAULT_SITE_CONTENT.collections,
+      collections: rawCols,
       subcollectionStrips: strips,
       instagramPosts: input?.instagramPosts?.length ? input.instagramPosts : DEFAULT_SITE_CONTENT.instagramPosts,
       aboutSection: { ...DEFAULT_SITE_CONTENT.aboutSection, ...(input?.aboutSection || {}) },
@@ -177,10 +316,8 @@ export function SiteContentSection({ siteContent, onSaveSiteContent, saving }) {
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   useEffect(() => {
-    if (siteContent && Object.keys(siteContent).length > 0) {
-      setContent(mergeDefaults(siteContent));
-    }
-  }, [siteContent]);
+    setContent(mergeDefaults(siteContent));
+  }, [siteContent, dbCategories]);
 
   const activeContent = content;
 

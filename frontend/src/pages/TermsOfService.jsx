@@ -71,8 +71,8 @@ export default function TermsOfService() {
             <ul className="space-y-2 text-sm text-secondary-text list-disc pl-5">
               <li>Orders are processed within 1–2 business days.</li>
               <li>Standard delivery time is 3–7 business days across India.</li>
-              <li><strong>FREE Shipping</strong> on all orders above ₹499.</li>
-              <li>Orders below ₹499 incur a flat ₹80 shipping fee.</li>
+              <li><strong>FREE Shipping</strong> on all orders above ₹1999.</li>
+              <li>Orders below ₹1999 incur a flat ₹80 shipping fee.</li>
             </ul>
           </div>
 

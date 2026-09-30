@@ -11,7 +11,7 @@ export const BRAND = {
   email: 'anokhiada9@gmail.com',
   supportTime: '10:00 AM – 6:00 PM (Monday to Saturday)',
   shippingPartner: 'Shadowfax 360',
-  freeShippingThreshold: 499,
+  freeShippingThreshold: 1999,
   flatShipping: 80,
   social: {
     instagram: 'https://www.instagram.com/anokhiada_01/',

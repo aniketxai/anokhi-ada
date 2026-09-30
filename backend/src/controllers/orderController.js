@@ -73,7 +73,7 @@ const createRazorpayOrder = asyncHandler(async (req, res) => {
     0
   );
 
-  const calculatedBaseShipping = subtotal < 399 ? 80 : 0;
+  const calculatedBaseShipping = subtotal < 1999 ? 80 : 0;
   const calculatedCeoFee = isCeoDelivery ? 5000 : 0;
   const calculatedShippingFee = calculatedBaseShipping + calculatedCeoFee;
   const calculatedDiscount = Math.max(0, Number(discountAmount) || 0);

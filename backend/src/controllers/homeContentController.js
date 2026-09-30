@@ -46,7 +46,7 @@ export const DEFAULT_HOME_CONTENT = {
   ],
   announcement: {
     enabled: true,
-    text: '✨ Free shipping on orders above ₹499 | Handcrafted with Love',
+    text: '✨ Free shipping on orders above ₹1999 | Handcrafted with Love',
     link: '/products',
   },
   aboutSection: {
@@ -60,7 +60,7 @@ export const DEFAULT_HOME_CONTENT = {
     city: 'Patna, Bihar',
   },
   features: [
-    { title: 'Free Shipping', desc: 'On orders above ₹499', icon: 'truck' },
+    { title: 'Free Shipping', desc: 'On orders above ₹1999', icon: 'truck' },
     { title: 'Secure Packaging', desc: 'Every order packed with care', icon: 'shield' },
     { title: 'Premium Gifting', desc: 'Handcrafted with love', icon: 'gift' },
     { title: 'Support', desc: '10:00 AM – 6:00 PM', icon: 'headphones' },
