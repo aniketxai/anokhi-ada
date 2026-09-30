@@ -314,8 +314,8 @@ export default function Products() {
               </button>
             ))}
           </div>
-        ) : (
-          /* Subcategory pills - shown when a specific category is selected */
+        ) : activeSubCategory === 'All' ? (
+          /* Subcategory pills - shown only when a category is selected and no specific subCategory is selected */
           <div className="flex flex-wrap items-center gap-2 mb-8">
             <span className="text-xs font-bold uppercase tracking-wider text-secondary-text mr-1">
               Subcategories:
@@ -344,7 +344,7 @@ export default function Products() {
               </button>
             ))}
           </div>
-        )}
+        ) : null}
 
         <div className="flex items-center justify-between mb-6">
           <p className="text-sm text-outline font-medium">{filtered.length} product{filtered.length !== 1 ? 's' : ''} found</p>
