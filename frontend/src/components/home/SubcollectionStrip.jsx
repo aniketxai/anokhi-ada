@@ -3,6 +3,80 @@ import { motion } from 'framer-motion';
 import { FiArrowUpRight } from 'react-icons/fi';
 import SectionHeader from '../common/SectionHeader';
 
+function getItemLink(item) {
+  if (!item) return '/products';
+
+  // 1. Explicit href link if specified
+  if (item.href && typeof item.href === 'string' && item.href.trim() !== '') {
+    return item.href;
+  }
+
+  const slug = (item.slug || '').trim();
+  const name = (item.name || '').trim();
+  const nameLower = name.toLowerCase();
+  const slugLower = slug.toLowerCase();
+
+  // 2. Hampers matching
+  if (nameLower.includes('hamper') || slugLower.includes('hamper') || nameLower.includes('gift box')) {
+    return '/products?category=luxury-hampers';
+  }
+
+  // 3. Earrings matching
+  if (nameLower.includes('earring')) {
+    if (nameLower.includes('box')) {
+      return '/products?category=Earrings&subCategory=Earrings%20box';
+    }
+    return '/products?category=Earrings';
+  }
+
+  // 4. Packing material subcategories matching
+  if (nameLower.includes('polybag') || slugLower.includes('polybag')) {
+    return '/products?category=Packing%20Material&subCategory=Polybag';
+  }
+  if (nameLower.includes('corrugated') || slugLower.includes('corrugated')) {
+    return '/products?category=Packing%20Material&subCategory=Corrugated%20boxes';
+  }
+  if (nameLower.includes('tape') || slugLower.includes('tape')) {
+    return '/products?category=Packing%20Material&subCategory=Tape';
+  }
+  if (nameLower.includes('thermal') || slugLower.includes('thermal')) {
+    return '/products?category=Packing%20Material&subCategory=Thermal%20roll';
+  }
+  if (nameLower.includes('bubble') || slugLower.includes('bubble')) {
+    return '/products?category=Packing%20Material&subCategory=Bubble%20wrap';
+  }
+  if (nameLower.includes('packing') || slugLower.includes('packing')) {
+    return '/products?category=Packing%20Material';
+  }
+
+  // 5. Hair accessories matching
+  if (nameLower.includes('claw') || slugLower.includes('claw')) {
+    return '/products?category=Hair%20Accessories&subCategory=Claws';
+  }
+  if (nameLower.includes('hair clip') || slugLower.includes('hair clip')) {
+    return '/products?category=Hair%20Accessories&subCategory=Hair%20clips';
+  }
+  if (nameLower.includes('hair band') || slugLower.includes('hair band')) {
+    return '/products?category=Hair%20Accessories&subCategory=Hair%20bands';
+  }
+  if (nameLower.includes('hair') || slugLower.includes('hair')) {
+    return '/products?category=Hair%20Accessories';
+  }
+
+  // 6. Cosmetics / makeup matching
+  if (nameLower.includes('cosmetic') || nameLower.includes('makeup') || nameLower.includes('lipstick')) {
+    return '/products?category=cosmetics';
+  }
+
+  // 7. If valid custom slug is set and NOT cosmetics (unless title actually says cosmetic)
+  if (slug && slug !== 'products') {
+    if (slug.startsWith('/') || slug.startsWith('http')) return slug;
+    return `/products?category=${encodeURIComponent(slug)}`;
+  }
+
+  return '/products';
+}
+
 export default function SubcollectionStrip({ eyebrow, title, subtitle, items, viewAllHref, loading = false }) {
   if (loading) {
     return (
@@ -24,45 +98,49 @@ export default function SubcollectionStrip({ eyebrow, title, subtitle, items, vi
       <SectionHeader eyebrow={eyebrow} title={title} subtitle={subtitle} viewAllHref={viewAllHref} />
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 mt-6">
-        {items.map((item, i) => (
-          <motion.div
-            key={item.id}
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: (i % 6) * 0.05 }}
-          >
-            <Link
-              to={`/products?category=${encodeURIComponent(item.slug)}`}
-              className="group relative flex flex-col justify-end aspect-square w-full rounded-2xl sm:rounded-3xl overflow-hidden bg-surface-container border border-black/5 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 select-none"
+        {items.map((item, i) => {
+          const targetUrl = getItemLink(item);
+
+          return (
+            <motion.div
+              key={item.id || item.name || i}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: (i % 6) * 0.05 }}
             >
-              {/* Background Image */}
-              {item.image ? (
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-              ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-amber-100 to-amber-300" />
-              )}
+              <Link
+                to={targetUrl}
+                className="group relative flex flex-col justify-end aspect-square w-full rounded-2xl sm:rounded-3xl overflow-hidden bg-surface-container border border-black/5 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 select-none"
+              >
+                {/* Background Image */}
+                {item.image ? (
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-amber-100 to-amber-300" />
+                )}
 
-              {/* Gradient Scrim for text readability */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent group-hover:from-black/90 transition-colors" />
+                {/* Gradient Scrim for text readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent group-hover:from-black/90 transition-colors" />
 
-              {/* Card Label & Action Icon */}
-              <div className="relative z-10 p-3 sm:p-4 flex items-end justify-between w-full">
-                <span className="text-xs sm:text-sm font-bold text-white tracking-tight line-clamp-2 leading-tight drop-shadow-md group-hover:text-amber-300 transition-colors">
-                  {item.name}
-                </span>
+                {/* Card Label & Action Icon */}
+                <div className="relative z-10 p-3 sm:p-4 flex items-end justify-between w-full">
+                  <span className="text-xs sm:text-sm font-bold text-white tracking-tight line-clamp-2 leading-tight drop-shadow-md group-hover:text-amber-300 transition-colors">
+                    {item.name}
+                  </span>
 
-                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white/25 backdrop-blur-md flex items-center justify-center text-white shrink-0 group-hover:bg-primary group-hover:text-white transition-all transform group-hover:scale-110 ml-1">
-                  <FiArrowUpRight className="w-3.5 h-3.5" />
+                  <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white/25 backdrop-blur-md flex items-center justify-center text-white shrink-0 group-hover:bg-primary group-hover:text-white transition-all transform group-hover:scale-110 ml-1">
+                    <FiArrowUpRight className="w-3.5 h-3.5" />
+                  </div>
                 </div>
-              </div>
-            </Link>
-          </motion.div>
-        ))}
+              </Link>
+            </motion.div>
+          );
+        })}
       </div>
     </section>
   );

@@ -1108,8 +1108,16 @@ export function SiteContentSection({ siteContent, dbCategories = [], onSaveSiteC
                       type="text"
                       value={item.name || ''}
                       onChange={(e) => updateSubcollectionItem(stripIdx, itemIdx, 'name', e.target.value)}
-                      placeholder="Title"
+                      placeholder="Title (e.g. Velvet Hampers)"
                       className="w-full rounded-lg border border-border bg-card px-2 py-1 text-xs font-semibold text-foreground outline-none focus:border-rose-500"
+                    />
+
+                    <input
+                      type="text"
+                      value={item.slug || ''}
+                      onChange={(e) => updateSubcollectionItem(stripIdx, itemIdx, 'slug', e.target.value)}
+                      placeholder="Category / Link (e.g. luxury-hampers)"
+                      className="w-full rounded-lg border border-border bg-card px-2 py-1 text-[11px] font-mono text-foreground outline-none focus:border-rose-500"
                     />
                   </div>
                 ))}
