@@ -30,13 +30,20 @@ export default function Products() {
       else if (fromUrlCat.toLowerCase() === 'earrings') setActiveCategory('Earrings');
       else if (fromUrlCat.toLowerCase() === 'hair-accessories') setActiveCategory('Hair Accessories');
       else setActiveCategory(fromUrlCat);
+    } else {
+      setActiveCategory('All');
     }
+
     const fromUrlSub = searchParams.get('subCategory') || searchParams.get('slug');
     if (fromUrlSub) {
       setActiveSubCategory(fromUrlSub);
+    } else {
+      setActiveSubCategory('All');
     }
+
     const q = searchParams.get('q');
     if (q) setSearch(q);
+    else setSearch('');
   }, [searchParams]);
 
   const [sort, setSort] = useState('featured');
@@ -45,10 +52,27 @@ export default function Products() {
   const [siteContent, setSiteContent] = useState(() => api.getCachedSiteContent());
   const [loading, setLoading] = useState(() => api.getCachedProducts().length === 0);
 
-  const categories = useMemo(
-    () => [...new Set((products || []).map(product => product.category).filter(Boolean))],
-    [products]
-  );
+  const categories = useMemo(() => {
+    const set = new Set();
+    (products || []).forEach((product) => {
+      if (product.category) set.add(product.category);
+    });
+    (siteContent?.collections || []).forEach((col) => {
+      if (col.name) set.add(col.name);
+    });
+
+    const seen = new Set();
+    const result = [];
+    for (const cat of set) {
+      if (!cat) continue;
+      const key = cat.toLowerCase().trim();
+      if (!seen.has(key)) {
+        seen.add(key);
+        result.push(cat);
+      }
+    }
+    return result;
+  }, [products, siteContent]);
 
   const subCategoryPills = useMemo(() => {
     if (activeCategory === 'All') return [];
@@ -84,12 +108,13 @@ export default function Products() {
 
     const combined = [...list, ...fromProds];
 
-    // Case-insensitive deduplication
+    // Case-insensitive deduplication & filter out exact category name itself
     const seen = new Set();
     const result = [];
     for (const sub of combined) {
       if (!sub) continue;
       const key = sub.toLowerCase().trim().replace(/[-_]/g, ' ');
+      if (key === normCat) continue; // Don't duplicate category name as a subcategory pill
       if (!seen.has(key)) {
         seen.add(key);
         result.push(sub);
