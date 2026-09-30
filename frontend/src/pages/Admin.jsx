@@ -216,11 +216,21 @@ const categoryOptions = useMemo(() => {
 }, [dbCategories, adminProducts]);
 
 const subCategoryOptions = useMemo(() => {
-  const set = new Set(ADMIN_SUBCATEGORIES);
-  (adminProducts || []).forEach((p) => {
-    if (p.subCategory) set.add(p.subCategory);
+  const seen = new Set();
+  const result = ['All'];
+  const allSubs = [
+    ...ADMIN_SUBCATEGORIES,
+    ...(adminProducts || []).map((p) => p.subCategory).filter(Boolean),
+  ];
+
+  allSubs.forEach((sub) => {
+    const key = String(sub).toLowerCase().trim();
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(sub);
+    }
   });
-  return ['All', ...Array.from(set)];
+  return result;
 }, [adminProducts]);
 
 const loadAdminData = useCallback(async ({ showLoading = true } = {}) => {

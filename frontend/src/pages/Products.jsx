@@ -42,6 +42,7 @@ export default function Products() {
   const [sort, setSort] = useState('featured');
   const [showFilters, setShowFilters] = useState(false);
   const [products, setProducts] = useState(() => api.getCachedProducts());
+  const [siteContent, setSiteContent] = useState(() => api.getCachedSiteContent());
   const [loading, setLoading] = useState(() => api.getCachedProducts().length === 0);
 
   const categories = useMemo(
@@ -51,23 +52,52 @@ export default function Products() {
 
   const subCategoryPills = useMemo(() => {
     if (activeCategory === 'All') return [];
-    const normCat = activeCategory.toLowerCase().replace(/[-_]/g, ' ');
+    const normCat = activeCategory.toLowerCase().trim().replace(/[-_]/g, ' ');
 
     let list = [];
-    for (const [k, v] of Object.entries(CATEGORY_SUBCATEGORIES)) {
-      if (k.toLowerCase() === normCat || normCat.includes(k.toLowerCase())) {
-        list = [...v];
-        break;
+
+    // 1. Check siteContent collections (Admin Panel homepage collections) first
+    const siteMatch = (siteContent?.collections || []).find(
+      (c) =>
+        (c.name || '').toLowerCase().trim().replace(/[-_]/g, ' ') === normCat ||
+        (c.slug || '').toLowerCase().trim().replace(/[-_]/g, ' ') === normCat
+    );
+    if (siteMatch && Array.isArray(siteMatch.subCategories) && siteMatch.subCategories.length > 0) {
+      list = siteMatch.subCategories.map((s) => (typeof s === 'string' ? s : s.name));
+    }
+
+    // 2. Check static CATEGORY_SUBCATEGORIES fallback
+    if (list.length === 0) {
+      for (const [k, v] of Object.entries(CATEGORY_SUBCATEGORIES)) {
+        if (k.toLowerCase().trim() === normCat || normCat.includes(k.toLowerCase().trim())) {
+          list = [...v];
+          break;
+        }
       }
     }
 
+    // 3. Extract subcategories from matching products
     const fromProds = (products || [])
-      .filter((p) => (p.category || '').toLowerCase().replace(/[-_]/g, ' ').includes(normCat))
+      .filter((p) => (p.category || '').toLowerCase().trim().replace(/[-_]/g, ' ').includes(normCat))
       .map((p) => p.subCategory)
       .filter(Boolean);
 
-    return Array.from(new Set([...list, ...fromProds]));
-  }, [activeCategory, products]);
+    const combined = [...list, ...fromProds];
+
+    // Case-insensitive deduplication
+    const seen = new Set();
+    const result = [];
+    for (const sub of combined) {
+      if (!sub) continue;
+      const key = sub.toLowerCase().trim().replace(/[-_]/g, ' ');
+      if (!seen.has(key)) {
+        seen.add(key);
+        result.push(sub);
+      }
+    }
+
+    return result;
+  }, [activeCategory, products, siteContent]);
 
   const showCategoryPills = activeCategory === 'All';
 
@@ -121,14 +151,14 @@ export default function Products() {
   useEffect(() => {
     let active = true;
 
-    api.fetchProducts()
-      .then(result => {
+    Promise.all([
+      api.fetchProducts().catch(() => ({ items: [] })),
+      api.fetchSiteContent().catch(() => null),
+    ])
+      .then(([prodRes, siteRes]) => {
         if (!active) return;
-        setProducts(result.items || []);
-      })
-      .catch(() => {
-        if (!active) return;
-        setProducts(api.getCachedProducts());
+        if (prodRes?.items) setProducts(prodRes.items);
+        if (siteRes) setSiteContent(siteRes);
       })
       .finally(() => {
         if (active) setLoading(false);

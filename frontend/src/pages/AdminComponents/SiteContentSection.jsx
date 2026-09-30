@@ -282,10 +282,11 @@ export function SiteContentSection({ siteContent, dbCategories = [], onSaveSiteC
           });
         } else {
           // If collection exists, populate missing subcategories from DB
-          const currentSubNames = (foundCol.subCategories || []).map((s) => (typeof s === 'string' ? s : s.name).toLowerCase());
+          const currentSubNames = (foundCol.subCategories || []).map((s) => (typeof s === 'string' ? s : s.name).toLowerCase().trim());
           dbSubs.forEach((dbSubName) => {
-            const sName = typeof dbSubName === 'string' ? dbSubName : dbSubName.name;
-            if (sName && !currentSubNames.includes(sName.toLowerCase())) {
+            const sName = typeof dbSubName === 'string' ? dbSubName : dbSubName?.name;
+            if (sName && !currentSubNames.includes(sName.toLowerCase().trim())) {
+              currentSubNames.push(sName.toLowerCase().trim());
               foundCol.subCategories = foundCol.subCategories || [];
               foundCol.subCategories.push({
                 id: `db-sub-${Date.now()}-${sName}`,
@@ -297,6 +298,24 @@ export function SiteContentSection({ siteContent, dbCategories = [], onSaveSiteC
         }
       });
     }
+
+    // Clean up & deduplicate subcategories in each collection case-insensitively
+    rawCols.forEach((col) => {
+      if (Array.isArray(col.subCategories)) {
+        const seen = new Set();
+        const cleanSubs = [];
+        col.subCategories.forEach((s) => {
+          const sName = typeof s === 'string' ? s : s?.name;
+          if (!sName) return;
+          const key = sName.toLowerCase().trim();
+          if (!seen.has(key)) {
+            seen.add(key);
+            cleanSubs.push(s);
+          }
+        });
+        col.subCategories = cleanSubs;
+      }
+    });
 
     return {
       ...DEFAULT_SITE_CONTENT,

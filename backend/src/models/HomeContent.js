@@ -16,11 +16,12 @@ const InstagramPostSchema = new mongoose.Schema({
 }, { _id: false });
 
 const CollectionItemSchema = new mongoose.Schema({
-  id: { type: String, required: true },
+  id: { type: String },
   name: { type: String, required: true },
   slug: { type: String, required: true },
-  image: { type: String, required: true },
-}, { _id: false });
+  image: { type: String },
+  subCategories: [mongoose.Schema.Types.Mixed],
+}, { _id: false, strict: false });
 
 const FeatureItemSchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -76,7 +77,7 @@ const HomeContentSchema = new mongoose.Schema(
       supportTime: { type: String, default: '10:00 AM – 6:00 PM (Monday to Saturday)' },
     },
   },
-  { timestamps: true }
+  { timestamps: true, strict: false }
 );
 
 export default mongoose.model('HomeContent', HomeContentSchema);

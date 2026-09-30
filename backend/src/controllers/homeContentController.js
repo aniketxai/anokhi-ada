@@ -170,14 +170,17 @@ export async function getAdminHomeContent(req, res) {
   }
 }
 
-// UPDATE Admin Home Content
 export async function updateAdminHomeContent(req, res) {
   try {
     const payload = req.body || {};
+    delete payload._id;
+    delete payload.createdAt;
+    delete payload.updatedAt;
+
     const updated = await HomeContent.findOneAndUpdate(
       { key: 'default' },
       { $set: payload },
-      { new: true, upsert: true, runValidators: true }
+      { new: true, upsert: true, runValidators: false }
     );
     return res.json({ success: true, message: 'Site homepage content updated successfully!', data: updated });
   } catch (error) {

@@ -82,6 +82,7 @@ export default function CategorySelection() {
   // Subcategories list (returns objects with name and photo if set in Admin)
   const subCategoriesList = useMemo(() => {
     const norm = normalizeSlug(categoryName);
+    let rawList = [];
 
     // 1. Check Site Content collections (Featured Homepage Collections) first
     if (siteContent?.collections) {
@@ -89,41 +90,63 @@ export default function CategorySelection() {
         (c) => normalizeSlug(c.name) === norm || normalizeSlug(c.slug) === norm
       );
       if (siteMatch && Array.isArray(siteMatch.subCategories) && siteMatch.subCategories.length > 0) {
-        return siteMatch.subCategories.map((sub) =>
+        rawList = siteMatch.subCategories.map((sub) =>
           typeof sub === 'string' ? { name: sub, image: '' } : sub
         );
       }
     }
 
     // 2. Check DB Categories second
-    const dbMatch = dbCategories.find((c) => normalizeSlug(c.name) === norm);
-    if (dbMatch && Array.isArray(dbMatch.subCategories) && dbMatch.subCategories.length > 0) {
-      return dbMatch.subCategories.map((sub) =>
-        typeof sub === 'string' ? { name: sub, image: '' } : sub
-      );
+    if (rawList.length === 0) {
+      const dbMatch = dbCategories.find((c) => normalizeSlug(c.name) === norm);
+      if (dbMatch && Array.isArray(dbMatch.subCategories) && dbMatch.subCategories.length > 0) {
+        rawList = dbMatch.subCategories.map((sub) =>
+          typeof sub === 'string' ? { name: sub, image: '' } : sub
+        );
+      }
     }
 
     // 3. Check static dictionary mapping
-    for (const [key, subs] of Object.entries(CATEGORY_SUBCATEGORIES)) {
-      if (normalizeSlug(key) === norm || norm.includes(normalizeSlug(key))) {
-        return subs.map((sub) => ({ name: sub, image: '' }));
+    if (rawList.length === 0) {
+      for (const [key, subs] of Object.entries(CATEGORY_SUBCATEGORIES)) {
+        if (normalizeSlug(key) === norm || norm.includes(normalizeSlug(key))) {
+          rawList = subs.map((sub) => ({ name: sub, image: '' }));
+          break;
+        }
       }
     }
 
     // 4. Extract unique subCategories from products matching this category
-    const distinctSubs = [
-      ...new Set(
-        products
-          .filter((p) => normalizeSlug(p.category) === norm)
-          .map((p) => p.subCategory)
-          .filter(Boolean)
-      ),
-    ];
+    if (rawList.length === 0) {
+      const distinctSubs = [
+        ...new Set(
+          products
+            .filter((p) => normalizeSlug(p.category) === norm)
+            .map((p) => p.subCategory)
+            .filter(Boolean)
+        ),
+      ];
 
-    return (distinctSubs.length > 0 ? distinctSubs : ['All Products']).map((sub) => ({
-      name: sub,
-      image: '',
-    }));
+      rawList = (distinctSubs.length > 0 ? distinctSubs : ['All Products']).map((sub) => ({
+        name: sub,
+        image: '',
+      }));
+    }
+
+    // Case-insensitive deduplication to prevent duplicate pills/cards like "Earrings box" & "Earrings Box"
+    const seen = new Set();
+    const result = [];
+    for (const item of rawList) {
+      const name = typeof item === 'string' ? item : item?.name;
+      if (!name) continue;
+      const key = normalizeSlug(name);
+      if (!seen.has(key)) {
+        seen.add(key);
+        result.push(item);
+      }
+    }
+
+    return result;
   }, [categoryName, dbCategories, siteContent, products]);
 
   // Get image for subcategory
