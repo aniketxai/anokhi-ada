@@ -29,6 +29,7 @@ export default function CategorySelection() {
 
   const [dbCategories, setDbCategories] = useState([]);
   const [products, setProducts] = useState(() => api.getCachedProducts());
+  const [siteContent, setSiteContent] = useState(() => api.getCachedSiteContent());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,10 +38,12 @@ export default function CategorySelection() {
     Promise.all([
       api.fetchAdminCategories().catch(() => ({ data: [] })),
       api.fetchProducts().catch(() => ({ items: [] })),
-    ]).then(([catRes, prodRes]) => {
+      api.fetchSiteContent().catch(() => ({})),
+    ]).then(([catRes, prodRes, siteRes]) => {
       if (!active) return;
       if (catRes?.data) setDbCategories(catRes.data);
       if (prodRes?.items) setProducts(prodRes.items);
+      if (siteRes) setSiteContent(siteRes);
       setLoading(false);
     });
 
@@ -58,6 +61,12 @@ export default function CategorySelection() {
     if (raw === 'earrings' || raw.includes('earring')) return 'Earrings';
     if (raw === 'hair accessories' || raw.includes('hair')) return 'Hair Accessories';
 
+    // Try finding in Site Content collections
+    const foundSite = siteContent?.collections?.find(
+      (c) => normalizeSlug(c.name) === raw || normalizeSlug(c.slug) === raw
+    );
+    if (foundSite) return foundSite.name;
+
     // Try finding in DB
     const foundDb = dbCategories.find(
       (c) => normalizeSlug(c.name) === raw || normalizeSlug(c.name).includes(raw)
@@ -68,26 +77,40 @@ export default function CategorySelection() {
     return categorySlug
       .replace(/[-_]/g, ' ')
       .replace(/\b\w/g, (char) => char.toUpperCase());
-  }, [categorySlug, dbCategories]);
+  }, [categorySlug, dbCategories, siteContent]);
 
-  // Subcategories list
+  // Subcategories list (returns objects with name and photo if set in Admin)
   const subCategoriesList = useMemo(() => {
     const norm = normalizeSlug(categoryName);
 
-    // Check DB first
-    const dbMatch = dbCategories.find((c) => normalizeSlug(c.name) === norm);
-    if (dbMatch && Array.isArray(dbMatch.subCategories) && dbMatch.subCategories.length > 0) {
-      return dbMatch.subCategories;
-    }
-
-    // Check static dictionary mapping
-    for (const [key, subs] of Object.entries(CATEGORY_SUBCATEGORIES)) {
-      if (normalizeSlug(key) === norm || norm.includes(normalizeSlug(key))) {
-        return subs;
+    // 1. Check Site Content collections (Featured Homepage Collections) first
+    if (siteContent?.collections) {
+      const siteMatch = siteContent.collections.find(
+        (c) => normalizeSlug(c.name) === norm || normalizeSlug(c.slug) === norm
+      );
+      if (siteMatch && Array.isArray(siteMatch.subCategories) && siteMatch.subCategories.length > 0) {
+        return siteMatch.subCategories.map((sub) =>
+          typeof sub === 'string' ? { name: sub, image: '' } : sub
+        );
       }
     }
 
-    // Extract unique subCategories from products matching this category
+    // 2. Check DB Categories second
+    const dbMatch = dbCategories.find((c) => normalizeSlug(c.name) === norm);
+    if (dbMatch && Array.isArray(dbMatch.subCategories) && dbMatch.subCategories.length > 0) {
+      return dbMatch.subCategories.map((sub) =>
+        typeof sub === 'string' ? { name: sub, image: '' } : sub
+      );
+    }
+
+    // 3. Check static dictionary mapping
+    for (const [key, subs] of Object.entries(CATEGORY_SUBCATEGORIES)) {
+      if (normalizeSlug(key) === norm || norm.includes(normalizeSlug(key))) {
+        return subs.map((sub) => ({ name: sub, image: '' }));
+      }
+    }
+
+    // 4. Extract unique subCategories from products matching this category
     const distinctSubs = [
       ...new Set(
         products
@@ -97,20 +120,40 @@ export default function CategorySelection() {
       ),
     ];
 
-    return distinctSubs.length > 0 ? distinctSubs : ['All Products'];
-  }, [categoryName, dbCategories, products]);
+    return (distinctSubs.length > 0 ? distinctSubs : ['All Products']).map((sub) => ({
+      name: sub,
+      image: '',
+    }));
+  }, [categoryName, dbCategories, siteContent, products]);
 
   // Get image for subcategory
-  const getSubCategoryImg = (subName) => {
+  const getSubCategoryImg = (subItem) => {
+    if (typeof subItem === 'object' && subItem.image) {
+      return subItem.image;
+    }
+
+    const subName = typeof subItem === 'object' ? subItem.name : subItem;
     const normSub = normalizeSlug(subName);
 
-    // 1. Check known subcategory images
+    // Check Site Content collection subcategories for custom photo matching this name
+    if (siteContent?.collections) {
+      for (const col of siteContent.collections) {
+        if (Array.isArray(col.subCategories)) {
+          const matchedSub = col.subCategories.find(
+            (s) => typeof s === 'object' && s.image && normalizeSlug(s.name) === normSub
+          );
+          if (matchedSub?.image) return matchedSub.image;
+        }
+      }
+    }
+
+    // Check known static subcategory images
     if (SUBCATEGORY_IMAGES[normSub]) return SUBCATEGORY_IMAGES[normSub];
     for (const [k, v] of Object.entries(SUBCATEGORY_IMAGES)) {
       if (normSub.includes(k) || k.includes(normSub)) return v;
     }
 
-    // 2. Find product image matching this subcategory
+    // Find product image matching this subcategory
     const matchingProd = products.find(
       (p) =>
         normalizeSlug(p.category) === normalizeSlug(categoryName) &&
@@ -119,7 +162,7 @@ export default function CategorySelection() {
     );
     if (matchingProd?.images?.[0]) return matchingProd.images[0];
 
-    // 3. Fallback main category image
+    // Fallback main category image
     const categoryImg =
       DEFAULT_CATEGORY_IMAGES[normalizeSlug(categoryName)] ||
       'https://images.pexels.com/photos/1454171/pexels-photo-1454171.jpeg?auto=compress&cs=tinysrgb&w=600';
@@ -181,12 +224,13 @@ export default function CategorySelection() {
         {/* CIRCLE TYPE DESIGN GRID */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8 justify-items-center">
           {subCategoriesList.map((sub, index) => {
+            const subName = typeof sub === 'object' ? sub.name : sub;
             const imgUrl = getSubCategoryImg(sub);
-            const targetUrl = `/products?category=${encodeURIComponent(categoryName)}&subCategory=${encodeURIComponent(sub)}`;
+            const targetUrl = `/products?category=${encodeURIComponent(categoryName)}&subCategory=${encodeURIComponent(subName)}`;
 
             return (
               <motion.div
-                key={`${sub}-${index}`}
+                key={`${subName}-${index}`}
                 initial={{ opacity: 0, scale: 0.8, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.08 }}
@@ -202,7 +246,7 @@ export default function CategorySelection() {
                   <div className="relative h-32 w-32 sm:h-36 sm:w-36 rounded-full overflow-hidden border-4 border-card shadow-lg group-hover:shadow-2xl transition-all duration-300 group-hover:scale-105 bg-muted">
                     <img
                       src={imgUrl}
-                      alt={sub}
+                      alt={subName}
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                     {/* Gradient Overlay */}
@@ -225,7 +269,7 @@ export default function CategorySelection() {
                 {/* Subcategory Label */}
                 <div className="space-y-1">
                   <h3 className="font-serif text-sm sm:text-base font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                    {index + 1}. {sub}
+                    {index + 1}. {subName}
                   </h3>
                   <p className="text-[11px] font-semibold text-secondary-text group-hover:text-foreground transition-colors flex items-center justify-center gap-1">
                     Explore <ArrowRight className="h-3 w-3 inline opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />

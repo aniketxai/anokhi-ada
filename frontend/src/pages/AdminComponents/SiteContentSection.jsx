@@ -300,6 +300,13 @@ export function SiteContentSection({ siteContent, onSaveSiteContent, saving }) {
           name: 'New Collection',
           slug: 'new-collection',
           image: 'https://images.pexels.com/photos/6393013/pexels-photo-6393013.jpeg?auto=compress&cs=tinysrgb&w=900',
+          subCategories: [
+            {
+              id: `sub-${Date.now()}-1`,
+              name: 'Sample Subcategory',
+              image: 'https://images.pexels.com/photos/6393013/pexels-photo-6393013.jpeg?auto=compress&cs=tinysrgb&w=600',
+            },
+          ],
         },
       ],
     }));
@@ -309,6 +316,54 @@ export function SiteContentSection({ siteContent, onSaveSiteContent, saving }) {
     setContent((prev) => {
       const items = [...(prev.collections || [])];
       items.splice(index, 1);
+      return { ...prev, collections: items };
+    });
+  };
+
+  const addSubCategoryToCollection = (colIdx) => {
+    setContent((prev) => {
+      const items = [...(prev.collections || [])];
+      const target = { ...items[colIdx] };
+      const currentSubs = Array.isArray(target.subCategories) ? [...target.subCategories] : [];
+
+      currentSubs.push({
+        id: `sub-${Date.now()}`,
+        name: 'New Subcategory',
+        image: 'https://images.pexels.com/photos/6393013/pexels-photo-6393013.jpeg?auto=compress&cs=tinysrgb&w=600',
+      });
+
+      target.subCategories = currentSubs;
+      items[colIdx] = target;
+      return { ...prev, collections: items };
+    });
+  };
+
+  const updateSubCategoryInCollection = (colIdx, subIdx, field, value) => {
+    setContent((prev) => {
+      const items = [...(prev.collections || [])];
+      const target = { ...items[colIdx] };
+      const currentSubs = Array.isArray(target.subCategories) ? [...target.subCategories] : [];
+
+      const rawSub = currentSubs[subIdx];
+      const subObj = typeof rawSub === 'string' ? { name: rawSub, image: '' } : { ...rawSub };
+      subObj[field] = value;
+      currentSubs[subIdx] = subObj;
+
+      target.subCategories = currentSubs;
+      items[colIdx] = target;
+      return { ...prev, collections: items };
+    });
+  };
+
+  const removeSubCategoryFromCollection = (colIdx, subIdx) => {
+    setContent((prev) => {
+      const items = [...(prev.collections || [])];
+      const target = { ...items[colIdx] };
+      const currentSubs = Array.isArray(target.subCategories) ? [...target.subCategories] : [];
+
+      currentSubs.splice(subIdx, 1);
+      target.subCategories = currentSubs;
+      items[colIdx] = target;
       return { ...prev, collections: items };
     });
   };
@@ -611,84 +666,186 @@ export function SiteContentSection({ siteContent, onSaveSiteContent, saving }) {
               Featured Homepage Collections ({activeContent.collections?.length || 0})
             </h2>
             <p className="text-xs text-secondary-text mt-0.5">
-              Change the collection cards and cover images shown on your home page.
+              Manage collection cover photos, titles, and subcategory photos shown on your store.
             </p>
           </div>
 
           <button
             type="button"
             onClick={addCollection}
-            className="inline-flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 transition-colors shadow-xs"
           >
             <Plus className="w-4 h-4" /> Add Collection
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {(activeContent.collections || []).map((col, idx) => (
-            <div key={col.id || idx} className="rounded-2xl border border-border bg-surface-muted p-4 space-y-3 relative group">
-              <div className="flex items-center justify-between border-b border-border/40 pb-2">
-                <span className="text-xs font-bold text-foreground">Collection #{idx + 1}</span>
-                <button
-                  type="button"
-                  onClick={() => removeCollection(idx)}
-                  className="text-xs font-bold text-rose-600 hover:text-rose-800 p-1"
-                  title="Remove Collection"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {(activeContent.collections || []).map((col, idx) => {
+            const subCats = Array.isArray(col.subCategories) ? col.subCategories : [];
+
+            return (
+              <div key={col.id || idx} className="rounded-2xl border border-border bg-surface-muted p-5 space-y-4 relative group shadow-xs">
+                <div className="flex items-center justify-between border-b border-border/40 pb-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-rose-700 bg-rose-100 px-2.5 py-0.5 rounded-full">
+                    Collection #{idx + 1}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeCollection(idx)}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-rose-600 hover:text-rose-800 p-1 rounded-lg hover:bg-rose-100/50 transition-colors"
+                    title="Remove Collection"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" /> Remove Collection
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {/* Cover Image & Upload */}
+                  <div className="space-y-2">
+                    <span className="text-[11px] font-bold text-foreground block">Cover Image</span>
+                    <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-muted border border-border">
+                      <img
+                        src={col.image}
+                        alt={col.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://images.pexels.com/photos/6393013/pexels-photo-6393013.jpeg?auto=compress&cs=tinysrgb&w=900';
+                        }}
+                      />
+                    </div>
+
+                    <label className="inline-flex w-full cursor-pointer items-center justify-center gap-1 rounded-xl border border-rose-300 bg-card px-2.5 py-1.5 text-[11px] font-bold text-rose-700 hover:bg-rose-50 transition-colors shadow-xs">
+                      <Upload className="w-3 h-3" />
+                      {uploadingField === `col-${idx}` ? 'Uploading...' : 'Upload Cover'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={uploadingField === `col-${idx}`}
+                        onChange={(e) =>
+                          handleFileUpload(
+                            e.target.files[0],
+                            (url) => updateCollection(idx, 'image', url),
+                            `col-${idx}`
+                          )
+                        }
+                      />
+                    </label>
+                  </div>
+
+                  {/* Text Details */}
+                  <div className="sm:col-span-2 space-y-3">
+                    <label className="block">
+                      <span className="text-[11px] font-bold text-foreground">Collection Name *</span>
+                      <input
+                        type="text"
+                        value={col.name || ''}
+                        onChange={(e) => updateCollection(idx, 'name', e.target.value)}
+                        className="w-full rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground outline-none focus:border-rose-500"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="text-[11px] font-bold text-foreground">Category Slug</span>
+                      <input
+                        type="text"
+                        value={col.slug || ''}
+                        onChange={(e) => updateCollection(idx, 'slug', e.target.value)}
+                        className="w-full rounded-xl border border-border bg-card px-3 py-2 text-xs font-mono text-foreground outline-none focus:border-rose-500"
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                {/* ── SUB CATEGORIES & PHOTOS EDITOR ── */}
+                <div className="border-t border-border/50 pt-4 mt-2 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-rose-500" />
+                      Subcategories & Photos ({subCats.length})
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => addSubCategoryToCollection(idx)}
+                      className="inline-flex items-center gap-1 rounded-full border border-rose-300 bg-rose-50 px-3 py-1 text-[11px] font-bold text-rose-700 hover:bg-rose-100 transition-colors"
+                    >
+                      <Plus className="w-3 h-3" /> Add Subcategory
+                    </button>
+                  </div>
+
+                  {subCats.length === 0 ? (
+                    <p className="text-[11px] text-muted-foreground italic bg-card p-3 rounded-xl border border-border/40 text-center">
+                      No subcategories attached. Click &quot;+ Add Subcategory&quot; to add subcategory photos & names.
+                    </p>
+                  ) : (
+                    <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                      {subCats.map((subItem, subIdx) => {
+                        const subObj = typeof subItem === 'string' ? { name: subItem, image: '' } : subItem;
+                        const subName = subObj.name || '';
+                        const subImg = subObj.image || '';
+
+                        return (
+                          <div
+                            key={subObj.id || subIdx}
+                            className="flex flex-col sm:flex-row items-start sm:items-center gap-2.5 p-3 rounded-xl border border-border bg-card shadow-2xs"
+                          >
+                            {/* Subcat thumbnail preview */}
+                            <div className="relative h-11 w-11 rounded-lg overflow-hidden bg-muted border border-border shrink-0">
+                              <img
+                                src={subImg || 'https://images.pexels.com/photos/6393013/pexels-photo-6393013.jpeg?auto=compress&cs=tinysrgb&w=600'}
+                                alt={subName}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+
+                            {/* Subcat Name */}
+                            <input
+                              type="text"
+                              placeholder="Subcategory Name (e.g. Polybag, Earrings)"
+                              value={subName}
+                              onChange={(e) =>
+                                updateSubCategoryInCollection(idx, subIdx, 'name', e.target.value)
+                              }
+                              className="flex-1 rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs font-semibold text-foreground outline-none focus:border-rose-500 min-w-[120px]"
+                            />
+
+                            {/* Subcat Upload Photo */}
+                            <label className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-rose-300 bg-rose-50 px-2.5 py-1.5 text-[10px] font-bold text-rose-700 hover:bg-rose-100 transition-colors shrink-0">
+                              <Upload className="w-3 h-3" />
+                              {uploadingField === `col-sub-${idx}-${subIdx}` ? 'Uploading...' : 'Upload Photo'}
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                disabled={uploadingField === `col-sub-${idx}-${subIdx}`}
+                                onChange={(e) =>
+                                  handleFileUpload(
+                                    e.target.files[0],
+                                    (url) => updateSubCategoryInCollection(idx, subIdx, 'image', url),
+                                    `col-sub-${idx}-${subIdx}`
+                                  )
+                                }
+                              />
+                            </label>
+
+                            {/* Delete Subcat button */}
+                            <button
+                              type="button"
+                              onClick={() => removeSubCategoryFromCollection(idx, subIdx)}
+                              className="text-rose-600 hover:text-rose-800 p-1 rounded-md hover:bg-rose-100 transition-colors shrink-0"
+                              title="Delete Subcategory"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
-
-              <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-muted border border-border">
-                <img
-                  src={col.image}
-                  alt={col.name}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.src = 'https://images.pexels.com/photos/6393013/pexels-photo-6393013.jpeg?auto=compress&cs=tinysrgb&w=900';
-                  }}
-                />
-              </div>
-
-              <label className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-rose-300 bg-card px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-50 transition-colors shadow-xs">
-                <Upload className="w-3.5 h-3.5" />
-                {uploadingField === `col-${idx}` ? 'Uploading...' : 'Upload Image (Cloudinary)'}
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  disabled={uploadingField === `col-${idx}`}
-                  onChange={(e) =>
-                    handleFileUpload(
-                      e.target.files[0],
-                      (url) => updateCollection(idx, 'image', url),
-                      `col-${idx}`
-                    )
-                  }
-                />
-              </label>
-
-              <label className="block">
-                <span className="text-[11px] font-bold text-foreground">Name</span>
-                <input
-                  type="text"
-                  value={col.name || ''}
-                  onChange={(e) => updateCollection(idx, 'name', e.target.value)}
-                  className="w-full rounded-xl border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground outline-none focus:border-rose-500"
-                />
-              </label>
-
-              <label className="block">
-                <span className="text-[11px] font-bold text-foreground">Category Slug</span>
-                <input
-                  type="text"
-                  value={col.slug || ''}
-                  onChange={(e) => updateCollection(idx, 'slug', e.target.value)}
-                  className="w-full rounded-xl border border-border bg-card px-3 py-1.5 text-xs font-mono text-foreground outline-none focus:border-rose-500"
-                />
-              </label>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
